@@ -9,22 +9,25 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
  */
-public class Canvas extends JPanel {
+public class Canvas extends JPanel implements ItemListener{
     // image where the user's drawing is stored
     private Image drawingBuffer;
-    
+    private boolean erase;
     
     /**
      * Make a canvas.
@@ -37,8 +40,19 @@ public class Canvas extends JPanel {
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
+
+        erase = false;
+        JToggleButton eraseButton = new JToggleButton("Erase");
+        eraseButton.setLocation(0,10);
+        eraseButton.setSize(50,100);
+        eraseButton.addItemListener(this);
+        this.add(eraseButton);
     }
-    
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        erase = !erase;
+    }
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
@@ -116,8 +130,13 @@ public class Canvas extends JPanel {
      */
     private void drawLineSegment(int x1, int y1, int x2, int y2) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        
-        g.setColor(Color.BLACK);
+        if (!erase){
+            g.setColor(Color.BLACK);
+        }
+        else{
+            g.setStroke(new BasicStroke(10));
+            g.setColor(Color.WHITE);
+        }
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -188,4 +207,5 @@ public class Canvas extends JPanel {
             }
         });
     }
+
 }
