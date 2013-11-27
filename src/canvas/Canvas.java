@@ -51,8 +51,10 @@ public class Canvas extends JPanel implements ItemListener{
 
     @Override
     public void itemStateChanged(ItemEvent e) {
+        //change the state of erase
         erase = !erase;
     }
+    
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
