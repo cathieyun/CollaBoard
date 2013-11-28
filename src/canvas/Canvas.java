@@ -9,11 +9,14 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -25,9 +28,16 @@ import javax.swing.SwingUtilities;
  * on it freehand, with the mouse.
  */
 public class Canvas extends JPanel implements ItemListener{
+    public static Stroke SMALL = new BasicStroke(5);
+    public static Stroke MED = new BasicStroke(15);
+    public static Stroke LARGE = new BasicStroke(25);
     // image where the user's drawing is stored
     private Image drawingBuffer;
     private boolean erase;
+    private List<Point> currentDrawingObj;
+    private CanvasModel canvasModel;
+    private Stroke currentStroke;
+    private Color currentColor;
     
     /**
      * Make a canvas.
@@ -35,8 +45,11 @@ public class Canvas extends JPanel implements ItemListener{
      * @param height height in pixels
      */
     public Canvas(int width, int height) {
+        canvasModel = new CanvasModel();
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
+        currentColor = Color.BLACK;
+        currentStroke = SMALL;
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
@@ -91,6 +104,17 @@ public class Canvas extends JPanel implements ItemListener{
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
         // have to notify Swing to repaint this component on the screen.
         this.repaint();
+    }
+    
+    private void drawFreehand(Point[] points){
+        Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+        int[] x = new int[points.length];
+        int[] y = new int[points.length];
+        for (int i = 0; i < points.length; i++){
+            x[i] = points[i].x;
+            y[i] = points[i].y;   
+        }
+        g.drawPolyline(x,y, points.length);
     }
     
     /*
@@ -169,6 +193,8 @@ public class Canvas extends JPanel implements ItemListener{
         public void mousePressed(MouseEvent e) {
             lastX = e.getX();
             lastY = e.getY();
+            currentDrawingObj = new ArrayList<Point>();
+            currentDrawingObj.add(new Point(lastX, lastY));
         }
 
         /*
@@ -181,12 +207,17 @@ public class Canvas extends JPanel implements ItemListener{
             drawLineSegment(lastX, lastY, x, y);
             lastX = x;
             lastY = y;
+            currentDrawingObj.add(new Point(x,y));
         }
 
         // Ignore all these other mouse events.
         public void mouseMoved(MouseEvent e) { }
         public void mouseClicked(MouseEvent e) { }
-        public void mouseReleased(MouseEvent e) { }
+        public void mouseReleased(MouseEvent e) {
+            //instantiate a new Freehand object
+            canvasModel.getDrawingObjects().add(new Freehand(currentDrawingObj, currentColor, currentStroke));
+            
+        }
         public void mouseEntered(MouseEvent e) { }
         public void mouseExited(MouseEvent e) { }
     }

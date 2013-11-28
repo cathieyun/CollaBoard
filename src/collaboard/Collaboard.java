@@ -1,8 +1,12 @@
 package collaboard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import server.User;
 
 import whiteboard.Whiteboard;
 
@@ -10,33 +14,38 @@ public class Collaboard {
 /**
  * Contains a collection of whiteboards.
  */
-    private List<Whiteboard> whiteboards;
-    private Set<Integer> whiteboardIDs;
+    private Map<Integer, Whiteboard>whiteboards;
+    private HashMap<Integer, User> users;
     private Set<String> usernames;
     
     public Collaboard(){
-        this.whiteboards = new ArrayList<Whiteboard>();
+        this.whiteboards = new HashMap<Integer, Whiteboard>();
+        this.users = new HashMap<Integer, User>();
     }
     
     public void createNewWhiteboard(int ID, int x, int y){
-        if (whiteboardIDs.contains(ID)){
-            //do something
+        if (whiteboards.keySet().contains(ID)){
+            //return error
         }
         else{
             Whiteboard w = new Whiteboard(ID, x, y);
-            whiteboards.add(w);
-            whiteboardIDs.add(ID);
+            whiteboards.put(ID, w);
         }
     }
     
-    private void checkUsernameValidity(String input){
-        if (usernames.contains(input)){
-            //return error message
-        }
+    public String addUser(int userID, String username){
+
+//        if (usernames.contains(username)){
+//            return "E*"; //username already taken
+//        } //TODO: implement unique usernames later
+        usernames.add(username);
+        users.get(userID).setUsername(username);
+        return "C:" + username + userID;
     }
     
-    public List<Whiteboard> getWhiteboards(){
+    public Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
     }
+    
     
 }
