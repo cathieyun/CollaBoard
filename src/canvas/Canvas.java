@@ -68,7 +68,6 @@ public class Canvas extends JPanel implements ItemListener {
 		this.add(eraseButton);
 
 		JButton undoButton = new JButton("Undo");
-		// Add action listener to button
 		undoButton.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
@@ -77,9 +76,22 @@ public class Canvas extends JPanel implements ItemListener {
 				undo();
 			}
 		});
-
+		
 		undoButton.setLocation(0, 20);
 		this.add(undoButton);
+
+		JButton redoButton = new JButton("Redo");
+		redoButton.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Freehand List size: " + freehandList.size());
+				System.out.println("freehandListUndoIndex: " + freehandListUndoIndex);
+				redo();
+			}
+		});
+		
+		redoButton.setLocation(0, 40);
+		this.add(redoButton);
 	}
 
 	@Override
@@ -167,7 +179,7 @@ public class Canvas extends JPanel implements ItemListener {
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in pixels
 	 * relative to the upper-left corner of the drawing buffer.
 	 */
-	private void drawLineSegment(int x1, int y1, int x2, int y2, String color, String thickness, boolean areUndoing) {
+	private void drawLineSegment(int x1, int y1, int x2, int y2, String color, String thickness, boolean areUndoingOrRedoing) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 		if (color == "Black") {
 			g.setColor(Color.BLACK);
@@ -178,7 +190,7 @@ public class Canvas extends JPanel implements ItemListener {
 		
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
-		if (!areUndoing) {
+		if (!areUndoingOrRedoing) {
 			for (int i = freehandList.size() - 1; freehandListUndoIndex < freehandList.size(); i--) {
 				System.out.println("My index is: " + i);
 				System.out.println("My array size is: " + freehandList.size());
@@ -221,6 +233,23 @@ public class Canvas extends JPanel implements ItemListener {
 		// prevent the index from going below 0.
 		if (freehandListUndoIndex > 0) {
 			--freehandListUndoIndex;
+		}
+	}
+	
+	private void redo() {
+		if (freehandListUndoIndex < freehandList.size()) {
+			Freehand freehand = freehandList.get(freehandListUndoIndex);
+			for (Line l : freehand.getLineList()) {
+				int x1 = l.getX1();
+				int x2 = l.getX2();
+				int y1 = l.getY1();
+				int y2 = l.getY2();
+				String color = l.getColor();
+				String thickness = l.getThickness();
+				this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);
+			}
+			
+			++freehandListUndoIndex;
 		}
 	}
 
@@ -299,4 +328,3 @@ public class Canvas extends JPanel implements ItemListener {
 		});
 	}
 }
-

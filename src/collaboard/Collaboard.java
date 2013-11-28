@@ -23,12 +23,12 @@ public class Collaboard {
         this.users = new HashMap<Integer, User>();
     }
     
-    public void createNewWhiteboard(int ID, int x, int y){
+    public void createNewWhiteboard(int ID, int x, int y, String user){
         if (whiteboards.keySet().contains(ID)){
             //return error
         }
         else{
-            Whiteboard w = new Whiteboard(ID, x, y);
+            Whiteboard w = new Whiteboard(ID, x, y, user);
             whiteboards.put(ID, w);
         }
     }
@@ -45,7 +45,5 @@ public class Collaboard {
     
     public Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
-    }
-    
-    
+    }   
 }
