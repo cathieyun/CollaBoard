@@ -11,12 +11,14 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Stroke;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -27,16 +29,21 @@ import javax.swing.SwingUtilities;
 import whiteboard.Freehand;
 import whiteboard.Line;
 
+
 /**
  * Canvas represents a drawing surface that allows the user to draw on it
  * freehand, with the mouse.
  */
+
 public class Canvas extends JPanel implements ItemListener {
 	// image where the user's drawing is stored
 	private Image drawingBuffer;
 	private boolean erase;
 	private ArrayList<Freehand> freehandList = new ArrayList<Freehand>();
 	int freehandListUndoIndex = 0;
+    public static Stroke SMALL = new BasicStroke(5);
+    public static Stroke MED = new BasicStroke(15);
+    public static Stroke LARGE = new BasicStroke(25);
 
 	/**
 	 * Make a canvas.
@@ -292,3 +299,4 @@ public class Canvas extends JPanel implements ItemListener {
 		});
 	}
 }
+
