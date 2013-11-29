@@ -4,28 +4,36 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicButtonUI;
 
 public class ToolbarGUI extends JFrame implements ActionListener{
     //TODO: implement the action listener for each button
-    private ToolbarModel toolbar;
-    public ToolbarGUI(ToolbarModel toolbar){
-        try {
-            //make it so that button colors show up
-            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
-         } catch (Exception e) {
-                    e.printStackTrace();
-         }
+    private final ToolbarModel toolbar;
+    public ToolbarGUI(final ToolbarModel toolbar){
+//        try {
+//            //make it so that button colors show up
+//            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+//         } catch (Exception e) {
+//                    e.printStackTrace();
+//         }
+        System.out.println("hi");
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
         JPanel main = new JPanel();
 
@@ -36,10 +44,36 @@ public class ToolbarGUI extends JFrame implements ActionListener{
         this.setLocation(475,200);
         JButton[] buttons = new JButton[colors.length];
         for (int i = 0; i< colors.length; i++){
-            JButton button = new JButton();
-            button.setBackground(colors[i]);
+            final Color currentColor = colors[i];
+            final JButton button = new JButton();
+            button.setUI(new BasicButtonUI(){
+                @Override
+                public void paint(Graphics g, JComponent c){
+                    JButton myButton = (JButton) c;
+                    g.setColor(currentColor);
+                    g.fillRect(0,0, c.getWidth(),c.getHeight());
+                    ButtonModel buttonModel = myButton.getModel ();
+                    if ( buttonModel.isPressed () || buttonModel.isSelected () )
+                    {
+                        button.setBorder(BorderFactory.createLineBorder(Color.black));
+                    }
+                    else
+                    {
+                        //button.setBorder(BorderFactory.createEmptyBorder());
+                    }
+                    super.paint(g,c);
+                }
+            });
+            //button.setBackground(currentColor);
+            button.addActionListener(new ActionListener(){
+                @Override
+                public void actionPerformed(ActionEvent arg0) {
+                    toolbar.setColor(currentColor);
+                }  
+            });
             buttons[i] = button;
         }
+
         JButton small = new JButton("Small");
         JButton med = new JButton("Medium");
         JButton large = new JButton("Large");
@@ -87,16 +121,31 @@ public class ToolbarGUI extends JFrame implements ActionListener{
     public void actionPerformed(ActionEvent arg0) {
         // TODO Auto-generated method stub
     }
-    
-    public static void main(final String[] args){
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ToolbarModel toolbar = new ToolbarModel();
-                ToolbarGUI main = new ToolbarGUI(toolbar);
-                main.setVisible(true);
-            }
-        });
-    }
+//    
+//    public static void main(final String[] args){
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                ToolbarModel toolbar = new ToolbarModel();
+//                ToolbarGUI main = new ToolbarGUI(toolbar);
+//                main.setVisible(true);
+//            }
+//        });
+//    }
+    public static void main(final String args[]) {
+        JFrame frame = new JFrame("Line Borders");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        Border thickBorder = new LineBorder(Color.WHITE, 5);
+        
+        JButton thickButton = new JButton("12 Pixel");
+        thickButton.setBorder(thickBorder);
+        
+        Container contentPane = frame.getContentPane();
+        contentPane.add(thickButton, BorderLayout.NORTH);
+        frame.pack();
+        frame.setSize(300, frame.getHeight());
+        frame.setVisible(true);
+      }
     
     
 }

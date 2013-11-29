@@ -1,5 +1,6 @@
 package collaboard;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -21,7 +22,13 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
+import server.User;
+
+import whiteboard.Whiteboard;
+
 import canvas.Canvas;
+import canvas.CanvasModel;
+import canvas.ToolbarGUI;
 
 
 public class CollaboardGUI extends JFrame{
@@ -31,42 +38,42 @@ public class CollaboardGUI extends JFrame{
     private JPanel panels;
     private final JTextField usernameField;
     private final JTextField whiteboardField;
-    private final JButton newUsernameButton;
-    private final JLabel instruction;
     private final JLabel error;
     private Collaboard collaboard;
-    public CollaboardGUI(Collaboard collaboard){ 
+    private User user; //ID of the user using this instance of CollaboardGUI
+    private int userID;
+    public CollaboardGUI(Collaboard collaboard, User user){ 
+        this.user = user;
         this.collaboard = collaboard;
+        this.userID = user.getUserID();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
         panels = new JPanel(layout);
         userSelect = new JPanel();
-        whiteboardSelect = new JPanel();
-        canvas = new Canvas(800,800);
+        whiteboardSelect = new JPanel();   
         panels.add(userSelect,"user");
         panels.add(whiteboardSelect,"whiteboard");
-        panels.add(canvas, "canvas");
+        
         this.setTitle("Collaboard");
-        instruction = new JLabel("Please select a username.");
-        newUsernameButton = new JButton("Go!");
         usernameField = new JTextField(15);
         error = new JLabel("Invalid username");
         whiteboardField = new JTextField(15);
+        whiteboardField.addActionListener(new CreateWhiteboardListener());
         this.setSize(350,200);
-        this.setLocation(475,200);
+        this.setLocation(600,200);
         initializeUserPane();
         initializeWhiteboardPane();
         this.add(panels);
-        //this.add(userSelect);
-        //this.add(whiteboardSelect);
-        //this.add(canvas);
-        //panels.setVisible(true);
         layout.show(panels, "user");
         this.setVisible(true);
     }
     
     private void initializeUserPane(){
         userSelect.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JLabel instruction = new JLabel("Please select a username.");
+        JButton newUsernameButton = new JButton("Go!");
         userSelect.add(instruction);
         userSelect.add(usernameField);
         userSelect.add(newUsernameButton);
@@ -76,7 +83,7 @@ public class CollaboardGUI extends JFrame{
         newUsernameButton.setVisible(true);
         error.setVisible(false);
         
-        UsernameListener u = new UsernameListener(this);
+        UsernameListener u = new UsernameListener();
         usernameField.addActionListener(u);
         newUsernameButton.addActionListener(u);
     }
@@ -84,6 +91,7 @@ public class CollaboardGUI extends JFrame{
     private void initializeWhiteboardPane(){
         JButton chooseWhiteboard = new JButton("Go");
         JButton makeNewWhiteboard = new JButton("Create!");
+        makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard");
         JTable whiteboardIDs = new JTable();
         JLabel createWhiteboard = new JLabel("Create a new whiteboard");
@@ -136,11 +144,7 @@ public class CollaboardGUI extends JFrame{
         whiteboardField.setVisible(true);
     }
     
-    public class UsernameListener implements ActionListener{
-        private CollaboardGUI gui;
-        public UsernameListener(CollaboardGUI gui){
-            this.gui=gui;
-        }
+    private class UsernameListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent arg0) {
             error.setVisible(false);
@@ -150,15 +154,45 @@ public class CollaboardGUI extends JFrame{
                 error.setVisible(true); 
             }
             else{
-                gui.setSize(400,400);
+                CollaboardGUI.this.setSize(400,400);
+                
                 //send message to the server to set new username.
                 CardLayout layout = (CardLayout) panels.getLayout();
                 layout.show(panels, "whiteboard");
                 //go to whiteboardselect page
+            }        
+        }   
+    }
+    
+    private class CreateWhiteboardListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try{
+                int newWhiteboard = Integer.parseInt(whiteboardField.getText());
+                if (newWhiteboard < 1) throw new NumberFormatException();
+                Whiteboard whiteboard = collaboard.createNewWhiteboard(newWhiteboard, 800, 600);
+                JPanel canvas = new Canvas(800, 600, whiteboard.getCanvasModel(), user);
+                JFrame window = new JFrame("Freehand Canvas");
+                window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                window.setLayout(new BorderLayout());
+                window.setLocation(300,100);
+                window.add(canvas, BorderLayout.CENTER);
+                window.pack();
+                window.setVisible(true);
+                ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar());
+                toolbarGUI.setVisible(true);
+                CollaboardGUI.this.dispose();
+//                panels.add(canvas, "canvas");
+//                CardLayout layout = (CardLayout) panels.getLayout();
+//                layout.show(panels, "canvas");
+            }catch(NumberFormatException e1){
+                //if it's not a valid value
+                //display error message
             }
+            // TODO Auto-generated method stub
             
         }
-        
     }
     public static void main(final String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -167,9 +201,10 @@ public class CollaboardGUI extends JFrame{
                 for (int i = 0; i < 10; i++){
                     collaboard.createNewWhiteboard(i,10,20);
                 }
-                CollaboardGUI main = new CollaboardGUI(collaboard);
+                CollaboardGUI main = new CollaboardGUI(collaboard, new User(1));
                 main.setVisible(true);
             }
         });
     }
+
 }

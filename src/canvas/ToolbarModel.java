@@ -16,6 +16,7 @@ public class ToolbarModel {
     }
     
     public void setColor(Color color){
+        System.out.println("I am now this color: "+ color.toString());
         this.color = color;
     }
     public Color getColor(){

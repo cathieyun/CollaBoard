@@ -23,14 +23,14 @@ public class Collaboard {
         this.users = new HashMap<Integer, User>();
     }
     
-    public void createNewWhiteboard(int ID, int x, int y){
-        if (whiteboards.keySet().contains(ID)){
-            //return error
-        }
-        else{
-            Whiteboard w = new Whiteboard(ID, x, y);
-            whiteboards.put(ID, w);
-        }
+    public Whiteboard createNewWhiteboard(int ID, int x, int y){
+        Whiteboard w = new Whiteboard(ID);
+        whiteboards.put(ID, w);
+        return w;
+    }
+    
+    public boolean exisitingWhiteboard(int ID){
+        return (whiteboards.keySet().contains(ID));
     }
     
     public String addUser(int userID, String username){

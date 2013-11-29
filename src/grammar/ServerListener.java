@@ -1,7 +1,6 @@
 package grammar;
 
 public class ServerListener extends ProtocolBaseListener{
-    private boolean sender; //true corresponds to server, false corresponds to client
     public void enterLine(ProtocolParser.LineContext ctx){
         
     }

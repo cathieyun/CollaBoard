@@ -49,7 +49,7 @@ public class WhiteboardServer {
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
         try {
-            CollaboardGUI gui = new CollaboardGUI(collaboard);
+            CollaboardGUI gui = new CollaboardGUI(collaboard, user);
             gui.setVisible(true);
             String line = in.readLine();
 //            String output = collaboard.checkUsernameValidity(line);

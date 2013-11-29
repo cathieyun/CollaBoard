@@ -23,6 +23,8 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
+import server.User;
+
 /**
  * Canvas represents a drawing surface that allows the user to draw
  * on it freehand, with the mouse.
@@ -36,32 +38,34 @@ public class Canvas extends JPanel implements ItemListener{
     private boolean erase;
     private List<Point> currentDrawingObj;
     private CanvasModel canvasModel;
-    private Stroke currentStroke;
-    private Color currentColor;
+    private User user;
     
     /**
      * Make a canvas.
      * @param width width in pixels
      * @param height height in pixels
      */
-    public Canvas(int width, int height) {
-        canvasModel = new CanvasModel();
+    public Canvas(int width, int height, CanvasModel canvasModel, User user) {
+        this.user = user;
+        this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
-        currentColor = Color.BLACK;
-        currentStroke = SMALL;
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window.  Have to
         // wait until paintComponent() is first called.
 
-        erase = false;
-        JToggleButton eraseButton = new JToggleButton("Erase");
-        eraseButton.setLocation(0,10);
-        eraseButton.setSize(50,100);
-        eraseButton.addItemListener(this);
-        this.add(eraseButton);
+//        erase = false;
+//        JToggleButton eraseButton = new JToggleButton("Erase");
+//        eraseButton.setLocation(0,10);
+//        eraseButton.setSize(50,100);
+//        eraseButton.addItemListener(this);
+//        this.add(eraseButton);
     }
-
+    
+    public CanvasModel getCanvasModel(){
+        return canvasModel;
+    }
+    
     @Override
     public void itemStateChanged(ItemEvent e) {
         //change the state of erase
@@ -156,13 +160,8 @@ public class Canvas extends JPanel implements ItemListener{
      */
     private void drawLineSegment(int x1, int y1, int x2, int y2) {
         Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        if (!erase){
-            g.setColor(Color.BLACK);
-        }
-        else{
-            g.setStroke(new BasicStroke(10));
-            g.setColor(Color.WHITE);
-        }
+        g.setStroke(user.getToolbar().getStroke());
+        g.setColor(user.getToolbar().getColor());
         g.drawLine(x1, y1, x2, y2);
         
         // IMPORTANT!  every time we draw on the internal drawing buffer, we
@@ -215,7 +214,7 @@ public class Canvas extends JPanel implements ItemListener{
         public void mouseClicked(MouseEvent e) { }
         public void mouseReleased(MouseEvent e) {
             //instantiate a new Freehand object
-            canvasModel.getDrawingObjects().add(new Freehand(currentDrawingObj, currentColor, currentStroke));
+            canvasModel.getDrawingObjects().add(new Freehand(currentDrawingObj, user.getToolbar().getColor(), user.getToolbar().getStroke()));
             
         }
         public void mouseEntered(MouseEvent e) { }
@@ -233,7 +232,7 @@ public class Canvas extends JPanel implements ItemListener{
                 JFrame window = new JFrame("Freehand Canvas");
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
-                Canvas canvas = new Canvas(800, 600);
+                Canvas canvas = new Canvas(800, 600, new CanvasModel(), new User(1));
                 window.add(canvas, BorderLayout.CENTER);
                 window.pack();
                 window.setVisible(true);
