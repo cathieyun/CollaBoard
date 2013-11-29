@@ -45,7 +45,5 @@ public class Collaboard {
     
     public Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
-    }
-    
-    
+    }   
 }

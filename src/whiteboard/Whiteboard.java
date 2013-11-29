@@ -16,11 +16,13 @@ public class Whiteboard {
     private final int whiteboardID;
     private BlockingQueue requests;
     
+
     public Whiteboard(int whiteboardID){
         this.whiteboardID = whiteboardID;
         canvas = new CanvasModel();
         this.users = new ArrayList<String>();
         requests = new LinkedBlockingQueue<String>(); //stores the requests to be handled
+        //users.add(user); 
     }
     
     public BlockingQueue getRequests(){
@@ -35,4 +37,25 @@ public class Whiteboard {
         return canvas;
     }
     
+	/**
+	 * addUser() is called when a user enters a Whiteboard. Adds the username to
+	 * the userList.
+	 * 
+	 * @param user
+	 *            the username of the user who entered the Whiteboard.
+	 */
+	public void addUser(String user) {
+		users.add(user);
+	}
+    
+	/**
+	 * removeUser() is called when a user exits a Whiteboard. Removes the
+	 * username from userList.
+	 * 
+	 * @param user
+	 *            the username of the user who exited the Whiteboard
+	 */
+	public void removeUser(String user) {
+		users.remove(user);
+	}
 }
