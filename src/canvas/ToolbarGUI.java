@@ -27,12 +27,12 @@ public class ToolbarGUI extends JFrame implements ActionListener{
     //TODO: implement the action listener for each button
     private final ToolbarModel toolbar;
     public ToolbarGUI(final ToolbarModel toolbar){
-//        try {
-//            //make it so that button colors show up
-//            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
-//         } catch (Exception e) {
-//                    e.printStackTrace();
-//         }
+        try {
+            //make it so that button colors show up
+            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+         } catch (Exception e) {
+                    e.printStackTrace();
+         }
         System.out.println("hi");
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
         JPanel main = new JPanel();
@@ -46,25 +46,7 @@ public class ToolbarGUI extends JFrame implements ActionListener{
         for (int i = 0; i< colors.length; i++){
             final Color currentColor = colors[i];
             final JButton button = new JButton();
-            button.setUI(new BasicButtonUI(){
-                @Override
-                public void paint(Graphics g, JComponent c){
-                    JButton myButton = (JButton) c;
-                    g.setColor(currentColor);
-                    g.fillRect(0,0, c.getWidth(),c.getHeight());
-                    ButtonModel buttonModel = myButton.getModel ();
-                    if ( buttonModel.isPressed () || buttonModel.isSelected () )
-                    {
-                        button.setBorder(BorderFactory.createLineBorder(Color.black));
-                    }
-                    else
-                    {
-                        //button.setBorder(BorderFactory.createEmptyBorder());
-                    }
-                    super.paint(g,c);
-                }
-            });
-            //button.setBackground(currentColor);
+            button.setBackground(currentColor);
             button.addActionListener(new ActionListener(){
                 @Override
                 public void actionPerformed(ActionEvent arg0) {
@@ -77,7 +59,7 @@ public class ToolbarGUI extends JFrame implements ActionListener{
         JButton small = new JButton("Small");
         JButton med = new JButton("Medium");
         JButton large = new JButton("Large");
-        JButton undo = new JButton("undo");
+        JButton undo = new JButton("undo");//TODO: pass undo/redo events to Canvas
         JButton redo = new JButton("redo");
         GroupLayout layout = new GroupLayout(main);
         main.setLayout(layout);
@@ -121,31 +103,17 @@ public class ToolbarGUI extends JFrame implements ActionListener{
     public void actionPerformed(ActionEvent arg0) {
         // TODO Auto-generated method stub
     }
-//    
-//    public static void main(final String[] args){
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                ToolbarModel toolbar = new ToolbarModel();
-//                ToolbarGUI main = new ToolbarGUI(toolbar);
-//                main.setVisible(true);
-//            }
-//        });
-//    }
-    public static void main(final String args[]) {
-        JFrame frame = new JFrame("Line Borders");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    
+    public static void main(final String[] args){
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ToolbarModel toolbar = new ToolbarModel();
+                ToolbarGUI main = new ToolbarGUI(toolbar);
+                main.setVisible(true);
+            }
+        });
+    }
 
-        Border thickBorder = new LineBorder(Color.WHITE, 5);
-        
-        JButton thickButton = new JButton("12 Pixel");
-        thickButton.setBorder(thickBorder);
-        
-        Container contentPane = frame.getContentPane();
-        contentPane.add(thickButton, BorderLayout.NORTH);
-        frame.pack();
-        frame.setSize(300, frame.getHeight());
-        frame.setVisible(true);
-      }
     
     
 }

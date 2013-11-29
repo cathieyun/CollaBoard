@@ -48,28 +48,6 @@ public class Canvas extends JPanel implements ItemListener {
     private CanvasModel canvasModel;
     private User user;
     
-    /**
-     * Make a canvas.
-     * @param width width in pixels
-     * @param height height in pixels
-     */
-    public Canvas(int width, int height, CanvasModel canvasModel, User user) {
-        this.user = user;
-        this.canvasModel = canvasModel;
-        this.setPreferredSize(new Dimension(width, height));
-        addDrawingController();
-        // note: we can't call makeDrawingBuffer here, because it only
-        // works *after* this canvas has been added to a window.  Have to
-        // wait until paintComponent() is first called.
-
-//        erase = false;
-//        JToggleButton eraseButton = new JToggleButton("Erase");
-//        eraseButton.setLocation(0,10);
-//        eraseButton.setSize(50,100);
-//        eraseButton.addItemListener(this);
-//        this.add(eraseButton);
-    }
-
 
     /**
      * Make a canvas.
@@ -79,7 +57,9 @@ public class Canvas extends JPanel implements ItemListener {
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height) {
+    public Canvas(int width, int height, CanvasModel canvasModel, User user) {
+        this.user = user;
+        this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         // note: we can't call makeDrawingBuffer here, because it only
@@ -212,33 +192,20 @@ public class Canvas extends JPanel implements ItemListener {
         this.repaint();
     }
     
-    /*
-     * Draw a line between two points (x1, y1) and (x2, y2), specified in
-     * pixels relative to the upper-left corner of the drawing buffer.
-     */
-    private void drawLineSegment(int x1, int y1, int x2, int y2) {
-        Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        g.setStroke(user.getToolbar().getStroke());
-        g.setColor(user.getToolbar().getColor());
-        g.drawLine(x1, y1, x2, y2);
-        
-        // IMPORTANT!  every time we draw on the internal drawing buffer, we
-        // have to notify Swing to repaint this component on the screen.
-        this.repaint();
-    }
-
 	/*
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in pixels
 	 * relative to the upper-left corner of the drawing buffer.
 	 */
 	private void drawLineSegment(int x1, int y1, int x2, int y2, String color, String thickness, boolean areUndoingOrRedoing) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-		if (color == "Black") {
-			g.setColor(Color.BLACK);
-		} else if (color == "White") {
-			g.setStroke(new BasicStroke(10));
-			g.setColor(Color.WHITE);
-		}
+//		if (color == "Black") {
+//			g.setColor(Color.BLACK);
+//		} else if (color == "White") {
+//			g.setStroke(new BasicStroke(10));
+//			g.setColor(Color.WHITE);
+//		}
+		g.setStroke(user.getToolbar().getStroke());
+        g.setColor(user.getToolbar().getColor());
 		
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
@@ -372,7 +339,7 @@ public class Canvas extends JPanel implements ItemListener {
 				JFrame window = new JFrame("Freehand Canvas");
 				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				window.setLayout(new BorderLayout());
-				Canvas canvas = new Canvas(800, 600);
+				Canvas canvas = new Canvas(800, 600, new CanvasModel(), new User(1));
 				window.add(canvas, BorderLayout.CENTER);
 				window.pack();
 				window.setVisible(true);
