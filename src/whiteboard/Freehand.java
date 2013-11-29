@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * @author Eric Ruleman
  * 
  */
-public class Freehand {
+public class Freehand implements canvas.DrawingObject{
 	private ArrayList<Line> lineList;
 
 	public Freehand(ArrayList<Line> lineList) {
@@ -25,5 +25,4 @@ public class Freehand {
 	public String toString() {
 		return "Freehand [lineList=" + lineList + "]";
 	}
-
 }
