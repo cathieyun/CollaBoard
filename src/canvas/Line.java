@@ -1,4 +1,4 @@
-package whiteboard;
+package canvas;
 
 /**
  * Line represents a line segment that a user draws by dragging his mouse. Lines

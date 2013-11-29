@@ -1,31 +1,30 @@
 package canvas;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Stroke;
-import java.util.List;
+import java.util.ArrayList;
 
-public class Freehand implements DrawingObject{
-    private final List<Point> points;
-    private Color color;
-    private Stroke stroke;
-    public Freehand(List<Point> points, Color color, Stroke stroke){
-        this.points = points;
-        this.color = color;
-        this.stroke = stroke;
-    }
-    public List<Point> getPoints() {
-        return points;
-    }
-    public Color getColor() {
-        return color;
-    }
 
-    public Stroke getStroke() {
-        return stroke;
-    }
+/**
+ * Freehand aggregates all the line segments that a user draws between the time
+ * when the mouse is pressed and when the mouse is released. The Freehand class
+ * allows for meaningful undos/redos.
+ * 
+ * @author Eric Ruleman
+ * 
+ */
+public class Freehand{
+	private ArrayList<Line> lineList;
 
-    
-    
-    
+	public Freehand(ArrayList<Line> lineList) {
+		this.lineList = lineList;
+	}
+
+	public ArrayList<Line> getLineList() {
+		return lineList;
+	}
+
+	@Override
+	public String toString() {
+		return "Freehand [lineList=" + lineList + "]";
+	}
+
 }

@@ -27,8 +27,6 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
 import server.User;
-import whiteboard.Freehand;
-import whiteboard.Line;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw on it
@@ -39,8 +37,8 @@ public class Canvas extends JPanel implements ItemListener {
 	// image where the user's drawing is stored
 	private Image drawingBuffer;
 	private boolean erase;
-	private ArrayList<Freehand> freehandList = new ArrayList<Freehand>();
-	int freehandListUndoIndex = 0;
+	//private ArrayList<Freehand> freehandList = new ArrayList<Freehand>();
+	//int freehandListUndoIndex = 0;
     public static Stroke SMALL = new BasicStroke(5);
     public static Stroke MED = new BasicStroke(15);
     public static Stroke LARGE = new BasicStroke(25);
@@ -57,7 +55,7 @@ public class Canvas extends JPanel implements ItemListener {
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, CanvasModel canvasModel, User user) {
+    public Canvas(int width, int height, final CanvasModel canvasModel, User user) {
         this.user = user;
         this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
@@ -77,8 +75,8 @@ public class Canvas extends JPanel implements ItemListener {
         undoButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Freehand List size: " + freehandList.size());
-                System.out.println("freehandListUndoIndex: " + freehandListUndoIndex);
+                System.out.println("Freehand List size: " + canvasModel.getListSize());
+                System.out.println("freehandListUndoIndex: " + canvasModel.getFreehandListUndoIndex());
                 undo();
             }
         });
@@ -90,8 +88,8 @@ public class Canvas extends JPanel implements ItemListener {
         redoButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Freehand List size: " + freehandList.size());
-                System.out.println("freehandListUndoIndex: " + freehandListUndoIndex);
+                System.out.println("Freehand List size: " + canvasModel.getListSize());
+                System.out.println("freehandListUndoIndex: " + canvasModel.getFreehandListUndoIndex());
                 redo();
             }
         });
@@ -210,10 +208,10 @@ public class Canvas extends JPanel implements ItemListener {
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
 		if (!areUndoingOrRedoing) {
-			for (int i = freehandList.size() - 1; freehandListUndoIndex < freehandList.size(); i--) {
+			for (int i = canvasModel.getListSize() - 1; canvasModel.getFreehandListUndoIndex() < canvasModel.getListSize(); i--) {
 				System.out.println("My index is: " + i);
-				System.out.println("My array size is: " + freehandList.size());
-				freehandList.remove(i);
+				System.out.println("My array size is: " + canvasModel.getListSize());
+				canvasModel.removeFreehand(i);
 			}
 		}
 
@@ -234,10 +232,11 @@ public class Canvas extends JPanel implements ItemListener {
 	}
 
 	private void undo() {
+	    //TODO: send message to server
 		fillWithWhite();
 		
-		for (int i = 0; i < freehandListUndoIndex - 1; i++) {
-			Freehand freehand = freehandList.get(i);
+		for (int i = 0; i < canvasModel.getFreehandListUndoIndex() - 1; i++) {
+			Freehand freehand = canvasModel.getIthFreehand(i);
 			for (Line l : freehand.getLineList()) {
 				int x1 = l.getX1();
 				int x2 = l.getX2();
@@ -250,14 +249,15 @@ public class Canvas extends JPanel implements ItemListener {
 		}
 		
 		// prevent the index from going below 0.
-		if (freehandListUndoIndex > 0) {
-			--freehandListUndoIndex;
+		if (canvasModel.getFreehandListUndoIndex() > 0) {
+			canvasModel.getAndDecrementIndex();
 		}
 	}
 	
 	private void redo() {
-		if (freehandListUndoIndex < freehandList.size()) {
-			Freehand freehand = freehandList.get(freehandListUndoIndex);
+	    //TODO: send message to server
+		if (canvasModel.getFreehandListUndoIndex() < canvasModel.getListSize()) {
+			Freehand freehand = canvasModel.getIthFreehand(canvasModel.getFreehandListUndoIndex());
 			for (Line l : freehand.getLineList()) {
 				int x1 = l.getX1();
 				int x2 = l.getX2();
@@ -268,7 +268,7 @@ public class Canvas extends JPanel implements ItemListener {
 				this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);
 			}
 			
-			++freehandListUndoIndex;
+			canvasModel.getAndIncrementIndex();
 		}
 	}
 
@@ -318,8 +318,8 @@ public class Canvas extends JPanel implements ItemListener {
 		}
 
 		public void mouseReleased(MouseEvent e) {
-			freehandList.add(freehand);
-			++freehandListUndoIndex;
+			canvasModel.addFreehand(freehand);
+			canvasModel.getAndIncrementIndex();
 		}
 
 		public void mouseEntered(MouseEvent e) {
