@@ -17,6 +17,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -25,10 +26,11 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
-import server.User;
-import whiteboard.Freehand;
-import whiteboard.Line;
-import whiteboard.Oval;
+import client.User;
+
+import canvas.Freehand;
+import canvas.Line;
+import canvas.Oval;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw on it
@@ -44,6 +46,7 @@ public class Canvas extends JPanel implements ItemListener {
     public static Stroke LARGE = new BasicStroke(25);
     private CanvasModel canvasModel;
     private User user;
+    private Socket socket;
     boolean isDrawingOval = false;
     
 

@@ -9,6 +9,10 @@ import java.awt.GridLayout;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -20,9 +24,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
-import server.User;
+import client.User;
+
 
 import whiteboard.Whiteboard;
 
@@ -42,12 +48,16 @@ public class CollaboardGUI extends JFrame{
     private Collaboard collaboard;
     private User user; //ID of the user using this instance of CollaboardGUI
     private int userID;
-    public CollaboardGUI(Collaboard collaboard, User user){ 
+    private PrintWriter out;
+    private BufferedReader in;
+    public CollaboardGUI(Collaboard collaboard, User user){  
         this.user = user;
         this.collaboard = collaboard;
         this.userID = user.getUserID();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+        in = user.getInputStream();
+        out = user.getOutputStream();
+
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
         panels = new JPanel(layout);
@@ -106,7 +116,6 @@ public class CollaboardGUI extends JFrame{
         whiteboardIDs.setModel(model);
         
         Set<Integer> whiteboards = collaboard.getWhiteboards().keySet();
-        //System.out.println(whiteboards.toString());
         for (int i: whiteboards){
             model.addRow(new String[]{Integer.toString(i)});
         }
@@ -144,6 +153,10 @@ public class CollaboardGUI extends JFrame{
         whiteboardField.setVisible(true);
     }
     
+    /**
+     * ActionListener that listens for the actions pertaining to creation of a new username
+     *
+     */
     private class UsernameListener implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent arg0) {
@@ -154,6 +167,7 @@ public class CollaboardGUI extends JFrame{
                 error.setVisible(true); 
             }
             else{
+                new ProtocolWorker("make " + desiredUsername + " " + user.getUserID()).execute(); //send to the server
                 CollaboardGUI.this.setSize(400,400);
                 
                 //send message to the server to set new username.
@@ -164,6 +178,10 @@ public class CollaboardGUI extends JFrame{
         }   
     }
     
+    /**
+     * ActionListener that listens for actions pertaining to the creation of a new whiteboard.
+     *
+     */
     private class CreateWhiteboardListener implements ActionListener{
 
         @Override
@@ -194,17 +212,44 @@ public class CollaboardGUI extends JFrame{
             
         }
     }
-    public static void main(final String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                Collaboard collaboard = new Collaboard();
-                for (int i = 0; i < 10; i++){
-                    collaboard.createNewWhiteboard(i,10,20);
-                }
-                CollaboardGUI main = new CollaboardGUI(collaboard, new User(1));
-                main.setVisible(true);
-            }
-        });
+    
+    /**
+     * SwingWorker that passes messages to the server in a background thread.
+     *
+     */
+    public class ProtocolWorker extends SwingWorker<String, Object>{
+        private String message; //message to be sent
+        public ProtocolWorker(String message){
+            this.message = message;
+        }
+        @Override
+        protected String doInBackground() throws Exception {
+            //send a message to the server.
+            out.println(message);
+            return null;
+        }
+        
     }
+//    public static void main(final String[] args) {
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                Collaboard collaboard = new Collaboard();
+//                for (int i = 0; i < 10; i++){
+//                    collaboard.createNewWhiteboard(i,10,20);
+//                }
+//                Socket socket = new Socket();
+//                PrintWriter out;
+//                try {
+//                    out = new PrintWriter(socket.getOutputStream(), true);
+//                    User user = new User(1);
+//                    CollaboardGUI main = new CollaboardGUI(collaboard, user);
+//                    user.setOutputStream(out);
+//                    main.setVisible(true);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
 }
