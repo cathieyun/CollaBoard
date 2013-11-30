@@ -19,7 +19,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -29,6 +28,9 @@ import javax.swing.SwingUtilities;
 
 import client.User;
 
+import canvas.Freehand;
+import canvas.Line;
+import canvas.Oval;
 
 /**
  * Canvas represents a drawing surface that allows the user to draw on it
@@ -38,16 +40,14 @@ import client.User;
 public class Canvas extends JPanel implements ItemListener {
 	// image where the user's drawing is stored
 	private Image drawingBuffer;
-	private boolean erase;
-	//private ArrayList<Freehand> freehandList = new ArrayList<Freehand>();
-	//int freehandListUndoIndex = 0;
+	private boolean erase = false;
     public static Stroke SMALL = new BasicStroke(5);
     public static Stroke MED = new BasicStroke(15);
     public static Stroke LARGE = new BasicStroke(25);
-    private List<Point> currentDrawingObj;
     private CanvasModel canvasModel;
     private User user;
     private Socket socket;
+    boolean isDrawingOval = false;
     
 
     /**
@@ -67,7 +67,10 @@ public class Canvas extends JPanel implements ItemListener {
         // works *after* this canvas has been added to a window. Have to
         // wait until paintComponent() is first called.
 
-        erase = false;
+        configureButtons();
+    }
+    
+    private void configureButtons() {
         JToggleButton eraseButton = new JToggleButton("Erase");
         eraseButton.setLocation(0, 10);
         eraseButton.setSize(50, 100);
@@ -78,9 +81,10 @@ public class Canvas extends JPanel implements ItemListener {
         undoButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Freehand List size: " + canvasModel.getListSize());
-                System.out.println("freehandListUndoIndex: " + canvasModel.getFreehandListUndoIndex());
                 undo();
+//                System.out.println("Undo Action performed.");
+//                System.out.println("Freehand List size: " + canvasModel.getListSize());
+//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
             }
         });
         
@@ -91,14 +95,30 @@ public class Canvas extends JPanel implements ItemListener {
         redoButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Freehand List size: " + canvasModel.getListSize());
-                System.out.println("freehandListUndoIndex: " + canvasModel.getFreehandListUndoIndex());
                 redo();
+//                System.out.println("Redo Action performed.");
+//                System.out.println("Freehand List size: " + canvasModel.getListSize());
+//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
             }
         });
         
         redoButton.setLocation(0, 40);
         this.add(redoButton);
+        
+		JButton drawOvalButton = new JButton("Draw Oval");
+		drawOvalButton.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+//				System.out.println("drawingObjectList size: "
+//						+ canvasModel.getListSize());
+//				System.out.println("drawingObjectListUndoIndex: "
+//						+ canvasModel.getDrawingObjectListUndoIndex());
+				isDrawingOval = !isDrawingOval;
+			}
+		});
+		
+		drawOvalButton.setLocation(0, 60);
+        this.add(drawOvalButton);
     }
     
     public CanvasModel getCanvasModel(){
@@ -149,17 +169,6 @@ public class Canvas extends JPanel implements ItemListener {
         this.repaint();
     }
     
-    private void drawFreehand(Point[] points){
-        Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-        int[] x = new int[points.length];
-        int[] y = new int[points.length];
-        for (int i = 0; i < points.length; i++){
-            x[i] = points[i].x;
-            y[i] = points[i].y;   
-        }
-        g.drawPolyline(x,y, points.length);
-    }
-    
     /*
      * Draw a happy smile on the drawing buffer.
      */
@@ -193,35 +202,53 @@ public class Canvas extends JPanel implements ItemListener {
         this.repaint();
     }
     
-	/*
+	/**
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in pixels
 	 * relative to the upper-left corner of the drawing buffer.
 	 */
-	private void drawLineSegment(int x1, int y1, int x2, int y2, String color, String thickness, boolean areUndoingOrRedoing) {
+	private void drawLineSegment(int x1, int y1, int x2, int y2, String color,
+			String thickness, boolean areUndoingOrRedoing) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-//		if (color == "Black") {
-//			g.setColor(Color.BLACK);
-//		} else if (color == "White") {
-//			g.setStroke(new BasicStroke(10));
-//			g.setColor(Color.WHITE);
-//		}
+		// if (color == "Black") {
+		// g.setColor(Color.BLACK);
+		// } else if (color == "White") {
+		// g.setStroke(new BasicStroke(10));
+		// g.setColor(Color.WHITE);
+		// }
 		g.setStroke(user.getToolbar().getStroke());
-        g.setColor(user.getToolbar().getColor());
-		
+		g.setColor(user.getToolbar().getColor());
+
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
 		if (!areUndoingOrRedoing) {
-			for (int i = canvasModel.getListSize() - 1; canvasModel.getFreehandListUndoIndex() < canvasModel.getListSize(); i--) {
-				System.out.println("My index is: " + i);
-				System.out.println("My array size is: " + canvasModel.getListSize());
-				canvasModel.removeFreehand(i);
-			}
+			canvasModel.preventRedoAfterThisEdit();
 		}
 
 		g.drawLine(x1, y1, x2, y2);
 
 		// IMPORTANT! every time we draw on the internal drawing buffer, we
 		// have to notify Swing to repaint this component on the screen.
+		this.repaint();
+	}
+
+	private void drawOval(int x, int y, int width, int height, boolean areUndoingOrRedoing) {
+		fillWithWhite();
+		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+
+		// redraw all the drawinObjects on the canvas in order for the circle to appear as if it's resizing
+		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex(); i++) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
+			redrawDrawingObject(currentDrawingObject);
+		}
+
+		g.drawOval(x, y, width, height);
+		
+		// after a series of undo operations, if a user begins to draw again,
+		// all edits after the current edit are discarded
+		if (!areUndoingOrRedoing) {
+			canvasModel.preventRedoAfterThisEdit();
+		}
+
 		this.repaint();
 	}
 
@@ -234,48 +261,75 @@ public class Canvas extends JPanel implements ItemListener {
 		addMouseMotionListener(controller);
 	}
 
+	/**
+	 * Undos the last DrawingObject completed on the canvas.
+	 */
 	private void undo() {
 	    //TODO: send message to server
 		fillWithWhite();
-		
-		for (int i = 0; i < canvasModel.getFreehandListUndoIndex() - 1; i++) {
-			Freehand freehand = canvasModel.getIthFreehand(i);
-			for (Line l : freehand.getLineList()) {
-				int x1 = l.getX1();
-				int x2 = l.getX2();
-				int y1 = l.getY1();
-				int y2 = l.getY2();
-				String color = l.getColor();
-				String thickness = l.getThickness();
-				this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);
-			}
+		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
+			redrawDrawingObject(currentDrawingObject);
 		}
-		
+
 		// prevent the index from going below 0.
-		if (canvasModel.getFreehandListUndoIndex() > 0) {
+		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
 			canvasModel.getAndDecrementIndex();
 		}
 	}
-	
+
+	/**
+	 * Redraws the last DrawingObject to have been undone from the canvas.
+	 */
 	private void redo() {
-	    //TODO: send message to server
-		if (canvasModel.getFreehandListUndoIndex() < canvasModel.getListSize()) {
-			Freehand freehand = canvasModel.getIthFreehand(canvasModel.getFreehandListUndoIndex());
-			for (Line l : freehand.getLineList()) {
-				int x1 = l.getX1();
-				int x2 = l.getX2();
-				int y1 = l.getY1();
-				int y2 = l.getY2();
-				String color = l.getColor();
-				String thickness = l.getThickness();
-				this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);
-			}
-			
+		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
+			redrawDrawingObject(currentDrawingObject);
 			canvasModel.getAndIncrementIndex();
 		}
 	}
-
-	/*
+	
+	/**
+	 * Redraws a drawingObject onto the screen by checking the type of
+	 * particular drawingObject and calling the appropriate methods to redraw
+	 * the type.
+	 * 
+	 * @param d
+	 *            the drawingObject to redraw onto the canvas
+	 */
+	public void redrawDrawingObject(DrawingObject d) {
+		if (d instanceof Freehand) {
+			Freehand freehand = (Freehand) d;
+			redrawLinesInFreehand(freehand);
+		}
+		else if (d instanceof Oval) {
+			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+			Oval oval = (Oval) d;
+			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
+		}
+		this.repaint();
+	}
+	
+	/**
+	 * This method is used to redaw the lines in a Freehand object.
+	 * 
+	 * @param freehand
+	 *            the Freehand object whose lines are to be redrawn onto the GUI
+	 */
+	private void redrawLinesInFreehand(Freehand freehand) {
+	    //TODO: send message to server
+		for (Line l : freehand.getLineList()) {
+			int x1 = l.getX1();
+			int x2 = l.getX2();
+			int y1 = l.getY1();
+			int y2 = l.getY2();
+			String color = l.getColor();
+			String thickness = l.getThickness();
+			this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);	
+		}
+	}
+	
+	/**
 	 * DrawingController handles the user's freehand drawing.
 	 */
 	private class DrawingController implements MouseListener,
@@ -284,15 +338,23 @@ public class Canvas extends JPanel implements ItemListener {
 		// draw a line segment from that last point to the point of the next
 		// mouse event.
 		private int lastX, lastY;
-		private Freehand freehand;
+		private DrawingObject currentDrawingObject;
+		private int shapeStartX;
+		private int shapeStartY;
 
 		/*
 		 * When mouse button is pressed down, start drawing.
 		 */
 		public void mousePressed(MouseEvent e) {
-			freehand = new Freehand(new ArrayList<Line>());
-			lastX = e.getX();
-			lastY = e.getY();
+			if (isDrawingOval) {
+				shapeStartX = e.getX();
+				shapeStartY = e.getY();
+				currentDrawingObject = new Oval(shapeStartX, shapeStartY, shapeStartX, shapeStartY);
+			} else {
+				lastX = e.getX();
+				lastY = e.getY();
+				currentDrawingObject = new Freehand(new ArrayList<Line>());
+			}
 		}
 
 		/*
@@ -301,19 +363,37 @@ public class Canvas extends JPanel implements ItemListener {
 		public void mouseDragged(MouseEvent e) {
 			int x = e.getX();
 			int y = e.getY();
-			if (!erase) {
-				freehand.getLineList().add(new Line(lastX, lastY, x, y, "Black", "Medium"));
-				drawLineSegment(lastX, lastY, x, y, "Black", "DUMMYTHICKNESS_CHANGEME", false);
+			if (isDrawingOval) {
+				Oval oval = new Oval(shapeStartX, shapeStartY, x, y);
+				currentDrawingObject = oval;
+				int width = oval.getWidth();
+				int height = oval.getHeight();
+				int x1 = oval.getTopLeftX();
+				int y1 = oval.getTopLeftY();
+				drawOval(x1, y1, width, height, false);
+			} else {
+				if (currentDrawingObject instanceof Freehand) {
+					if (!erase) {
+						Freehand freehand = (Freehand) currentDrawingObject;
+						freehand.getLineList()
+								.add(new Line(lastX, lastY, x, y, "Black",
+										"Medium"));
+						drawLineSegment(lastX, lastY, x, y, "Black",
+								"DUMMYTHICKNESS_CHANGEME", false);
+					} else if (erase) {
+						Freehand freehand = (Freehand) currentDrawingObject;
+						freehand.getLineList()
+								.add(new Line(lastX, lastY, x, y, "White",
+										"Medium"));
+						drawLineSegment(lastX, lastY, x, y, "White",
+								"DUMMYTHICKNESS_CHANGEME", false);
+					}
+				}
+				lastX = x;
+				lastY = y;
 			}
-			else if (erase) {
-				freehand.getLineList().add(new Line(lastX, lastY, x, y, "White", "Medium"));
-				drawLineSegment(lastX, lastY, x, y, "White", "DUMMYTHICKNESS_CHANGEME", false);
-			}
-			lastX = x;
-			lastY = y;
 		}
 
-		// Ignore all these other mouse events.
 		public void mouseMoved(MouseEvent e) {
 		}
 
@@ -321,7 +401,7 @@ public class Canvas extends JPanel implements ItemListener {
 		}
 
 		public void mouseReleased(MouseEvent e) {
-			canvasModel.addFreehand(freehand);
+			canvasModel.addDrawingObject(currentDrawingObject);
 			canvasModel.getAndIncrementIndex();
 		}
 
@@ -342,7 +422,8 @@ public class Canvas extends JPanel implements ItemListener {
 				JFrame window = new JFrame("Freehand Canvas");
 				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				window.setLayout(new BorderLayout());
-				Canvas canvas = new Canvas(800, 600, new CanvasModel(), new User(1));
+				Canvas canvas = new Canvas(800, 600, new CanvasModel(),
+						new User(1));
 				window.add(canvas, BorderLayout.CENTER);
 				window.pack();
 				window.setVisible(true);

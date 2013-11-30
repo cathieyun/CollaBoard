@@ -1,76 +1,86 @@
 package canvas;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Model for the Canvas GUI.
  * Threadsafe through use of the monitor pattern.
- * No thread can gain direct access to freehandList.
+ * No thread can gain direct access to drawingObjectList.
  * @author KateYu
  *
  */
 public class CanvasModel{
-    private ArrayList<Freehand> freehandList;
-    private int freehandListUndoIndex;
+    private ArrayList<DrawingObject> drawingObjectList;
+    private int drawingObjectListUndoIndex;
     public CanvasModel(){
-        freehandList = new ArrayList<Freehand>();
-        freehandListUndoIndex = 0;
+        drawingObjectList = new ArrayList<DrawingObject>();
+        drawingObjectListUndoIndex = 0;
     }
     /**
      * 
-     * @return the current size of freehandList
+     * @return the current size of drawingObjectList
      */
     public synchronized int getListSize(){
-        return freehandList.size();
+        return drawingObjectList.size();
     }
     /**
-     * Requires: 0 <= index < freehandList.size() 
-     * @param i index of the Freehand to retrieve
-     * @return Freehand at the ith index in freehandList
+     * Requires: 0 <= index < drawingObjectList.size() 
+     * @param i index of the DrawingObject to retrieve
+     * @return DrawingObject at the ith index in drawingObjectList
      */
-    public synchronized Freehand getIthFreehand(int i){
-        return freehandList.get(i);
+    public synchronized DrawingObject getIthDrawingObject(int i){
+        return drawingObjectList.get(i);
     }
     
     /**
      * 
      * @return the current undo index
      */
-    public synchronized int getFreehandListUndoIndex(){
-        return freehandListUndoIndex;
+    public synchronized int getDrawingObjectListUndoIndex(){
+        return drawingObjectListUndoIndex;
     }
     /**
      * Decrements the undo index.
      * @return the current undo index
      */
     public synchronized int getAndDecrementIndex(){
-        --freehandListUndoIndex;
-        return freehandListUndoIndex;
+        --drawingObjectListUndoIndex;
+        return drawingObjectListUndoIndex;
     }
     /**
      * Increments the undo index.
      * @return the current undo index.
      */
     public synchronized int getAndIncrementIndex(){
-        ++freehandListUndoIndex;
-        return freehandListUndoIndex;
+        ++drawingObjectListUndoIndex;
+        return drawingObjectListUndoIndex;
     }
     
     /**
-     * Requires: 0 <= index < freehandList.size()
-     * Removes a freehand from freehandList.
+     * Requires: 0 <= index < drawingObjectList.size()
+     * Removes a freehand from drawingObjectList.
      * @param index of the freehand to be removed
      */
-    public synchronized void removeFreehand(int index){
-        freehandList.remove(index);
+    public synchronized void removeDrawingObject(int index){
+        drawingObjectList.remove(index);
     }
     
     /**
-     * Adds a Freehand to freehandList.
+     * Adds a Freehand to drawingObjectList.
      * @param f Freehand object to be added.
      */
-    public synchronized void addFreehand(Freehand f){
-        freehandList.add(f);
+    public synchronized void addDrawingObject(DrawingObject d){
+        drawingObjectList.add(d);
     }
+    
+	/**
+	 *  After a series of undo operations, if a user begins to draw again,
+	 *  all edits after the current edit are discarded.
+	 */
+	public synchronized void preventRedoAfterThisEdit() {
+		for (int i = getListSize() - 1; getDrawingObjectListUndoIndex() < getListSize(); i--) {
+			removeDrawingObject(i);
+		}
+	}
+
 }
