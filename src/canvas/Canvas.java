@@ -40,172 +40,163 @@ public class Canvas extends JPanel implements ItemListener {
 	// image where the user's drawing is stored
 	private Image drawingBuffer;
 	private boolean erase;
-	private ArrayList<DrawingObject> drawingObjectList = new ArrayList<DrawingObject>();
-	int drawingObjectListUndoIndex = 0;
-	public static Stroke SMALL = new BasicStroke(5);
-	public static Stroke MED = new BasicStroke(15);
-	public static Stroke LARGE = new BasicStroke(25);
-	private List<Point> currentDrawingObj;
-	private CanvasModel canvasModel;
-	private User user;
-	boolean isDrawingOval = false;
+    public static Stroke SMALL = new BasicStroke(5);
+    public static Stroke MED = new BasicStroke(15);
+    public static Stroke LARGE = new BasicStroke(25);
+    private CanvasModel canvasModel;
+    private User user;
+    boolean isDrawingOval = false;
+    
 
-	/**
-	 * Make a canvas.
-	 * 
-	 * @param width
-	 *            width in pixels
-	 * @param height
-	 *            height in pixels
-	 */
-	public Canvas(int width, int height, CanvasModel canvasModel, User user) {
-		this.user = user;
-		this.canvasModel = canvasModel;
-		this.setPreferredSize(new Dimension(width, height));
-		addDrawingController();
-		// note: we can't call makeDrawingBuffer here, because it only
-		// works *after* this canvas has been added to a window. Have to
-		// wait until paintComponent() is first called.
+    /**
+     * Make a canvas.
+     * 
+     * @param width
+     *            width in pixels
+     * @param height
+     *            height in pixels
+     */
+    public Canvas(int width, int height, final CanvasModel canvasModel, User user) {
+        this.user = user;
+        this.canvasModel = canvasModel;
+        this.setPreferredSize(new Dimension(width, height));
+        addDrawingController();
+        // note: we can't call makeDrawingBuffer here, because it only
+        // works *after* this canvas has been added to a window. Have to
+        // wait until paintComponent() is first called.
 
-		erase = false;
-		JToggleButton eraseButton = new JToggleButton("Erase");
-		eraseButton.setLocation(0, 10);
-		eraseButton.setSize(50, 100);
-		eraseButton.addItemListener(this);
-		this.add(eraseButton);
+        erase = false;
+        JToggleButton eraseButton = new JToggleButton("Erase");
+        eraseButton.setLocation(0, 10);
+        eraseButton.setSize(50, 100);
+        eraseButton.addItemListener(this);
+        this.add(eraseButton);
 
-		JButton undoButton = new JButton("Undo");
-		undoButton.addActionListener(new ActionListener() {
+        JButton undoButton = new JButton("Undo");
+        undoButton.addActionListener(new ActionListener() {
 
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("drawingObjectList size: "
-						+ drawingObjectList.size());
-				System.out.println("drawingObjectListUndoIndex: "
-						+ drawingObjectListUndoIndex);
-				undo();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                undo();
+                System.out.println("Undo Action performed.");
+                System.out.println("Freehand List size: " + canvasModel.getListSize());
+                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
+            }
+        });
+        
+        undoButton.setLocation(0, 20);
+        this.add(undoButton);
 
-		undoButton.setLocation(0, 20);
-		this.add(undoButton);
+        JButton redoButton = new JButton("Redo");
+        redoButton.addActionListener(new ActionListener() {
 
-		JButton redoButton = new JButton("Redo");
-		redoButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("drawingObjectList size: "
-						+ drawingObjectList.size());
-				System.out.println("drawingObjectListUndoIndex: "
-						+ drawingObjectListUndoIndex);
-				redo();
-			}
-		});
-
-		redoButton.setLocation(0, 40);
-		this.add(redoButton);
-		
+            public void actionPerformed(ActionEvent e) {
+                redo();
+                System.out.println("Redo Action performed.");
+                System.out.println("Freehand List size: " + canvasModel.getListSize());
+                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
+            }
+        });
+        
+        redoButton.setLocation(0, 40);
+        this.add(redoButton);
+        
 		JButton drawOvalButton = new JButton("Draw Oval");
 		drawOvalButton.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("drawingObjectList size: "
-						+ drawingObjectList.size());
+						+ canvasModel.getListSize());
 				System.out.println("drawingObjectListUndoIndex: "
-						+ drawingObjectListUndoIndex);
+						+ canvasModel.getDrawingObjectListUndoIndex());
 				isDrawingOval = !isDrawingOval;
 			}
 		});
+		
+		drawOvalButton.setLocation(0, 60);
+        this.add(drawOvalButton);
+    }
+    
+    public CanvasModel getCanvasModel(){
+        return canvasModel;
+    }
+    
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        //change the state of erase
+        erase = !erase;
+    }
+    
+    /**
+     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
+     */
+    @Override
+    public void paintComponent(Graphics g) {
+        // If this is the first time paintComponent() is being called,
+        // make our drawing buffer.
+        if (drawingBuffer == null) {
+            makeDrawingBuffer();
+        }
+        
+        // Copy the drawing buffer to the screen.
+        g.drawImage(drawingBuffer, 0, 0, null);
+    }
+    
+    /*
+     * Make the drawing buffer and draw some starting content for it.
+     */
+    private void makeDrawingBuffer() {
+        drawingBuffer = createImage(getWidth(), getHeight());
+        fillWithWhite();
+        drawSmile();
+    }
+    
+    /*
+     * Make the drawing buffer entirely white.
+     */
+    private void fillWithWhite() {
+        final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
-		drawOvalButton.setLocation(0, 40);
-		this.add(drawOvalButton);
-	}
+        g.setColor(Color.WHITE);
+        g.fillRect(0,  0,  getWidth(), getHeight());
+        
+        // IMPORTANT!  every time we draw on the internal drawing buffer, we
+        // have to notify Swing to repaint this component on the screen.
+        this.repaint();
+    }
+    
+    /*
+     * Draw a happy smile on the drawing buffer.
+     */
+    private void drawSmile() {
+        final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
-	public CanvasModel getCanvasModel() {
-		return canvasModel;
-	}
-
-	@Override
-	public void itemStateChanged(ItemEvent e) {
-		// change the state of erase
-		erase = !erase;
-	}
-
-	/**
-	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-	 */
-	@Override
-	public void paintComponent(Graphics g) {
-		// If this is the first time paintComponent() is being called,
-		// make our drawing buffer.
-		if (drawingBuffer == null) {
-			makeDrawingBuffer();
-		}
-
-		// Copy the drawing buffer to the screen.
-		g.drawImage(drawingBuffer, 0, 0, null);
-	}
-
-	/*
-	 * Make the drawing buffer and draw some starting content for it.
-	 */
-	private void makeDrawingBuffer() {
-		drawingBuffer = createImage(getWidth(), getHeight());
-		fillWithWhite();
-		drawSmile();
-	}
-
-	/*
-	 * Make the drawing buffer entirely white.
-	 */
-	private void fillWithWhite() {
-		final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-
-		g.setColor(Color.WHITE);
-		g.fillRect(0, 0, getWidth(), getHeight());
-
-		// IMPORTANT! every time we draw on the internal drawing buffer, we
-		// have to notify Swing to repaint this component on the screen.
-		this.repaint();
-	}
-
-	/*
-	 * Draw a happy smile on the drawing buffer.
-	 */
-	private void drawSmile() {
-		final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-
-		// all positions and sizes below are in pixels
-		final Rectangle smileBox = new Rectangle(20, 20, 100, 100); // x, y,
-																	// width,
-																	// height
-		final Point smileCenter = new Point(smileBox.x + smileBox.width / 2,
-				smileBox.y + smileBox.height / 2);
-		final int smileStrokeWidth = 3;
-		final Dimension eyeSize = new Dimension(9, 9);
-		final Dimension eyeOffset = new Dimension(smileBox.width / 6,
-				smileBox.height / 6);
-
-		g.setColor(Color.BLACK);
-		g.setStroke(new BasicStroke(smileStrokeWidth));
-
-		// draw the smile -- an arc inscribed in smileBox, starting at -30
-		// degrees (southeast)
-		// and covering 120 degrees
-		g.drawArc(smileBox.x, smileBox.y, smileBox.width, smileBox.height, -30,
-				-120);
-
-		// draw some eyes to make it look like a smile rather than an arc
-		for (int side : new int[] { -1, 1 }) {
-			g.fillOval(smileCenter.x + side * eyeOffset.width - eyeSize.width
-					/ 2, smileCenter.y - eyeOffset.height - eyeSize.width / 2,
-					eyeSize.width, eyeSize.height);
-		}
-
-		// IMPORTANT! every time we draw on the internal drawing buffer, we
-		// have to notify Swing to repaint this component on the screen.
-		this.repaint();
-	}
-
+        // all positions and sizes below are in pixels
+        final Rectangle smileBox = new Rectangle(20, 20, 100, 100); // x, y, width, height
+        final Point smileCenter = new Point(smileBox.x + smileBox.width/2, smileBox.y + smileBox.height/2);
+        final int smileStrokeWidth = 3;
+        final Dimension eyeSize = new Dimension(9, 9);
+        final Dimension eyeOffset = new Dimension(smileBox.width/6, smileBox.height/6);
+        
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(smileStrokeWidth));
+        
+        // draw the smile -- an arc inscribed in smileBox, starting at -30 degrees (southeast)
+        // and covering 120 degrees
+        g.drawArc(smileBox.x, smileBox.y, smileBox.width, smileBox.height, -30, -120);
+        
+        // draw some eyes to make it look like a smile rather than an arc
+        for (int side: new int[] { -1, 1 }) {
+            g.fillOval(smileCenter.x + side * eyeOffset.width - eyeSize.width/2,
+                       smileCenter.y - eyeOffset.height - eyeSize.width/2,
+                       eyeSize.width,
+                       eyeSize.height);
+        }
+        
+        // IMPORTANT!  every time we draw on the internal drawing buffer, we
+        // have to notify Swing to repaint this component on the screen.
+        this.repaint();
+    }
+    
 	/*
 	 * Draw a line between two points (x1, y1) and (x2, y2), specified in pixels
 	 * relative to the upper-left corner of the drawing buffer.
@@ -240,8 +231,8 @@ public class Canvas extends JPanel implements ItemListener {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
 		// redraw all the drawinObjects on the canvas in order for the circle to appear as if it's resizing
-		for (int i = 0; i < drawingObjectListUndoIndex - 1; i++) {
-			DrawingObject currentDrawingObject = drawingObjectList.get(i);
+		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex(); i++) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
 			if (currentDrawingObject instanceof Freehand) {
 				Freehand freehand = (Freehand) currentDrawingObject;
 				redrawLinesInFreehand(freehand);
@@ -274,34 +265,46 @@ public class Canvas extends JPanel implements ItemListener {
 	}
 
 	private void undo() {
+	    //TODO: send message to server
 		fillWithWhite();
-
-		for (int i = 0; i < drawingObjectListUndoIndex - 1; i++) {
-			DrawingObject currentDrawingObject = drawingObjectList.get(i);
+		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
 			if (currentDrawingObject instanceof Freehand) {
 				Freehand freehand = (Freehand) currentDrawingObject;
 				redrawLinesInFreehand(freehand);
 			}
+			else if (currentDrawingObject instanceof Oval) {
+				Oval oval = (Oval) currentDrawingObject;
+				g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
+			}
 		}
 
-		System.out.println("Undo!");
 		// prevent the index from going below 0.
-		if (drawingObjectListUndoIndex > 0) {
-			--drawingObjectListUndoIndex;
+		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
+			canvasModel.getAndDecrementIndex();
 		}
 	}
 
 	private void redo() {
-		if (drawingObjectListUndoIndex < drawingObjectList.size()) {
-			DrawingObject currentDrawingObject = drawingObjectList
-					.get(drawingObjectListUndoIndex);
-			if (currentDrawingObject instanceof Line) {
-				Freehand freehand = (Freehand) currentDrawingObject;
-				redrawLinesInFreehand(freehand);
-			}
-
-			++drawingObjectListUndoIndex;
+		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
+			redrawDrawingObject(currentDrawingObject);
+			canvasModel.getAndIncrementIndex();
 		}
+	}
+	
+	public void redrawDrawingObject(DrawingObject d) {
+		if (d instanceof Freehand) {
+			Freehand freehand = (Freehand) d;
+			redrawLinesInFreehand(freehand);
+		}
+		else if (d instanceof Oval) {
+			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
+			Oval oval = (Oval) d;
+			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
+		}
+		this.repaint();
 	}
 	
 	/**
@@ -312,6 +315,7 @@ public class Canvas extends JPanel implements ItemListener {
 	 *            the Freehand object whose lines are to be redrawn onto the GUI
 	 */
 	private void redrawLinesInFreehand(Freehand freehand) {
+	    //TODO: send message to server
 		for (Line l : freehand.getLineList()) {
 			int x1 = l.getX1();
 			int x2 = l.getX2();
@@ -319,18 +323,18 @@ public class Canvas extends JPanel implements ItemListener {
 			int y2 = l.getY2();
 			String color = l.getColor();
 			String thickness = l.getThickness();
-			this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);
+			this.drawLineSegment(x1, y1, x2, y2, color, thickness, true);	
 		}
+		System.out.println("Redraw one Freehand object!");
 	}
 	
 	private void preventRedoAfterThisEdit() {
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
-		for (int i = drawingObjectList.size() - 1; drawingObjectListUndoIndex < drawingObjectList
-				.size(); i--) {
+		for (int i = canvasModel.getListSize() - 1; canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize(); i--) {
 			System.out.println("My index is: " + i);
-			System.out.println("My array size is: " + drawingObjectList.size());
-			drawingObjectList.remove(i);
+			System.out.println("My array size is: " + canvasModel.getListSize());
+			canvasModel.removeDrawingObject(i);
 		}
 	}
 
@@ -407,8 +411,8 @@ public class Canvas extends JPanel implements ItemListener {
 		}
 
 		public void mouseReleased(MouseEvent e) {
-			drawingObjectList.add(currentDrawingObject);
-			++drawingObjectListUndoIndex;
+			canvasModel.addDrawingObject(currentDrawingObject);
+			canvasModel.getAndIncrementIndex();
 		}
 
 		public void mouseEntered(MouseEvent e) {

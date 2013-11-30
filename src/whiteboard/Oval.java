@@ -28,4 +28,10 @@ public class Oval implements canvas.DrawingObject{
 	public int getTopLeftY() {
 		return shapeStartY < y ? shapeStartY : y;
 	}
+
+	@Override
+	public String toString() {
+		return "Oval [x=" + x + ", y=" + y + ", shapeStartX=" + shapeStartX
+				+ ", shapeStartY=" + shapeStartY + "]";
+	}
 }
