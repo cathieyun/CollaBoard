@@ -38,11 +38,11 @@ public class Whiteboard {
     }
     
 	/**
-	 * addUser() is called when a user enters a Whiteboard. Adds the username to
-	 * the userList.
+	 * addUser() is called when a user enters a Whiteboard. Adds the user to
+	 * users.
 	 * 
 	 * @param user
-	 *            the username of the user who entered the Whiteboard.
+	 *            the user who entered the Whiteboard.
 	 */
 	public void addUser(String user) {
 		users.add(user);
@@ -50,10 +50,10 @@ public class Whiteboard {
     
 	/**
 	 * removeUser() is called when a user exits a Whiteboard. Removes the
-	 * username from userList.
+	 * user from users.
 	 * 
 	 * @param user
-	 *            the username of the user who exited the Whiteboard
+	 *            the user who exited the Whiteboard
 	 */
 	public void removeUser(String user) {
 		users.remove(user);
