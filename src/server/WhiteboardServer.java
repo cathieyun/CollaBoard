@@ -5,11 +5,16 @@ import grammar.ProtocolLexer;
 import grammar.ProtocolParser;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -19,6 +24,8 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import client.User;
 
 import collaboard.Collaboard;
 import collaboard.CollaboardGUI;
@@ -48,10 +55,15 @@ public class WhiteboardServer {
     private void handleConnection(Socket socket, User user) throws IOException{
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+        user.setOutputStream(out);
         try {
+            System.out.println("got here");
             CollaboardGUI gui = new CollaboardGUI(collaboard, user);
             gui.setVisible(true);
+            out.println("user");
             String line = in.readLine();
+            System.out.println("received");
+            System.out.println(line);
 //            String output = collaboard.checkUsernameValidity(line);
 //            if (output != null){
 //                out.println(output);
@@ -76,8 +88,32 @@ public class WhiteboardServer {
         }
     }
     
-    public String handleRequest(String input){
-        //run parser
+    public String handleRequest(String input) throws IOException{
+          runClientListener(input);
+//        String regex = "(makeuser [A-Za-z0-9]+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
+//                + "(redo -?\\d+ -?\\d+)|"
+//                +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (blue|yellow|red|green|orange|magenta|black|white) (small|med|large))|"
+//                +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)";
+//        if ( ! input.matches(regex)) {
+//            // invalid input
+//            throw new RuntimeException(); 
+//        }
+//        String[] tokens = input.split(" ");
+//        if (tokens[0].equals("make")){
+//            //add username 
+//        }
+//        if (tokens[0].equals("makeboard")){
+//            //addboard
+//        }
+//        if (tokens[0].equals("undo")){
+//            //undo
+//        }
+//        if (tokens[0].equals("redo")){
+//            //redo
+//        }
+//        if (tokens[0].equals("draw")){
+//            //draw
+//        }
         return "";
         
     }
@@ -141,5 +177,21 @@ public class WhiteboardServer {
         //((ABCListener) listener).getMusic().toPlayableFormat();
         //return ((ABCListener) listener).getMusic();
         
+    }
+    public static void main(String[] args) {
+        // Command-line argument parsing is provided. Do not change this method.
+        
+        int port = 4444; // default port
+
+        try {
+            runCollaboardServer(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void runCollaboardServer(int port) throws IOException {
+        WhiteboardServer server = new WhiteboardServer(port, new Collaboard());
+        server.serve();
     }
 }

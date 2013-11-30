@@ -15,6 +15,10 @@ public class ClientListener extends ProtocolBaseListener{
     public ClientListener(Collaboard collaboard){
         this.collaboard = collaboard;
     }
+    
+    public void exitLine(ProtocolParser.LineContext ctx){
+        System.out.println("got here");
+    }
     public void exitMakeboard(ProtocolParser.MakeboardContext ctx) {
         int whiteboardID = Integer.parseInt(ctx.INT().getText());
         collaboard.createNewWhiteboard(whiteboardID, 400,400);
@@ -39,6 +43,7 @@ public class ClientListener extends ProtocolBaseListener{
     @Override public void enterMakeusername(ProtocolParser.MakeusernameContext ctx) { }
     @Override public void exitMakeusername(ProtocolParser.MakeusernameContext ctx) { 
         int userID = Integer.parseInt(ctx.INT().getText());
+        System.out.println("making username");
         
     }
 

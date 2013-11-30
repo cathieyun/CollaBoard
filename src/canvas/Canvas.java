@@ -17,6 +17,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
-import server.User;
+import client.User;
+
 
 /**
  * Canvas represents a drawing surface that allows the user to draw on it
@@ -45,6 +47,7 @@ public class Canvas extends JPanel implements ItemListener {
     private List<Point> currentDrawingObj;
     private CanvasModel canvasModel;
     private User user;
+    private Socket socket;
     
 
     /**

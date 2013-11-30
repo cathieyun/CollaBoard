@@ -1,12 +1,14 @@
 package collaboard;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import server.User;
+import client.User;
+
 
 import whiteboard.Whiteboard;
 
