@@ -72,4 +72,15 @@ public class CanvasModel{
     public synchronized void addDrawingObject(DrawingObject d){
         drawingObjectList.add(d);
     }
+    
+	/**
+	 *  After a series of undo operations, if a user begins to draw again,
+	 *  all edits after the current edit are discarded.
+	 */
+	public synchronized void preventRedoAfterThisEdit() {
+		for (int i = getListSize() - 1; getDrawingObjectListUndoIndex() < getListSize(); i--) {
+			removeDrawingObject(i);
+		}
+	}
+
 }
