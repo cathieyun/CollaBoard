@@ -17,8 +17,17 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -26,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
+import client.ClientCanvasModel;
 import client.User;
 
 import canvas.Freehand;
@@ -37,17 +47,19 @@ import canvas.Oval;
  * freehand, with the mouse.
  */
 
-public class Canvas extends JPanel implements ItemListener {
-	// image where the user's drawing is stored
+public class Canvas extends JPanel implements ItemListener, Observer{
+
+    // image where the user's drawing is stored
 	private Image drawingBuffer;
 	private boolean erase = false;
     public static Stroke SMALL = new BasicStroke(5);
     public static Stroke MED = new BasicStroke(15);
     public static Stroke LARGE = new BasicStroke(25);
     private CanvasModel canvasModel;
-    private User user;
-    private Socket socket;
+    private PrintWriter out;
+    private BufferedReader in;
     boolean isDrawingOval = false;
+    private User user;
     
 
     /**
@@ -58,9 +70,11 @@ public class Canvas extends JPanel implements ItemListener {
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, final CanvasModel canvasModel, User user) {
+    public Canvas(int width, int height, final CanvasModel canvasModel2, User user, OutputStream outputStream, InputStream inputStream) {
         this.user = user;
-        this.canvasModel = canvasModel;
+        this.out = new PrintWriter(outputStream);
+        this.in = new BufferedReader(new InputStreamReader(inputStream));
+        this.canvasModel = canvasModel2;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         // note: we can't call makeDrawingBuffer here, because it only
@@ -152,7 +166,6 @@ public class Canvas extends JPanel implements ItemListener {
     private void makeDrawingBuffer() {
         drawingBuffer = createImage(getWidth(), getHeight());
         fillWithWhite();
-        drawSmile();
     }
     
     /*
@@ -422,12 +435,18 @@ public class Canvas extends JPanel implements ItemListener {
 				JFrame window = new JFrame("Freehand Canvas");
 				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				window.setLayout(new BorderLayout());
-				Canvas canvas = new Canvas(800, 600, new CanvasModel(),
-						new User(1));
+				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
+						new User(1), new DataOutputStream(null), new DataInputStream(null));
 				window.add(canvas, BorderLayout.CENTER);
 				window.pack();
 				window.setVisible(true);
 			}
 		});
 	}
+
+    @Override
+    public void update(Observable arg0, Object arg1) {
+        // TODO Auto-generated method stub
+        
+    }
 }

@@ -11,8 +11,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -27,6 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
+import client.ClientCanvasModel;
 import client.User;
 
 
@@ -45,19 +50,24 @@ public class CollaboardGUI extends JFrame{
     private final JTextField usernameField;
     private final JTextField whiteboardField;
     private final JLabel error;
-    private Collaboard collaboard;
+    //private Collaboard collaboard;
     private User user; //ID of the user using this instance of CollaboardGUI
     private int userID;
-    private PrintWriter out;
+    private OutputStream outputStream;
+    private InputStream inputStream;
     private BufferedReader in;
-    public CollaboardGUI(Collaboard collaboard, User user){  
+    private PrintWriter out;
+    private ArrayList<Integer> whiteboards;
+    public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){  
         this.user = user;
-        this.collaboard = collaboard;
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
+        in = new BufferedReader(new InputStreamReader(inputStream));
+        out = new PrintWriter(outputStream, true);
+        whiteboards = new ArrayList<Integer>();
         this.userID = user.getUserID();
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        in = user.getInputStream();
-        out = user.getOutputStream();
-
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
         panels = new JPanel(layout);
@@ -79,7 +89,9 @@ public class CollaboardGUI extends JFrame{
         layout.show(panels, "user");
         this.setVisible(true);
     }
-    
+    public ArrayList<Integer> getWhiteboards(){
+        return whiteboards;
+    }
     private void initializeUserPane(){
         userSelect.setLayout(new FlowLayout(FlowLayout.CENTER));
         JLabel instruction = new JLabel("Please select a username.");
@@ -114,8 +126,7 @@ public class CollaboardGUI extends JFrame{
             }
         };
         whiteboardIDs.setModel(model);
-        
-        Set<Integer> whiteboards = collaboard.getWhiteboards().keySet();
+        out.println("whiteboards");
         for (int i: whiteboards){
             model.addRow(new String[]{Integer.toString(i)});
         }
@@ -167,7 +178,7 @@ public class CollaboardGUI extends JFrame{
                 error.setVisible(true); 
             }
             else{
-                new ProtocolWorker("make " + desiredUsername + " " + user.getUserID()).execute(); //send to the server
+                new ProtocolWorker("makeuser " + desiredUsername + " " + user.getUserID()).execute(); //send to the server
                 CollaboardGUI.this.setSize(400,400);
                 
                 //send message to the server to set new username.
@@ -189,9 +200,11 @@ public class CollaboardGUI extends JFrame{
             try{
                 int newWhiteboard = Integer.parseInt(whiteboardField.getText());
                 if (newWhiteboard < 1) throw new NumberFormatException();
-                Whiteboard whiteboard = collaboard.createNewWhiteboard(newWhiteboard, 800, 600);
-                JPanel canvas = new Canvas(800, 600, whiteboard.getCanvasModel(), user);
-                JFrame window = new JFrame("Freehand Canvas");
+                new ProtocolWorker("makeboard "+newWhiteboard).execute();
+                //send a message to the server to create a new whiteboard
+                ClientCanvasModel clientModel = new ClientCanvasModel();
+                JPanel canvas = new Canvas(800, 600, clientModel, user, outputStream, inputStream);
+                JFrame window = new JFrame("Canvas " + newWhiteboard);
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 window.setLayout(new BorderLayout());
                 window.setLocation(300,100);
@@ -201,9 +214,6 @@ public class CollaboardGUI extends JFrame{
                 ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar());
                 toolbarGUI.setVisible(true);
                 CollaboardGUI.this.dispose();
-//                panels.add(canvas, "canvas");
-//                CardLayout layout = (CardLayout) panels.getLayout();
-//                layout.show(panels, "canvas");
             }catch(NumberFormatException e1){
                 //if it's not a valid value
                 //display error message
@@ -230,26 +240,5 @@ public class CollaboardGUI extends JFrame{
         }
         
     }
-//    public static void main(final String[] args) {
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                Collaboard collaboard = new Collaboard();
-//                for (int i = 0; i < 10; i++){
-//                    collaboard.createNewWhiteboard(i,10,20);
-//                }
-//                Socket socket = new Socket();
-//                PrintWriter out;
-//                try {
-//                    out = new PrintWriter(socket.getOutputStream(), true);
-//                    User user = new User(1);
-//                    CollaboardGUI main = new CollaboardGUI(collaboard, user);
-//                    user.setOutputStream(out);
-//                    main.setVisible(true);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//    }
 
 }

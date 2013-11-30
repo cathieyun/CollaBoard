@@ -1,6 +1,7 @@
 package canvas;
 
 import java.util.ArrayList;
+import java.util.Observable;
 
 /**
  * Model for the Canvas GUI.
@@ -9,7 +10,7 @@ import java.util.ArrayList;
  * @author KateYu
  *
  */
-public class CanvasModel{
+public class CanvasModel extends Observable{
     private ArrayList<DrawingObject> drawingObjectList;
     private int drawingObjectListUndoIndex;
     public CanvasModel(){

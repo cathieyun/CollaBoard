@@ -16,17 +16,9 @@ public class User {
     private int whiteboardID;
     //current state of the user's toolbar settings
     private ToolbarModel toolbar;
-    private BufferedReader in;
-    private PrintWriter out;
     public User(int userID){
         this.userID = userID;
         toolbar = new ToolbarModel();
-    }
-    public void setInputStream(BufferedReader in){
-        this.in = in;
-    }
-    public void setOutputStream(PrintWriter out){
-        this.out=out;
     }
     public int getUserID() {
         return userID;
@@ -45,11 +37,5 @@ public class User {
     }
     public ToolbarModel getToolbar() {
         return toolbar;
-    }
-    public BufferedReader getInputStream(){
-        return in;
-    }
-    public PrintWriter getOutputStream(){
-        return out;
     }
 }
