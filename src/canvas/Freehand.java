@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * @author Eric Ruleman
  * 
  */
-public class Freehand{
+public class Freehand implements DrawingObject{
 	private ArrayList<Line> lineList;
 
 	public Freehand(ArrayList<Line> lineList) {

@@ -1,4 +1,4 @@
-package whiteboard;
+package canvas;
 
 public class Oval implements canvas.DrawingObject{
 	int x;
