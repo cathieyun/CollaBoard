@@ -24,52 +24,63 @@ public class CanvasModel extends Observable{
     public synchronized int getListSize(){
         return drawingObjectList.size();
     }
-    /**
-     * Requires: 0 <= index < drawingObjectList.size() 
-     * @param i index of the DrawingObject to retrieve
-     * @return DrawingObject at the ith index in drawingObjectList
-     */
+
+	/**
+	 * Requires: 0 <= index < drawingObjectList.size()
+	 * 
+	 * @param i
+	 *            index of the DrawingObject to retrieve
+	 * @return DrawingObject at the ith index in drawingObjectList
+	 */
     public synchronized DrawingObject getIthDrawingObject(int i){
         return drawingObjectList.get(i);
     }
     
-    /**
-     * 
-     * @return the current undo index
-     */
+	/**
+	 * 
+	 * @return the current undo index
+	 */
     public synchronized int getDrawingObjectListUndoIndex(){
         return drawingObjectListUndoIndex;
     }
-    /**
-     * Decrements the undo index.
-     * @return the current undo index
-     */
+
+	/**
+	 * Decrements the undo index.
+	 * 
+	 * @return the current undo index
+	 */
     public synchronized int getAndDecrementIndex(){
         --drawingObjectListUndoIndex;
         return drawingObjectListUndoIndex;
     }
-    /**
-     * Increments the undo index.
-     * @return the current undo index.
-     */
+
+	/**
+	 * Increments the undo index.
+	 * 
+	 * @return the current undo index.
+	 */
     public synchronized int getAndIncrementIndex(){
         ++drawingObjectListUndoIndex;
         return drawingObjectListUndoIndex;
     }
     
-    /**
-     * Requires: 0 <= index < drawingObjectList.size()
-     * Removes a freehand from drawingObjectList.
-     * @param index of the freehand to be removed
-     */
+	/**
+	 * Requires: 0 <= index < drawingObjectList.size(). Removes a DrawingObject
+	 * from drawingObjectList.
+	 * 
+	 * @param index
+	 *            index of the DrawingObject to be removed
+	 */
     public synchronized void removeDrawingObject(int index){
         drawingObjectList.remove(index);
     }
     
-    /**
-     * Adds a Freehand to drawingObjectList.
-     * @param f Freehand object to be added.
-     */
+	/**
+	 * Adds a DrawingObject to drawingObjectList.
+	 * 
+	 * @param d
+	 *            DrawingObject object to be added.
+	 */
     public synchronized void addDrawingObject(DrawingObject d){
         drawingObjectList.add(d);
     }
@@ -83,5 +94,4 @@ public class CanvasModel extends Observable{
 			removeDrawingObject(i);
 		}
 	}
-
 }
