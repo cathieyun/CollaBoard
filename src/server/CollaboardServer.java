@@ -2,6 +2,7 @@ package server;
 
 
 
+import java.awt.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +12,15 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import whiteboard.Whiteboard;
 
 import client.User;
 
@@ -116,7 +120,7 @@ public class CollaboardServer {
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
                     + "(redo -?\\d+ -?\\d+ -?\\d+)|(whiteboards)|"
-                    +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (blue|yellow|red|green|orange|magenta|black|white) (small|med|large) -?\\d+ -?\\d+)|"
+                    +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
@@ -143,6 +147,20 @@ public class CollaboardServer {
                 for (int whiteboardID: collaboard.getWhiteboards().keySet()){
                     message.append(" " + whiteboardID);
                 }
+                return message.toString();
+            }
+            if (tokens[0].equals("enter")){
+                //add user to the whiteboard's list of users.
+                Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
+                whiteboard.addUser(tokens[1]);
+                StringBuilder message = new StringBuilder("users");
+                ArrayList<String> users = whiteboard.getUsers();
+                for (int i=0; i < users.size(); i++){
+                    message.append(" " + users.get(i));
+                }
+                message.append("\n");
+
+                //send the user a list of users and a list of objects already drawn.
                 return message.toString();
             }
             if (tokens[0].equals("undo")){

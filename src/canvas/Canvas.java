@@ -26,6 +26,10 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -60,6 +64,27 @@ public class Canvas extends JPanel implements ItemListener, Observer{
     private BufferedReader in;
     boolean isDrawingOval = false;
     private User user;
+    static Map<String,Color> colors; //HashMap storing all the colors and their string representations.
+    {
+        Map<String,Color> temp = new HashMap<String, Color>();
+        temp.put("b", Color.BLUE);
+        temp.put("y", Color.YELLOW);
+        temp.put("r", Color.RED);
+        temp.put("o", Color.ORANGE);
+        temp.put("blk", Color.BLACK);
+        temp.put("w", Color.WHITE);
+        temp.put("g", Color.GREEN);
+        temp.put("m", Color.MAGENTA);
+        colors = Collections.unmodifiableMap(temp);
+    }
+    static Map<String,Stroke> thicknesses;
+    {
+        Map<String,Stroke> temp = new HashMap<String, Stroke>();
+        temp.put("s", new BasicStroke(5));
+        temp.put("m", new BasicStroke(15));
+        temp.put("l", new BasicStroke(25));
+        thicknesses = temp;
+    }
     
 
     /**
@@ -71,6 +96,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
      *            height in pixels
      */
     public Canvas(int width, int height, final CanvasModel canvasModel2, User user, OutputStream outputStream, InputStream inputStream) {
+
         this.user = user;
         this.out = new PrintWriter(outputStream);
         this.in = new BufferedReader(new InputStreamReader(inputStream));
@@ -220,7 +246,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 	 * relative to the upper-left corner of the drawing buffer.
 	 */
 	private void drawLineSegment(int x1, int y1, int x2, int y2, String color,
-			String thickness, boolean areUndoingOrRedoing) {
+		String thickness, boolean areUndoingOrRedoing) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 		// if (color == "Black") {
 		// g.setColor(Color.BLACK);
@@ -228,8 +254,14 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 		// g.setStroke(new BasicStroke(10));
 		// g.setColor(Color.WHITE);
 		// }
-		g.setStroke(user.getToolbar().getStroke());
-		g.setColor(user.getToolbar().getColor());
+		if (areUndoingOrRedoing){
+	        g.setStroke(thicknesses.get(thickness));
+	        g.setColor(colors.get(color));
+		}
+		else{
+	        g.setColor(user.getToolbar().getColor());
+	        g.setStroke(user.getToolbar().getStroke());
+		}
 
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
@@ -387,19 +419,31 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 			} else {
 				if (currentDrawingObject instanceof Freehand) {
 					if (!erase) {
+					    String color = "b";
+					    String thickness = "m";
+					    for (Entry<String, Color> entry: colors.entrySet()){
+					        if (entry.getValue().equals(user.getToolbar().getColor())){
+					            color = entry.getKey();
+					        }
+					    }
+	                    for (Entry<String, Stroke> entry: thicknesses.entrySet()){
+	                            if (entry.getValue().equals(user.getToolbar().getStroke())){
+	                                thickness = entry.getKey();
+	                            }
+	                    }
 						Freehand freehand = (Freehand) currentDrawingObject;
 						freehand.getLineList()
-								.add(new Line(lastX, lastY, x, y, "Black",
-										"Medium"));
-						drawLineSegment(lastX, lastY, x, y, "Black",
-								"DUMMYTHICKNESS_CHANGEME", false);
+								.add(new Line(lastX, lastY, x, y, color,
+										thickness));
+						drawLineSegment(lastX, lastY, x, y, color,
+								thickness, false);
 					} else if (erase) {
 						Freehand freehand = (Freehand) currentDrawingObject;
 						freehand.getLineList()
-								.add(new Line(lastX, lastY, x, y, "White",
-										"Medium"));
-						drawLineSegment(lastX, lastY, x, y, "White",
-								"DUMMYTHICKNESS_CHANGEME", false);
+								.add(new Line(lastX, lastY, x, y, "w",
+										"m"));
+						drawLineSegment(lastX, lastY, x, y, "w",
+								"m", false);
 					}
 				}
 				lastX = x;

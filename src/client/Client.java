@@ -55,8 +55,9 @@ public class Client {
     }
     
     private void handleRequest(String input){
-        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|"
-                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|"
+        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|" +
+        		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)*)"
+                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users( [A-Za-z0-9])+)"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)| (resend ([A-Za-z0-9]( )*)+)";
         if ( ! input.matches(regex)) {
             // invalid input
