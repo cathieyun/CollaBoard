@@ -86,7 +86,7 @@ public class CollaboardGUI extends JFrame{
         this.setSize(350,200);
         this.setLocation(600,200);
         initializeUserPane();
-        initializeWhiteboardPane();
+        //initializeWhiteboardPane();
         this.add(panels);
         layout.show(panels, "user");
         this.setVisible(true);
@@ -115,12 +115,13 @@ public class CollaboardGUI extends JFrame{
         newUsernameButton.addActionListener(u);
     }
     
-    private void initializeWhiteboardPane(){
+    public void initializeWhiteboardPane(){
         JButton chooseWhiteboard = new JButton("Go");
         JButton makeNewWhiteboard = new JButton("Create!");
         makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard below");
         JTable whiteboardIDs = new JTable();
+        whiteboardIDs.setTableHeader(null);
         chooseWhiteboard.addActionListener(new SelectWhiteboardListener(whiteboardIDs));
         createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
         JScrollPane whiteboardsList = new JScrollPane(whiteboardIDs);
@@ -132,7 +133,7 @@ public class CollaboardGUI extends JFrame{
             }
         };
         whiteboardIDs.setModel(model);
-        out.println("whiteboards");
+        System.out.println("There are " + whiteboards.size() + " whiteboards");
         for (int i: whiteboards){
             model.addRow(new String[]{Integer.toString(i)});
         }

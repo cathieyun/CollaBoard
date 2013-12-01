@@ -84,6 +84,7 @@ public class Client {
             for (int i = 1; i < tokens.length; i++){
                gui.getWhiteboards().add(new Integer(tokens[i]));
             }
+            gui.initializeWhiteboardPane();
         }
         if (tokens[0].equals("undo")){
             //undo

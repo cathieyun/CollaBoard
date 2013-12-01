@@ -96,6 +96,11 @@ public class CollaboardServer {
             PrintWriter out = new PrintWriter(outputStream, true);
             try {
                 out.println("userID " + userID); //send the userID
+                StringBuilder message = new StringBuilder("list");
+                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
+                    message.append(" " + whiteboardID);
+                }
+                out.println(message.toString()); //send the list of whiteboards
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
                     String output = handleRequest(line);
                     if (output != null) {
@@ -142,13 +147,13 @@ public class CollaboardServer {
                 return "validwhiteboard";
                 //addboard
             }
-            if (tokens[0].equals("whiteboards")){
-                StringBuilder message = new StringBuilder("list");
-                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
-                    message.append(" " + whiteboardID);
-                }
-                return message.toString();
-            }
+//            if (tokens[0].equals("whiteboards")){
+//                StringBuilder message = new StringBuilder("list");
+//                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
+//                    message.append(" " + whiteboardID);
+//                }
+//                return message.toString();
+//            }
             if (tokens[0].equals("enter")){
                 //add user to the whiteboard's list of users.
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
