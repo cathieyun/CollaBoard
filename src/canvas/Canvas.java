@@ -61,7 +61,6 @@ public class Canvas extends JPanel implements ItemListener, Observer{
     public static Stroke LARGE = new BasicStroke(25);
     private CanvasModel canvasModel;
     private PrintWriter out;
-    private BufferedReader in;
     boolean isDrawingOval = false;
     private User user;
     static Map<String,Color> colors; //HashMap storing all the colors and their string representations.
@@ -95,11 +94,10 @@ public class Canvas extends JPanel implements ItemListener, Observer{
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, final CanvasModel canvasModel2, User user, OutputStream outputStream, InputStream inputStream) {
+    public Canvas(int width, int height, final CanvasModel canvasModel2, User user, OutputStream outputStream) {
 
         this.user = user;
         this.out = new PrintWriter(outputStream);
-        this.in = new BufferedReader(new InputStreamReader(inputStream));
         this.canvasModel = canvasModel2;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
@@ -345,7 +343,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 	private void redrawDrawingObject(DrawingObject d) {
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
-			redrawLinesInFreehand(freehand);
+			drawLinesInFreehand(freehand);
 		}
 		else if (d instanceof Oval) {
 			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -361,7 +359,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 	 * @param freehand
 	 *            the Freehand object whose lines are to be redrawn onto the GUI
 	 */
-	private void redrawLinesInFreehand(Freehand freehand) {
+	private void drawLinesInFreehand(Freehand freehand) {
 	    //TODO: send message to server
 		for (Line l : freehand.getLineList()) {
 			int x1 = l.getX1();
@@ -480,7 +478,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				window.setLayout(new BorderLayout());
 				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
-						new User(1), new DataOutputStream(null), new DataInputStream(null));
+						new User(1), new DataOutputStream(null));
 				window.add(canvas, BorderLayout.CENTER);
 				window.pack();
 				window.setVisible(true);

@@ -1,25 +1,21 @@
 package collaboard;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.ScrollPane;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Set;
 
-import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,18 +24,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
 import client.ClientCanvasModel;
 import client.User;
-
-
-import whiteboard.Whiteboard;
-
 import canvas.Canvas;
-import canvas.CanvasModel;
 import canvas.ToolbarGUI;
 
 
@@ -51,20 +41,19 @@ public class CollaboardGUI extends JFrame{
     private final JTextField usernameField;
     private final JTextField whiteboardField;
     private final JLabel error;
-    //private Collaboard collaboard;
     private User user; //ID of the user using this instance of CollaboardGUI
     private int userID;
     private OutputStream outputStream;
-    private InputStream inputStream;
-    private BufferedReader in;
     private PrintWriter out;
     private ArrayList<Integer> whiteboards;
+    private ArrayList<String> users;
     private JLabel createWhiteboard;
+    private JTable currentUsers;
+    private int currentWhiteboardID;
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
         this.user = user;
-        this.inputStream = inputStream;
+        this.users = new ArrayList<String>();
         this.outputStream = outputStream;
-        in = new BufferedReader(new InputStreamReader(inputStream));
         out = new PrintWriter(outputStream, true);
         whiteboards = new ArrayList<Integer>();
         this.userID = user.getUserID();
@@ -93,6 +82,9 @@ public class CollaboardGUI extends JFrame{
     }
     public ArrayList<Integer> getWhiteboards(){
         return whiteboards;
+    }
+    public ArrayList<String> getUsers(){
+        return users;
     }
     public void displayUserTakenError(){
         error.setVisible(true);
@@ -133,7 +125,6 @@ public class CollaboardGUI extends JFrame{
             }
         };
         whiteboardIDs.setModel(model);
-        System.out.println("There are " + whiteboards.size() + " whiteboards");
         for (int i: whiteboards){
             model.addRow(new String[]{Integer.toString(i)});
         }
@@ -185,7 +176,9 @@ public class CollaboardGUI extends JFrame{
                 displayUserTakenError();
             }
             else{
-                new ProtocolWorker("makeuser " + desiredUsername + " " + user.getUserID()).execute(); //send to the server
+                new ProtocolWorker("makeuser " + desiredUsername + " " + user.getUserID()).execute();
+                //send to the server
+                user.setUsername(desiredUsername);
             }        
         }   
     }
@@ -199,20 +192,44 @@ public class CollaboardGUI extends JFrame{
     }
     /**
      * Helper method to initialize the canvas.
-     * @param whiteboardID - ID of the whiteboard
      */
-    private void initializeCanvas(int whiteboardID){
+    public void initializeCanvas(){
         ClientCanvasModel clientModel = new ClientCanvasModel();
-        JPanel canvas = new Canvas(800, 600, clientModel, user, outputStream, inputStream);
-        JFrame window = new JFrame("Canvas " + whiteboardID);    
+        currentUsers = new JTable();
+        String [] header = {"Current Users"};
+        DefaultTableModel usersModel = new DefaultTableModel(header,1){
+            //prevent user from editing cells
+            @Override
+            public boolean isCellEditable(int row, int column) {
+               return false;
+            }
+        };
+        for (String user: users){
+            usersModel.addRow(new String[]{user});
+        }
+        currentUsers.setModel(usersModel);
+        JScrollPane usersList = new JScrollPane(currentUsers);
+        usersList.setPreferredSize(new Dimension(100,200));
+        JPanel canvas = new Canvas(800, 600, clientModel, user, outputStream);
+        ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar());
+        JFrame window = new JFrame("Canvas " + currentWhiteboardID);    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = window.getContentPane();
-        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
+        container.setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridheight = 2;
+        container.add(canvas, c);
+        c.gridx = 1;
+        c.gridy = 0;
+        //c.weightx = 0;
+        c.gridheight = 1;
+        container.add(usersList, c);
+        c.gridx = 1;
+        c.gridy = 1;
+        container.add(toolbarGUI, c);
         window.setLocation(300,100);
-        ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar());
-        container.add(canvas);
-        container.add(toolbarGUI);
-        //window.add(container);
         window.pack();
         window.setVisible(true);
         CollaboardGUI.this.dispose();
@@ -248,10 +265,10 @@ public class CollaboardGUI extends JFrame{
     /**
      * Called by client after receiving a "validwhiteboard" message.
      */
-    public void toCanvas(){
-        int newWhiteboard = Integer.parseInt(whiteboardField.getText());
-        new ProtocolWorker("enter "+ user.getUsername()+ " " + newWhiteboard);
-        initializeCanvas(newWhiteboard);
+    public void enterCanvas(){
+        currentWhiteboardID = Integer.parseInt(whiteboardField.getText());
+        System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
+        new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();     
     }
     
     /**
@@ -265,9 +282,10 @@ public class CollaboardGUI extends JFrame{
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            int whiteboardID = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
-            new ProtocolWorker("enter "+ user.getUsername()+ " " + whiteboardID);
-            initializeCanvas(whiteboardID);
+            currentWhiteboardID = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
+            System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
+            new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();
+            //initializeCanvas();
         }
         
     }

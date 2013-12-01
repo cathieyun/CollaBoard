@@ -10,7 +10,7 @@ import java.util.Observable;
  * @author KateYu
  *
  */
-public class CanvasModel extends Observable{
+public class CanvasModel{
     private ArrayList<DrawingObject> drawingObjectList;
     private int drawingObjectListUndoIndex;
     public CanvasModel(){

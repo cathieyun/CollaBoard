@@ -45,20 +45,21 @@ public class Client {
         PrintWriter out = new PrintWriter(outputStream, true);
         String fromServer = in.readLine(); //get the userID and initialize userObject first.
         handleRequest(fromServer);
-        System.out.println(fromServer);
+        System.out.println("msg from server: " + fromServer);
         gui = new CollaboardGUI(user, outputStream, inputStream);
         gui.setVisible(true);
         while ((fromServer = in.readLine()) != null){
+            System.out.println("From server: "+ fromServer);
             handleRequest(fromServer);
        }
         
     }
     
     private void handleRequest(String input){
-        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|" +
-        		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)*)"
-                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users( [A-Za-z0-9])+)"
-                +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)| (resend ([A-Za-z0-9]( )*)+)";
+        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
+        		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+)* (bl|y|r|g|o|m|blk|w) (s|m|l))"
+                + "usertaken|whiteboardtaken|(list( -?\\d+)*)|(users( [A-Za-z0-9])+)|"
+                +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+)| (resend ([A-Za-z0-9]( )*)+)";
         if ( ! input.matches(regex)) {
             // invalid input
             System.out.println("server msg: "+ input + " didn't match");
@@ -72,7 +73,8 @@ public class Client {
             gui.goToWhiteboardSelect();
         }
         if (tokens[0].equals("validwhiteboard")){
-            gui.toCanvas();
+            System.out.println("Entering canvas");
+            gui.enterCanvas();
         }
         if (tokens[0].equals("usertaken")){
             gui.displayUserTakenError();
@@ -86,6 +88,14 @@ public class Client {
             }
             gui.initializeWhiteboardPane();
         }
+        if (tokens[0].equals("users")){
+            for (int i = 1; i < tokens.length; i++){
+                gui.getUsers().add(tokens[i]);
+            }
+        }
+        if (tokens[0].equals("ready")){
+            gui.initializeCanvas();
+        }
         if (tokens[0].equals("undo")){
             //undo
         }
@@ -93,7 +103,7 @@ public class Client {
             //redo
         }
         if (tokens[0].equals("draw")){
-            //draw
+            //add the specified freehand to the clientcanvasmodel, and draw it.
         }
     }
     public static void main(String[]args){
