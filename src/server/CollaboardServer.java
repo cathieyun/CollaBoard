@@ -169,7 +169,7 @@ public class CollaboardServer {
                 return message.toString();
             }
             if (tokens[0].equals("undo")){
-                //undo
+                //undo, add to the server's event queue. (I think it would be easier to just implement a single queue for all whiteboards)
             }
             if (tokens[0].equals("redo")){
                 //redo
