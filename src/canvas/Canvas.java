@@ -342,7 +342,7 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 	 * @param d
 	 *            the drawingObject to redraw onto the canvas
 	 */
-	public void redrawDrawingObject(DrawingObject d) {
+	private void redrawDrawingObject(DrawingObject d) {
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
 			redrawLinesInFreehand(freehand);
