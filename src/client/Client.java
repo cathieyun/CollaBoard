@@ -16,6 +16,7 @@ import collaboard.CollaboardGUI;
  *
  */
 public class Client {
+    private String host;
     private int userID;
     private int port;
     private Socket socket;
@@ -23,13 +24,14 @@ public class Client {
     private User user;
     private PrintWriter out;
     private BufferedReader in;
-    public Client(int port){
+    public Client(String host, int port){
+        this.host = host;
         this.port = port;
     }
     
     public void run(){
         try {
-            socket = new Socket("127.0.0.1", port);
+            socket = new Socket(host, port);
             handleServer();
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -103,11 +105,11 @@ public class Client {
             //redo
         }
         if (tokens[0].equals("draw")){
-            //add the specified freehand to the clientcanvasmodel, and draw it.
+            //TODO: add the specified Freehand to the ClientCanvasModel, and draw it.
         }
     }
     public static void main(String[]args){
-        Client client = new Client(4444);
+        Client client = new Client("127.0.0.1", 4444);
         client.run();
     }
 }

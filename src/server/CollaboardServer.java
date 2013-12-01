@@ -29,7 +29,9 @@ import client.User;
 import collaboard.Collaboard;
 import collaboard.CollaboardGUI;
 
-
+//TODO: Add a requests queue for the server to handle (I think it would be easier to
+//implement than a BlockingQueue for each whiteboard.
+//Make a new thread that is dedicated to handling requests.
 public class CollaboardServer {
 
     private final ServerSocket serverSocket;
@@ -150,7 +152,7 @@ public class CollaboardServer {
                 return "validwhiteboard";
                 //addboard
             }
-            if (tokens[0].equals("enter")){
+            if (tokens[0].equals("enter")){ //TODO: Notify all threads in the same whiteboard that a new user has entered.
                 System.out.println("received enter message");
                 //add user to the whiteboard's list of users.
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
@@ -173,7 +175,7 @@ public class CollaboardServer {
                 return message.toString();
             }
             if (tokens[0].equals("undo")){
-                //undo, add to the server's event queue. (I think it would be easier to just implement a single queue for all whiteboards)
+                //undo, TODO: add to the server's event queue. (I think it would be easier to just implement a single queue for all whiteboards)
             }
             if (tokens[0].equals("redo")){
                 //redo
@@ -182,7 +184,7 @@ public class CollaboardServer {
                 //draw
             }
             if (tokens[0].equals("bye")){
-                
+                //TODO: remove the user from the whiteboard's list of users, and from the list of taken usernames.
             }
             return "";
             

@@ -25,7 +25,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 public class ToolbarGUI extends JPanel{
-    //TODO: implement the action listener for the other non-color buttons. 
+    //In order of priority:
+    //TODO: implement the action listener for undo/redo.
+    //TODO: Add an "exit" button.
+    //TODO: Add a way to change whiteboards.
     private final ToolbarModel toolbar;
     public ToolbarGUI(final ToolbarModel toolbar){
         try {
