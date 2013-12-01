@@ -31,8 +31,8 @@ public class Line {
 		return s;
 	}
 	
-    public String toStringNoColor() {
-        String s = x1 + " " + y1 + " " + x2 + " "  + y2;
+    public String firstPointToString() {
+        String s = x1 + " " + y1;// + " " + x2 + " "  + y2;
         return s;
     }	
 	

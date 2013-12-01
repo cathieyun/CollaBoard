@@ -27,15 +27,12 @@ public class Whiteboard {
 	 * 
 	 * @param whiteboardID
 	 *            the unique, nonnegative numerical ID for the whiteboard
-	 * @param user
-	 *            the user who created the whiteboard
 	 */
-    public Whiteboard(int whiteboardID, String user){
+    public Whiteboard(int whiteboardID){
         this.whiteboardID = whiteboardID;
         canvas = new CanvasModel();
         this.users = new ArrayList<String>();
         requests = new LinkedBlockingQueue<String>(); //stores the requests to be handled
-        users.add(user); 
     }
     
     public BlockingQueue getRequests(){

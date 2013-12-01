@@ -58,6 +58,8 @@ public class CollaboardGUI extends JFrame{
         whiteboards = new ArrayList<Integer>();
         this.userID = user.getUserID();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+        //TODO: Add a windowlistener that sends a "bye" message to the server, so it will
+        //remove the user from the whiteboard's list of users.
         
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();

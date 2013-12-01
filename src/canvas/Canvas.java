@@ -51,14 +51,13 @@ import canvas.Oval;
  * freehand, with the mouse.
  */
 
-public class Canvas extends JPanel implements ItemListener, Observer{
+public class Canvas extends JPanel{
 
     // image where the user's drawing is stored
 	private Image drawingBuffer;
-	private boolean erase = false;
-    public static Stroke SMALL = new BasicStroke(5);
-    public static Stroke MED = new BasicStroke(15);
-    public static Stroke LARGE = new BasicStroke(25);
+    public static Stroke SMALL = new BasicStroke(2);
+    public static Stroke MED = new BasicStroke(5);
+    public static Stroke LARGE = new BasicStroke(20);
     private CanvasModel canvasModel;
     private PrintWriter out;
     boolean isDrawingOval = false;
@@ -79,9 +78,9 @@ public class Canvas extends JPanel implements ItemListener, Observer{
     static Map<String,Stroke> thicknesses;
     {
         Map<String,Stroke> temp = new HashMap<String, Stroke>();
-        temp.put("s", new BasicStroke(5));
-        temp.put("m", new BasicStroke(15));
-        temp.put("l", new BasicStroke(25));
+        temp.put("s", new BasicStroke(2));
+        temp.put("m", new BasicStroke(5));
+        temp.put("l", new BasicStroke(20));
         thicknesses = temp;
     }
     
@@ -109,11 +108,6 @@ public class Canvas extends JPanel implements ItemListener, Observer{
     }
     
     private void configureButtons() {
-        JToggleButton eraseButton = new JToggleButton("Erase");
-        eraseButton.setLocation(0, 10);
-        eraseButton.setSize(50, 100);
-        eraseButton.addItemListener(this);
-        this.add(eraseButton);
 
         JButton undoButton = new JButton("Undo");
         undoButton.addActionListener(new ActionListener() {
@@ -161,12 +155,6 @@ public class Canvas extends JPanel implements ItemListener, Observer{
     
     public CanvasModel getCanvasModel(){
         return canvasModel;
-    }
-    
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        //change the state of erase
-        erase = !erase;
     }
     
     /**
@@ -416,33 +404,24 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 				drawOval(x1, y1, width, height, false);
 			} else {
 				if (currentDrawingObject instanceof Freehand) {
-					if (!erase) {
-					    String color = "b";
-					    String thickness = "m";
-					    for (Entry<String, Color> entry: colors.entrySet()){
-					        if (entry.getValue().equals(user.getToolbar().getColor())){
-					            color = entry.getKey();
-					        }
+				    String color = "b";
+					String thickness = "m";
+					for (Entry<String, Color> entry: colors.entrySet()){
+					    if (entry.getValue().equals(user.getToolbar().getColor())){
+					        color = entry.getKey();
 					    }
-	                    for (Entry<String, Stroke> entry: thicknesses.entrySet()){
-	                            if (entry.getValue().equals(user.getToolbar().getStroke())){
-	                                thickness = entry.getKey();
-	                            }
-	                    }
-						Freehand freehand = (Freehand) currentDrawingObject;
-						freehand.getLineList()
-								.add(new Line(lastX, lastY, x, y, color,
-										thickness));
-						drawLineSegment(lastX, lastY, x, y, color,
-								thickness, false);
-					} else if (erase) {
-						Freehand freehand = (Freehand) currentDrawingObject;
-						freehand.getLineList()
-								.add(new Line(lastX, lastY, x, y, "w",
-										"m"));
-						drawLineSegment(lastX, lastY, x, y, "w",
-								"m", false);
 					}
+	                for (Entry<String, Stroke> entry: thicknesses.entrySet()){
+	                        if (entry.getValue().equals(user.getToolbar().getStroke())){
+	                            thickness = entry.getKey();
+	                        }
+	                }
+	                Freehand freehand = (Freehand) currentDrawingObject;
+	                freehand.getLineList()
+					    .add(new Line(lastX, lastY, x, y, color,
+								thickness));
+	                drawLineSegment(lastX, lastY, x, y, color,
+						thickness, false);
 				}
 				lastX = x;
 				lastY = y;
@@ -485,10 +464,4 @@ public class Canvas extends JPanel implements ItemListener, Observer{
 			}
 		});
 	}
-
-    @Override
-    public void update(Observable arg0, Object arg1) {
-        // TODO Auto-generated method stub
-        
-    }
 }

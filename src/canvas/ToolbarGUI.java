@@ -1,5 +1,6 @@
 package canvas;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -23,7 +24,7 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 
-public class ToolbarGUI extends JPanel implements ActionListener{
+public class ToolbarGUI extends JPanel{
     //TODO: implement the action listener for the other non-color buttons. 
     private final ToolbarModel toolbar;
     public ToolbarGUI(final ToolbarModel toolbar){
@@ -37,14 +38,8 @@ public class ToolbarGUI extends JPanel implements ActionListener{
          }
         System.out.println("hi");
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
-        //JPanel main = new JPanel();
-
-        //this.add(main);
-        //this.setTitle("Toolbar");
         this.toolbar = toolbar;
         this.setSize(100,500);
-        //this.setSize(80,400);
-        //this.setLocation(475,200);
         JButton[] buttons = new JButton[colors.length];
         for (int i = 0; i< colors.length; i++){
             final Color currentColor = colors[i];
@@ -60,8 +55,11 @@ public class ToolbarGUI extends JPanel implements ActionListener{
         }
 
         JButton small = new JButton("Small");
+        small.addActionListener(new StrokeListener(2));
         JButton med = new JButton("Medium");
+        med.addActionListener(new StrokeListener(5));
         JButton large = new JButton("Large");
+        large.addActionListener(new StrokeListener(20));
         JButton undo = new JButton("undo");//TODO: pass undo/redo events to Canvas
         JButton redo = new JButton("redo");
         GroupLayout layout = new GroupLayout(this);
@@ -102,11 +100,18 @@ public class ToolbarGUI extends JPanel implements ActionListener{
              );
         
     }
-    @Override
-    public void actionPerformed(ActionEvent arg0) {
-        // TODO Auto-generated method stub
-    }
     
+    public class StrokeListener implements ActionListener{
+        private int thickness;
+        public StrokeListener(int thickness){
+            this.thickness = thickness;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            toolbar.setStroke(new BasicStroke(thickness));            
+        }
+        
+    }
 //    public static void main(final String[] args){
 //        SwingUtilities.invokeLater(new Runnable() {
 //            public void run() {

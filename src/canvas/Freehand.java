@@ -23,10 +23,14 @@ public class Freehand implements DrawingObject{
 	}
 
 	@Override
+	/**
+	 * returns a String representation of a Freehand as a list of alternating x and y values
+	 * followed by a color and a thickness.
+	 */
 	public String toString() {
 	    StringBuilder string = new StringBuilder();
 	    for (int i=0; i < lineList.size() - 1; i++){
-	        string.append(lineList.get(i).toStringNoColor() + " ");
+	        string.append(lineList.get(i).firstPointToString() + " ");
 	    }
 	    string.append(lineList.get(lineList.size() - 1).toString());
 		return string.toString();
