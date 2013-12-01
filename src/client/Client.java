@@ -10,7 +10,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import collaboard.CollaboardGUI;
-
+/**
+ * Client class for Collaboard.
+ * Handles inputs/outputs to the server and acts as a controller for the GUI.
+ *
+ */
 public class Client {
     private int userID;
     private int port;
@@ -51,8 +55,9 @@ public class Client {
     }
     
     private void handleRequest(String input){
-        String regex = "(userID [0-9]+)|(update)|"
-                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|"
+        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|" +
+        		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)*)"
+                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users( [A-Za-z0-9])+)"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)| (resend ([A-Za-z0-9]( )*)+)";
         if ( ! input.matches(regex)) {
             // invalid input
@@ -63,16 +68,23 @@ public class Client {
             this.userID = Integer.parseInt(tokens[1]);
             user = new User(userID);
         }
+        if (tokens[0].equals("validuser")){
+            gui.goToWhiteboardSelect();
+        }
+        if (tokens[0].equals("validwhiteboard")){
+            gui.toCanvas();
+        }
         if (tokens[0].equals("usertaken")){
-            //display error message on gui
+            gui.displayUserTakenError();
         }
         if (tokens[0].equals("whiteboardtaken")){
-            //display error message on gui
+            gui.displayWhiteboardTakenError();
         }
         if (tokens[0].equals("list")){
             for (int i = 1; i < tokens.length; i++){
                gui.getWhiteboards().add(new Integer(tokens[i]));
             }
+            gui.initializeWhiteboardPane();
         }
         if (tokens[0].equals("undo")){
             //undo

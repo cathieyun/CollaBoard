@@ -18,7 +18,7 @@ import canvas.ToolbarModel;
  */
 public class Whiteboard {
     private CanvasModel canvas;
-    private List<String> users;
+    private ArrayList<String> users;
     private final int whiteboardID;
     private BlockingQueue requests;
     
@@ -42,7 +42,7 @@ public class Whiteboard {
         return requests;
     }
     
-    public List<String> getUsers(){
+    public ArrayList<String> getUsers(){
         return users;
     }
 

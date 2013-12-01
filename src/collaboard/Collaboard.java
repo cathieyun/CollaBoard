@@ -23,8 +23,10 @@ public class Collaboard {
     
     public Collaboard(){
         this.whiteboards = new HashMap<Integer, Whiteboard>();
+        whiteboards.put(1,null);
         this.users = new HashMap<Integer, User>();
         this.usernames = new HashSet<String>();
+        usernames.add("bob");
     }
     
     public Whiteboard createNewWhiteboard(int ID){
@@ -37,12 +39,13 @@ public class Collaboard {
         return (whiteboards.keySet().contains(ID));
     }
     
-    public void addUser(int userID, String username){
+    public String addUser(int userID, String username){
         System.out.println("Creating username: "+username);
-//        if (usernames.contains(username)){
-//            return "E*"; //username already taken
-//        } //TODO: implement unique usernames later
+        if (usernames.contains(username)){
+            return "usertaken";
+        } 
         usernames.add(username);
+        return "validuser";
     }
     
     public Map<Integer, Whiteboard> getWhiteboards(){

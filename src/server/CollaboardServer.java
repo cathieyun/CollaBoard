@@ -2,6 +2,7 @@ package server;
 
 
 
+import java.awt.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +12,15 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import whiteboard.Whiteboard;
 
 import client.User;
 
@@ -92,6 +96,11 @@ public class CollaboardServer {
             PrintWriter out = new PrintWriter(outputStream, true);
             try {
                 out.println("userID " + userID); //send the userID
+                StringBuilder message = new StringBuilder("list");
+                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
+                    message.append(" " + whiteboardID);
+                }
+                out.println(message.toString()); //send the list of whiteboards
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
                     String output = handleRequest(line);
                     if (output != null) {
@@ -116,7 +125,7 @@ public class CollaboardServer {
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
                     + "(redo -?\\d+ -?\\d+ -?\\d+)|(whiteboards)|"
-                    +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (blue|yellow|red|green|orange|magenta|black|white) (small|med|large) -?\\d+ -?\\d+)|"
+                    +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
@@ -126,28 +135,41 @@ public class CollaboardServer {
             if (tokens[0].equals("makeuser")){
                 System.out.println(tokens[1]);
                 System.out.println(tokens[2]);
-                collaboard.addUser(Integer.parseInt(tokens[2]), tokens[1]);
-                System.out.println("Made user:"+ tokens[1]);
-                return null;
+                System.out.println("Trying to make user:"+ tokens[1]);
+                return(collaboard.addUser(Integer.parseInt(tokens[2]), tokens[1]));
             }
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
                 if (collaboard.existingWhiteboard(whiteboardID)){
-                    return "error 1";
+                    return "whiteboardtaken";
                 }
                 collaboard.createNewWhiteboard(whiteboardID);
-                return null;
+                return "validwhiteboard";
                 //addboard
             }
-            if (tokens[0].equals("whiteboards")){
-                StringBuilder message = new StringBuilder("list");
-                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
-                    message.append(" " + whiteboardID);
+//            if (tokens[0].equals("whiteboards")){
+//                StringBuilder message = new StringBuilder("list");
+//                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
+//                    message.append(" " + whiteboardID);
+//                }
+//                return message.toString();
+//            }
+            if (tokens[0].equals("enter")){
+                //add user to the whiteboard's list of users.
+                Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
+                whiteboard.addUser(tokens[1]);
+                StringBuilder message = new StringBuilder("users");
+                ArrayList<String> users = whiteboard.getUsers();
+                for (int i=0; i < users.size(); i++){
+                    message.append(" " + users.get(i));
                 }
+                message.append("\n");
+
+                //send the user a list of users and a list of objects already drawn.
                 return message.toString();
             }
             if (tokens[0].equals("undo")){
-                //undo
+                //undo, add to the server's event queue. (I think it would be easier to just implement a single queue for all whiteboards)
             }
             if (tokens[0].equals("redo")){
                 //redo

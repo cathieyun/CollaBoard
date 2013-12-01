@@ -27,8 +27,8 @@ public class Line {
 	
 	@Override
 	public String toString() {
-		return "Line [x1=" + x1 + ", y1=" + y1 + ", x2=" + x2 + ", y2=" + y2
-				+ ", color=" + color + ", thickness=" + thickness + "]";
+		String s = x1 + " " + y1 + " " + x2 + " "  + y2 + " " + color + " " + thickness;
+		return s;
 	}
 
 	public int getX1() {
