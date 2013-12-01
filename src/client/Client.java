@@ -10,7 +10,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import collaboard.CollaboardGUI;
-
+/**
+ * Client class for Collaboard.
+ * Handles inputs/outputs to the server and acts as a controller for the GUI.
+ *
+ */
 public class Client {
     private int userID;
     private int port;
@@ -66,11 +70,14 @@ public class Client {
         if (tokens[0].equals("validuser")){
             gui.goToWhiteboardSelect();
         }
+        if (tokens[0].equals("validwhiteboard")){
+            gui.toCanvas();
+        }
         if (tokens[0].equals("usertaken")){
             gui.displayUserTakenError();
         }
         if (tokens[0].equals("whiteboardtaken")){
-            //display error message on gui
+            gui.displayWhiteboardTakenError();
         }
         if (tokens[0].equals("list")){
             for (int i = 1; i < tokens.length; i++){

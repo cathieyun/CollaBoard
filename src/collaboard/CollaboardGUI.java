@@ -59,11 +59,8 @@ public class CollaboardGUI extends JFrame{
     private BufferedReader in;
     private PrintWriter out;
     private ArrayList<Integer> whiteboards;
-    private boolean usernameTaken;
-    private boolean whiteboardTaken;
+    private JLabel createWhiteboard;
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
-        this.usernameTaken = true;
-        this.whiteboardTaken = true;
         this.user = user;
         this.inputStream = inputStream;
         this.outputStream = outputStream;
@@ -97,12 +94,6 @@ public class CollaboardGUI extends JFrame{
     public ArrayList<Integer> getWhiteboards(){
         return whiteboards;
     }
-    public void usernameNotTaken(){
-        usernameTaken = false;
-    }
-    public void whiteboardNotTaken(){
-        whiteboardTaken = false;
-    }
     public void displayUserTakenError(){
         error.setVisible(true);
     }
@@ -131,7 +122,7 @@ public class CollaboardGUI extends JFrame{
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard below");
         JTable whiteboardIDs = new JTable();
         chooseWhiteboard.addActionListener(new SelectWhiteboardListener(whiteboardIDs));
-        JLabel createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
+        createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
         JScrollPane whiteboardsList = new JScrollPane(whiteboardIDs);
         DefaultTableModel model = new DefaultTableModel(0,1){
             //prevent user from editing cells
@@ -235,12 +226,11 @@ public class CollaboardGUI extends JFrame{
         @Override
         public void actionPerformed(ActionEvent e) {
             try{
+                createWhiteboard.setText("Enter a new integer > 0 not displayed below to create a new whiteboard");
                 int newWhiteboard = Integer.parseInt(whiteboardField.getText());
                 if (newWhiteboard < 1) throw new NumberFormatException();
                 new ProtocolWorker("makeboard "+newWhiteboard).execute();
-                new ProtocolWorker("enter "+ user.getUsername()+ " " + newWhiteboard);
                 //send a message to the server to create a new whiteboard
-                initializeCanvas(newWhiteboard);
             }catch(NumberFormatException e1){
                 //if it's not a valid value
                 //display error message
@@ -248,6 +238,19 @@ public class CollaboardGUI extends JFrame{
             // TODO Auto-generated method stub
             
         }
+    }
+    
+    public void displayWhiteboardTakenError(){
+        createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
+    }
+    
+    /**
+     * Called by client after receiving a "validwhiteboard" message.
+     */
+    public void toCanvas(){
+        int newWhiteboard = Integer.parseInt(whiteboardField.getText());
+        new ProtocolWorker("enter "+ user.getUsername()+ " " + newWhiteboard);
+        initializeCanvas(newWhiteboard);
     }
     
     /**
