@@ -51,7 +51,7 @@ public class Client {
     }
     
     private void handleRequest(String input){
-        String regex = "(userID [0-9]+)|(update)|"
+        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)| (resend ([A-Za-z0-9]( )*)+)";
         if ( ! input.matches(regex)) {
@@ -63,8 +63,11 @@ public class Client {
             this.userID = Integer.parseInt(tokens[1]);
             user = new User(userID);
         }
+        if (tokens[0].equals("validuser")){
+            gui.goToWhiteboardSelect();
+        }
         if (tokens[0].equals("usertaken")){
-            //display error message on gui
+            gui.displayUserTakenError();
         }
         if (tokens[0].equals("whiteboardtaken")){
             //display error message on gui

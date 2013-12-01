@@ -23,25 +23,28 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
 
-public class ToolbarGUI extends JFrame implements ActionListener{
-    //TODO: implement the action listener for each button
+public class ToolbarGUI extends JPanel implements ActionListener{
+    //TODO: implement the action listener for the other non-color buttons. 
     private final ToolbarModel toolbar;
     public ToolbarGUI(final ToolbarModel toolbar){
         try {
             //make it so that button colors show up
             UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
          } catch (Exception e) {
-                    e.printStackTrace();
+              e.printStackTrace();
+             //this throws some sort of error, i think because it conflicts with canvas 
+             //but it doesn't really affect functionality. 
          }
         System.out.println("hi");
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
-        JPanel main = new JPanel();
+        //JPanel main = new JPanel();
 
-        this.add(main);
-        this.setTitle("Toolbar");
+        //this.add(main);
+        //this.setTitle("Toolbar");
         this.toolbar = toolbar;
-        this.setSize(80,400);
-        this.setLocation(475,200);
+        this.setSize(100,600);
+        //this.setSize(80,400);
+        //this.setLocation(475,200);
         JButton[] buttons = new JButton[colors.length];
         for (int i = 0; i< colors.length; i++){
             final Color currentColor = colors[i];
@@ -61,8 +64,8 @@ public class ToolbarGUI extends JFrame implements ActionListener{
         JButton large = new JButton("Large");
         JButton undo = new JButton("undo");//TODO: pass undo/redo events to Canvas
         JButton redo = new JButton("redo");
-        GroupLayout layout = new GroupLayout(main);
-        main.setLayout(layout);
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
         layout.setHorizontalGroup(
@@ -70,7 +73,7 @@ public class ToolbarGUI extends JFrame implements ActionListener{
                 .addComponent(small)
                 .addComponent(med)
                 .addComponent(large)
-                .addComponent(buttons[0]) //TODO:  put these in a loop
+                .addComponent(buttons[0]) //TODO:  figure put how to put these in a loop
                 .addComponent(buttons[1])
                 .addComponent(buttons[2])
                 .addComponent(buttons[3])
@@ -104,15 +107,15 @@ public class ToolbarGUI extends JFrame implements ActionListener{
         // TODO Auto-generated method stub
     }
     
-    public static void main(final String[] args){
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                ToolbarModel toolbar = new ToolbarModel();
-                ToolbarGUI main = new ToolbarGUI(toolbar);
-                main.setVisible(true);
-            }
-        });
-    }
+//    public static void main(final String[] args){
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                ToolbarModel toolbar = new ToolbarModel();
+//                ToolbarGUI main = new ToolbarGUI(toolbar);
+//                main.setVisible(true);
+//            }
+//        });
+//    }
 
     
     

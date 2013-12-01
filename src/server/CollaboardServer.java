@@ -128,15 +128,15 @@ public class CollaboardServer {
                 System.out.println(tokens[2]);
                 collaboard.addUser(Integer.parseInt(tokens[2]), tokens[1]);
                 System.out.println("Made user:"+ tokens[1]);
-                return null;
+                return "validuser";
             }
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
                 if (collaboard.existingWhiteboard(whiteboardID)){
-                    return "error 1";
+                    return "whiteboardtaken";
                 }
                 collaboard.createNewWhiteboard(whiteboardID);
-                return null;
+                return "validwhiteboard";
                 //addboard
             }
             if (tokens[0].equals("whiteboards")){
