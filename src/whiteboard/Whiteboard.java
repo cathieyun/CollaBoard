@@ -10,19 +10,32 @@ import canvas.Canvas;
 import canvas.CanvasModel;
 import canvas.ToolbarModel;
 
+/**
+ * Whiteboard 
+ * 
+ * @author Eric Ruleman
+ *
+ */
 public class Whiteboard {
     private CanvasModel canvas;
     private List<String> users;
     private final int whiteboardID;
     private BlockingQueue requests;
     
-
-    public Whiteboard(int whiteboardID){
+	/**
+	 * The constructor method for Whiteboard.
+	 * 
+	 * @param whiteboardID
+	 *            the unique, nonnegative numerical ID for the whiteboard
+	 * @param user
+	 *            the user who created the whiteboard
+	 */
+    public Whiteboard(int whiteboardID, String user){
         this.whiteboardID = whiteboardID;
         canvas = new CanvasModel();
         this.users = new ArrayList<String>();
         requests = new LinkedBlockingQueue<String>(); //stores the requests to be handled
-        //users.add(user); 
+        users.add(user); 
     }
     
     public BlockingQueue getRequests(){
