@@ -5,7 +5,7 @@ package canvas;
  * are packaged together in the Freehand class in order to provide meaningful
  * undos/redos.
  * 
- * @author Eric
+ * @author Eric Ruleman
  * 
  */
 public class Line {

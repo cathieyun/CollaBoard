@@ -1,6 +1,6 @@
 package canvas;
 
-public class Oval implements canvas.DrawingObject{
+public class Oval implements DrawingObject{
 	int x;
 	int y;
 	int shapeStartX;
