@@ -42,7 +42,7 @@ public class ToolbarGUI extends JPanel implements ActionListener{
         //this.add(main);
         //this.setTitle("Toolbar");
         this.toolbar = toolbar;
-        this.setSize(100,600);
+        this.setSize(100,500);
         //this.setSize(80,400);
         //this.setLocation(475,200);
         JButton[] buttons = new JButton[colors.length];

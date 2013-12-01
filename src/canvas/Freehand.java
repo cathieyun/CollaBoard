@@ -24,7 +24,12 @@ public class Freehand implements DrawingObject{
 
 	@Override
 	public String toString() {
-		return "Freehand [lineList=" + lineList + "]";
+	    StringBuilder string = new StringBuilder();
+	    for (int i=0; i < lineList.size() - 1; i++){
+	        string.append(lineList.get(i).toStringNoColor() + " ");
+	    }
+	    string.append(lineList.get(lineList.size() - 1).toString());
+		return string.toString();
 	}
 
 }

@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import whiteboard.Whiteboard;
 
+import canvas.CanvasModel;
+import canvas.DrawingObject;
 import client.User;
 
 import collaboard.Collaboard;
@@ -78,7 +80,7 @@ public class CollaboardServer {
         @Override
         public void run() {
             try {
-                handleConnection(socket, user, userID);
+                handleConnection(socket, userID);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -91,7 +93,7 @@ public class CollaboardServer {
                 }
             } 
         }
-        private void handleConnection(Socket socket, User user, int userID) throws IOException{
+        private void handleConnection(Socket socket, int userID) throws IOException{
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
             PrintWriter out = new PrintWriter(outputStream, true);
             try {
@@ -102,6 +104,7 @@ public class CollaboardServer {
                 }
                 out.println(message.toString()); //send the list of whiteboards
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
+                    //System.out.println("Processing: " + line);
                     String output = handleRequest(line);
                     if (output != null) {
                         System.out.println("server response to " + line + ": " + output);
@@ -147,14 +150,8 @@ public class CollaboardServer {
                 return "validwhiteboard";
                 //addboard
             }
-//            if (tokens[0].equals("whiteboards")){
-//                StringBuilder message = new StringBuilder("list");
-//                for (int whiteboardID: collaboard.getWhiteboards().keySet()){
-//                    message.append(" " + whiteboardID);
-//                }
-//                return message.toString();
-//            }
             if (tokens[0].equals("enter")){
+                System.out.println("received enter message");
                 //add user to the whiteboard's list of users.
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
                 whiteboard.addUser(tokens[1]);
@@ -164,8 +161,15 @@ public class CollaboardServer {
                     message.append(" " + users.get(i));
                 }
                 message.append("\n");
-
+                CanvasModel canvasModel = whiteboard.getCanvasModel();
+                for (int i = 0; i < canvasModel.getListSize(); i++){
+                    DrawingObject o = canvasModel.getIthDrawingObject(i);
+                    message.append("draw " + o.toString() + "\n");
+                }
+                message.append("ready");
+                //this only works for freehands right now.
                 //send the user a list of users and a list of objects already drawn.
+                System.out.println("Sending this message: " + message);
                 return message.toString();
             }
             if (tokens[0].equals("undo")){

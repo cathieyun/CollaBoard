@@ -30,6 +30,12 @@ public class Line {
 		String s = x1 + " " + y1 + " " + x2 + " "  + y2 + " " + color + " " + thickness;
 		return s;
 	}
+	
+    public String toStringNoColor() {
+        String s = x1 + " " + y1 + " " + x2 + " "  + y2;
+        return s;
+    }	
+	
 
 	public int getX1() {
 		return x1;
