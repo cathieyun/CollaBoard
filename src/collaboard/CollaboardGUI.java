@@ -6,9 +6,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -61,6 +62,15 @@ public class CollaboardGUI extends JFrame{
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         //TODO: Add a windowlistener that sends a "bye" message to the server, so it will
         //remove the user from the whiteboard's list of users.
+        
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosed(WindowEvent e) {
+				System.out.println("Window was closed!");
+				out.println("bye " + userID + currentWhiteboardID);
+			}
+		});
+        
+        
         
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
