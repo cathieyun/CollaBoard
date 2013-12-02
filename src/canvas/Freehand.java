@@ -8,14 +8,24 @@ import java.util.ArrayList;
  * when the mouse is pressed and when the mouse is released. The Freehand class
  * allows for meaningful undos/redos.
  * 
- * @author Eric Ruleman
- * 
  */
 public class Freehand implements DrawingObject{
 	private ArrayList<Line> lineList;
-
+	private ArrayList<Integer> pointsList;
 	public Freehand(ArrayList<Line> lineList) {
 		this.lineList = lineList;
+	}
+	/**
+	 * initialize a Freehand by an array of integers representing points.
+	 * Requires: length of pointsList%2 == 0, length of pointsList >=4
+	 * @param pointsList
+	 */
+	public Freehand(int[] pointsList, String color, String thickness){
+	    lineList = new ArrayList<Line>();
+	    for (int i = 0; i < pointsList.length-2; i=i+2){
+	       Line line = new Line(pointsList[0], pointsList[1], pointsList[2], pointsList[3], color, thickness);
+	       lineList.add(line);
+	    }
 	}
 	
 	/**
@@ -31,7 +41,7 @@ public class Freehand implements DrawingObject{
 	 * followed by a color and a thickness.
 	 */
 	public String toString() {
-	    StringBuilder string = new StringBuilder();
+	    StringBuilder string = new StringBuilder("freehand ");
 	    for (int i=0; i < lineList.size() - 1; i++){
 	        string.append(lineList.get(i).firstPointToString() + " ");
 	    }

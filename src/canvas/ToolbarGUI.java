@@ -37,7 +37,7 @@ public class ToolbarGUI extends JPanel{
             //make it so that button colors show up
             UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
          } catch (Exception e) {
-              e.printStackTrace();
+              //e.printStackTrace();
              //this throws some sort of error, i think because it conflicts with canvas 
              //but it doesn't really affect functionality. 
          }
