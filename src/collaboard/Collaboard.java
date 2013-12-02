@@ -23,7 +23,6 @@ public class Collaboard {
     
     public Collaboard(){
         this.whiteboards = new HashMap<Integer, Whiteboard>();
-        whiteboards.put(1,null);
         this.users = new HashMap<Integer, User>();
         this.usernames = new HashSet<String>();
         usernames.add("bob");

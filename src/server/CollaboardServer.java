@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import whiteboard.Whiteboard;
@@ -38,10 +40,12 @@ public class CollaboardServer {
     private Collaboard collaboard;
     private AtomicInteger numClients;
     private HashMap<Integer, Thread> threads;
+    private BlockingQueue<String> requests;
     public CollaboardServer(int port, Collaboard collaboard) throws IOException{
         this.serverSocket = new ServerSocket(port);
         this.collaboard = collaboard;
         this.numClients = new AtomicInteger(0);
+        this.requests = new LinkedBlockingQueue<String>();
     }
     
     private void serve() throws IOException{
@@ -129,7 +133,7 @@ public class CollaboardServer {
         
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+ -?\\d+)|(whiteboards)|"
+                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"
                     +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
             if ( ! input.matches(regex)) {

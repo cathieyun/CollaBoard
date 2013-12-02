@@ -58,7 +58,7 @@ public class Canvas extends JPanel{
     public static Stroke SMALL = new BasicStroke(2);
     public static Stroke MED = new BasicStroke(5);
     public static Stroke LARGE = new BasicStroke(20);
-    private CanvasModel canvasModel;
+    private ClientCanvasModel canvasModel;
     private PrintWriter out;
     boolean isDrawingOval = false;
     private User user;
@@ -93,7 +93,7 @@ public class Canvas extends JPanel{
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, final CanvasModel canvasModel2, User user, OutputStream outputStream) {
+    public Canvas(int width, int height, final ClientCanvasModel canvasModel2, User user, OutputStream outputStream) {
 
         this.user = user;
         this.out = new PrintWriter(outputStream);
@@ -155,6 +155,17 @@ public class Canvas extends JPanel{
     
     public CanvasModel getCanvasModel(){
         return canvasModel;
+    }
+    /**
+     * Draws the freehand defined by the input.
+     * @param points - list of x and y coordinates (alternating)
+     * @param color - color of the freehand
+     * @param stroke - stroke of the freehand
+     */
+    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
+        for (int i = 0; i < points.size(); i=i+2){
+            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
+        }
     }
     
     /**
