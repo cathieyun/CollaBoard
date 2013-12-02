@@ -31,6 +31,7 @@ public class ToolbarModel {
     }
     
     public void setStroke(Stroke stroke){
+//    	System.out.println("I am now this stroke: " + stroke);
         this.stroke = stroke;
     }
     

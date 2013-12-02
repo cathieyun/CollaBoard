@@ -247,12 +247,8 @@ public class Canvas extends JPanel{
 	private void drawLineSegment(int x1, int y1, int x2, int y2, String color,
 		String thickness, boolean areUndoingOrRedoing) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
-		// if (color == "Black") {
-		// g.setColor(Color.BLACK);
-		// } else if (color == "White") {
-		// g.setStroke(new BasicStroke(10));
-		// g.setColor(Color.WHITE);
-		// }
+
+		// configure the color and thickness depending on we are undoing/redoing or not
 		if (areUndoingOrRedoing){
 	        g.setStroke(thicknesses.get(thickness));
 	        g.setColor(colors.get(color));
@@ -275,7 +271,7 @@ public class Canvas extends JPanel{
 		this.repaint();
 	}
 
-	private void drawOval(int x, int y, int width, int height, boolean areUndoingOrRedoing) {
+	private void drawOval(int x, int y, int width, int height, String color, String thickness, boolean areUndoingOrRedoing) {
 		fillWithWhite();
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
@@ -285,6 +281,16 @@ public class Canvas extends JPanel{
 			redrawDrawingObject(currentDrawingObject);
 		}
 
+		// configure the color and thickness depending on we are undoing/redoing or not
+		if (areUndoingOrRedoing){
+	        g.setStroke(thicknesses.get(thickness));
+	        g.setColor(colors.get(color));
+		}
+		else{
+	        g.setColor(user.getToolbar().getColor());
+	        g.setStroke(user.getToolbar().getStroke());
+		}
+		
 		g.drawOval(x, y, width, height);
 		
 		// after a series of undo operations, if a user begins to draw again,
@@ -349,6 +355,14 @@ public class Canvas extends JPanel{
 		else if (d instanceof Oval) {
 			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 			Oval oval = (Oval) d;
+			
+			// get and set the color and thickness
+			String thickness = oval.getThickness();
+			String color = oval.getColor();
+			
+		    g.setStroke(thicknesses.get(thickness));
+		    g.setColor(colors.get(color));
+			
 			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
 		}
 		this.repaint();
@@ -393,7 +407,6 @@ public class Canvas extends JPanel{
 			if (isDrawingOval) {
 				shapeStartX = e.getX();
 				shapeStartY = e.getY();
-				currentDrawingObject = new Oval(shapeStartX, shapeStartY, shapeStartX, shapeStartY);
 			} else {
 				lastX = e.getX();
 				lastY = e.getY();
@@ -407,35 +420,36 @@ public class Canvas extends JPanel{
 		public void mouseDragged(MouseEvent e) {
 			int x = e.getX();
 			int y = e.getY();
+			
+			// configure the color and thickness
+		    String color = "b";
+			String thickness = "m";
+			for (Entry<String, Color> entry: colors.entrySet()){
+			    if (entry.getValue().equals(user.getToolbar().getColor())){
+			        color = entry.getKey();
+			    }
+			}
+            for (Entry<String, Stroke> entry: thicknesses.entrySet()){
+                    if (entry.getValue().equals(user.getToolbar().getStroke())){
+                        thickness = entry.getKey();
+                }
+            }
+            
 			if (isDrawingOval) {
-				Oval oval = new Oval(shapeStartX, shapeStartY, x, y);
+				Oval oval = new Oval(shapeStartX, shapeStartY, x, y, color, thickness);
 				currentDrawingObject = oval;
 				int width = oval.getWidth();
 				int height = oval.getHeight();
 				int x1 = oval.getTopLeftX();
 				int y1 = oval.getTopLeftY();
-				drawOval(x1, y1, width, height, false);
-			} else {
-				if (currentDrawingObject instanceof Freehand) {
-				    String color = "b";
-					String thickness = "m";
-					for (Entry<String, Color> entry: colors.entrySet()){
-					    if (entry.getValue().equals(user.getToolbar().getColor())){
-					        color = entry.getKey();
-					    }
-					}
-	                for (Entry<String, Stroke> entry: thicknesses.entrySet()){
-	                        if (entry.getValue().equals(user.getToolbar().getStroke())){
-	                            thickness = entry.getKey();
-	                        }
-	                }
+				drawOval(x1, y1, width, height, color, thickness, false);
+			} else if (currentDrawingObject instanceof Freehand) {
 	                Freehand freehand = (Freehand) currentDrawingObject;
 	                freehand.getLineList()
 					    .add(new Line(lastX, lastY, x, y, color,
 								thickness));
 	                drawLineSegment(lastX, lastY, x, y, color,
 						thickness, false);
-				}
 				lastX = x;
 				lastY = y;
 			}
