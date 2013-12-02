@@ -23,7 +23,7 @@ public class Freehand implements DrawingObject{
 	public Freehand(int[] pointsList, String color, String thickness){
 	    lineList = new ArrayList<Line>();
 	    for (int i = 0; i < pointsList.length-2; i=i+2){
-	       Line line = new Line(pointsList[0], pointsList[1], pointsList[2], pointsList[3], color, thickness);
+	       Line line = new Line(pointsList[i], pointsList[i+1], pointsList[i+2], pointsList[i+3], color, thickness);
 	       lineList.add(line);
 	    }
 	}

@@ -93,10 +93,10 @@ public class Canvas extends JPanel{
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, final ClientCanvasModel canvasModel2, User user, OutputStream outputStream) {
+    public Canvas(int width, int height, final ClientCanvasModel canvasModel, User user, OutputStream outputStream) {
         this.user = user;
         this.out = new PrintWriter(outputStream, true);
-        this.canvasModel = canvasModel2;
+        this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
         // note: we can't call makeDrawingBuffer here, because it only

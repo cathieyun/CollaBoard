@@ -66,38 +66,52 @@ public class CollaboardServer {
             private void handleRequest(String[] request){
                     int whiteboardID = Integer.parseInt(request[request.length-1]);
                     int userID = Integer.parseInt(request[request.length-2]);
+                    CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
+                    StringBuilder outputMsg = new StringBuilder();
+                    if (request[0].equals("undo")|request[0].equals("redo")){
+                        outputMsg.append(request[0]);
+                        //TODO: make the necessary change to the currentModel's drawingObjectUndoIndex
+                    }
+                    else if (request[0].equals("draw")){
+                        String color = request[request.length-4];
+                        String thickness = request[request.length-3];
+                        if(request[1].equals("freehand")){
+                            int [] points = new int[request.length-6];
+                            for (int i=0; i < points.length; i++){
+                                points[i] = Integer.parseInt(request[i+2]);
+                            }
+                            Freehand freehand = new Freehand(points, color, thickness);
+                            currentModel.addDrawingObject(freehand);
+                            
+                        }
+                        if(request[1].equals("oval")){
+                            Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
+                            currentModel.addDrawingObject(oval);
+                        }
+                        outputMsg.append("draw");
+                        for (int i = 1; i < request.length-2; i++){
+                            outputMsg.append(" " + request[i]);
+                        }
+                        System.out.println("outputMsg: " + outputMsg.toString());
                     for (UserThread t: threads){
+                        System.out.println("Current whiteboardID: " + whiteboardID);
+                        System.out.println("Thread currentWhiteboardID: "+t.getCurrentWhiteboardID());
+                        System.out.println("Thread ID: " + t.getUserID());
+                        System.out.println("Thread that sent this update: " + userID);
                         //find the threads that are on the same whiteboard and send the undo request to them.
                         if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
-                            PrintWriter output = new PrintWriter(t.getOutputStream());
-                            CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
-                            if (request[0].equals("undo")|request[0].equals("redo")){
-                                output.println(request[0]);
-                                //TODO: make the necessary change to the currentModel's drawingObjectUndoIndex
-                            }
-                            else if (request[0].equals("draw")){
-                                String color = request[request.length-4];
-                                String thickness = request[request.length-3];
-                                if(request[1].equals("freehand")){
-                                    int [] points = new int[request.length-6];
-                                    for (int i=0; i < points.length; i++){
-                                        points[i] = Integer.parseInt(request[i+2]);
-                                    }
-                                    Freehand freehand = new Freehand(points, color, thickness);
-                                    currentModel.addDrawingObject(freehand);
-                                    
-                                }
-                                if(request[1].equals("oval")){
-                                    Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
-                                    currentModel.addDrawingObject(oval);
-                                }
-                                StringBuilder outputMsg = new StringBuilder("draw");
-                                for (int i = 1; i < request.length-2; i++){
-                                    outputMsg.append(" " + request[i]);
-                                }
-                                output.println(outputMsg.toString());
-                            }
+                            System.out.println("Sending this to thread: " + t.getUserID());
+                            System.out.println("Output message: " + outputMsg.toString());
+                            PrintWriter output = t.getPrintWriter();
+                            output.println(outputMsg.toString());
                         }
+                        else{
+                            System.out.println("Didn't send to thread: " + t.getUserID());
+                        }
+                            
+                    }
+
+
                     }
             }
             
@@ -119,6 +133,7 @@ public class CollaboardServer {
         private int currentWhiteboardID;
         private InputStream inputStream;
         private OutputStream outputStream;
+        private PrintWriter out;
         public UserThread(Socket socket){
             this.socket= socket;
             currentWhiteboardID = 0; //initialize to 0
@@ -140,8 +155,8 @@ public class CollaboardServer {
             }
         }
         
-        public OutputStream getOutputStream(){
-            return outputStream;
+        public PrintWriter getPrintWriter(){
+            return out;
         }
         
         public int getCurrentWhiteboardID(){
@@ -169,7 +184,7 @@ public class CollaboardServer {
         }
         private void handleConnection(Socket socket, int userID) throws IOException{
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-            PrintWriter out = new PrintWriter(outputStream, true);
+            out = new PrintWriter(outputStream, true);
             try {
                 out.println("userID " + userID); //send the userID
                 StringBuilder message = new StringBuilder("list");
@@ -232,15 +247,14 @@ public class CollaboardServer {
                 for (int i=0; i < users.size(); i++){
                     message.append(" " + users.get(i));
                 }
-                message.append("\n");
+                message.append("\nready");
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     System.out.println("draw " + o.toString() + "\n");
-                    message.append("draw " + o.toString() + "\n");
+                    message.append("\ndraw " + o.toString());
                 }
-                message.append("ready");
-                //this only works for freehands right now.
+                //message.append("ready");
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);
                 return message.toString();

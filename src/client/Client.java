@@ -25,8 +25,8 @@ public class Client {
     private Socket socket;
     private CollaboardGUI gui;
     private User user;
-    private PrintWriter out;
-    private BufferedReader in;
+    //private PrintWriter out;
+    //private BufferedReader in;
     public Client(String host, int port){
         this.host = host;
         this.port = port;
@@ -111,11 +111,11 @@ public class Client {
         }
         if (tokens[0].equals("draw")){
             System.out.println("received draw message");
-            String color = tokens[tokens.length-4];
-            String thickness = tokens[tokens.length-3];
+            String color = tokens[tokens.length-2];
+            String thickness = tokens[tokens.length-1];
             ClientCanvasModel currentModel = gui.getCanvasModel();
             if(tokens[1].equals("freehand")){
-                int [] points = new int[tokens.length-6];
+                int [] points = new int[tokens.length-4];
                 for (int i=0; i < points.length; i++){
                     points[i] = Integer.parseInt(tokens[i+2]);
                 }

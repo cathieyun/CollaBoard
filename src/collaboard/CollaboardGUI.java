@@ -51,8 +51,11 @@ public class CollaboardGUI extends JFrame{
     private JLabel createWhiteboard;
     private JTable currentUsers;
     private int currentWhiteboardID;
+    private ClientCanvasModel clientModel;
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
         this.user = user;
+        this.clientModel = new ClientCanvasModel();
+        this.canvas = new Canvas(800, 600, clientModel, user, outputStream);
         this.users = new ArrayList<String>();
         this.outputStream = outputStream;
         this.out = new PrintWriter(outputStream, true);
@@ -115,7 +118,6 @@ public class CollaboardGUI extends JFrame{
         makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard below");
         JTable whiteboardIDs = new JTable();
-        //whiteboardIDs.setTableHeader(null);
         chooseWhiteboard.addActionListener(new SelectWhiteboardListener(whiteboardIDs));
         createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
         JScrollPane whiteboardsList = new JScrollPane(whiteboardIDs);
@@ -195,7 +197,6 @@ public class CollaboardGUI extends JFrame{
      * Helper method to initialize the canvas.
      */
     public void initializeCanvas(){
-        ClientCanvasModel clientModel = new ClientCanvasModel();
         currentUsers = new JTable();
         DefaultTableModel usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
             //prevent user from editing cells
@@ -210,7 +211,6 @@ public class CollaboardGUI extends JFrame{
         currentUsers.setModel(usersModel);
         JScrollPane usersList = new JScrollPane(currentUsers);
         usersList.setPreferredSize(new Dimension(100,200));
-        Canvas canvas = new Canvas(800, 600, clientModel, user, outputStream);
         ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
         JFrame window = new JFrame("Canvas " + currentWhiteboardID);    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -309,7 +309,7 @@ public class CollaboardGUI extends JFrame{
         
     }
     public ClientCanvasModel getCanvasModel() {
-        return canvas.getCanvasModel();
+        return clientModel;
     }
     
     public void drawObject(DrawingObject d){
