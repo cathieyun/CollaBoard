@@ -39,7 +39,6 @@ public class Oval implements DrawingObject{
 
 	@Override
 	public String toString() {
-		return "Oval [x=" + x + ", y=" + y + ", shapeStartX=" + shapeStartX
-				+ ", shapeStartY=" + shapeStartY + "]";
+		return "oval " + shapeStartX + " " + shapeStartY + " " + x + " " + y + " " + color + " " + thickness;
 	}
 }

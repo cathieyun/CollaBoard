@@ -30,12 +30,14 @@ public class ToolbarGUI extends JPanel{
     //TODO: Add an "exit" button.
     //TODO: Add a way to change whiteboards.
     private final ToolbarModel toolbar;
-    public ToolbarGUI(final ToolbarModel toolbar){
+    private Canvas canvas;
+    public ToolbarGUI(final ToolbarModel toolbar, final Canvas canvas){
+        this.canvas = canvas;
         try {
             //make it so that button colors show up
             UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
          } catch (Exception e) {
-              e.printStackTrace();
+              //e.printStackTrace();
              //this throws some sort of error, i think because it conflicts with canvas 
              //but it doesn't really affect functionality. 
          }
@@ -63,8 +65,9 @@ public class ToolbarGUI extends JPanel{
         med.addActionListener(new StrokeListener(5));
         JButton large = new JButton("Large");
         large.addActionListener(new StrokeListener(20));
-        JButton undo = new JButton("undo");//TODO: pass undo/redo events to Canvas
-        JButton redo = new JButton("redo");
+        JButton undo = new JButton("Undo");//TODO: pass undo/redo events to Canvas
+        JButton redo = new JButton("Redo");
+        JButton oval = new JButton("Draw Oval");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setAutoCreateGaps(true);
@@ -84,6 +87,7 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(buttons[7])
                 .addComponent(undo)
                 .addComponent(redo)
+                .addComponent(oval)
              );
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
@@ -100,9 +104,29 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(buttons[7])
                 .addComponent(undo)
                 .addComponent(redo)
+                .addComponent(oval)
              );
         
+    	undo.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                canvas.undo();
+            }
+        });
+    	
+        redo.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                canvas.redo();
+            }
+        });
+        
+        oval.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                canvas.toggleDrawingOval();
+            }
+        });
+    	
     }
+    
     
     public class StrokeListener implements ActionListener{
         private int thickness;

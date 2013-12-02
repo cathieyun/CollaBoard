@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import canvas.Freehand;
+import canvas.Oval;
+
 import collaboard.CollaboardGUI;
 /**
  * Client class for Collaboard.
@@ -46,20 +49,22 @@ public class Client {
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
         PrintWriter out = new PrintWriter(outputStream, true);
         String fromServer = in.readLine(); //get the userID and initialize userObject first.
-        handleRequest(fromServer);
+        handletokens(fromServer);
         System.out.println("msg from server: " + fromServer);
         gui = new CollaboardGUI(user, outputStream, inputStream);
         gui.setVisible(true);
         while ((fromServer = in.readLine()) != null){
             System.out.println("From server: "+ fromServer);
-            handleRequest(fromServer);
+            handletokens(fromServer);
        }
         
     }
     
-    private void handleRequest(String input){
+    private void handletokens(String input){
         String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
-        		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+)* (bl|y|r|g|o|m|blk|w) (s|m|l))|"
+        		"(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+        		"(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+        		"draw|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
@@ -105,8 +110,26 @@ public class Client {
             //redo
         }
         if (tokens[0].equals("draw")){
-            //TODO: add the specified Freehand to the ClientCanvasModel, and draw it.
-        }
+            System.out.println("received draw message");
+            String color = tokens[tokens.length-4];
+            String thickness = tokens[tokens.length-3];
+            ClientCanvasModel currentModel = gui.getCanvasModel();
+            if(tokens[1].equals("freehand")){
+                int [] points = new int[tokens.length-6];
+                for (int i=0; i < points.length; i++){
+                    points[i] = Integer.parseInt(tokens[i+2]);
+                }
+                Freehand freehand = new Freehand(points, color, thickness);
+                currentModel.addDrawingObject(freehand);
+                gui.drawObject(freehand);
+                
+            }
+            if(tokens[1].equals("oval")){
+                Oval oval = new Oval(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), color, thickness);
+                currentModel.addDrawingObject(oval);
+                gui.drawObject(oval);
+            }
+       }
     }
     public static void main(String[]args){
         Client client = new Client("127.0.0.1", 4444);

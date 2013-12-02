@@ -39,7 +39,6 @@ public class Collaboard {
     }
     
     public String addUser(int userID, String username){
-        System.out.println("Creating username: "+username);
         if (usernames.contains(username)){
             return "usertaken";
         } 

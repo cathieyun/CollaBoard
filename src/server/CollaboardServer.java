@@ -26,6 +26,8 @@ import whiteboard.Whiteboard;
 
 import canvas.CanvasModel;
 import canvas.DrawingObject;
+import canvas.Freehand;
+import canvas.Oval;
 import client.User;
 
 import collaboard.Collaboard;
@@ -55,24 +57,40 @@ public class CollaboardServer {
             public void run() {
                 while(true){
                     String[] currentRequest = requests.poll();
+                    if (currentRequest != null){
+                        System.out.println("got a request");
+                        handleRequest(currentRequest);
+                    }
                 }      
             }
             private void handleRequest(String[] request){
-                    int whiteboardID = Integer.parseInt(request[2]);
-                    int userID = Integer.parseInt(request[1]);
+                    int whiteboardID = Integer.parseInt(request[request.length-1]);
+                    int userID = Integer.parseInt(request[request.length-2]);
                     for (UserThread t: threads){
                         //find the threads that are on the same whiteboard and send the undo request to them.
                         if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                             PrintWriter output = new PrintWriter(t.getOutputStream());
+                            CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
                             if (request[0].equals("undo")|request[0].equals("redo")){
                                 output.println(request[0]);
-                                //TODO: make the necessary change to the CanvasModel's drawingObjectUndoIndex
-                                //get it by calling: collaboard.getWhiteboards().get(whiteboardID).getCanvas()
-                                //maybe make a helper method to avoid having to call this long chain all the time.
+                                //TODO: make the necessary change to the currentModel's drawingObjectUndoIndex
                             }
                             else if (request[0].equals("draw")){
-                                //TODO: process the request by creating a Freehand specified by this draw request
-                                //adding it to collaboard.getWhiteboards().get(whiteboardID).getCanvas().addDrawingObject()
+                                String color = request[request.length-4];
+                                String thickness = request[request.length-3];
+                                if(request[1].equals("freehand")){
+                                    int [] points = new int[request.length-6];
+                                    for (int i=0; i < points.length; i++){
+                                        points[i] = Integer.parseInt(request[i+2]);
+                                    }
+                                    Freehand freehand = new Freehand(points, color, thickness);
+                                    currentModel.addDrawingObject(freehand);
+                                    
+                                }
+                                if(request[1].equals("oval")){
+                                    Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
+                                    currentModel.addDrawingObject(oval);
+                                }
                                 StringBuilder outputMsg = new StringBuilder("draw");
                                 for (int i = 1; i < request.length-2; i++){
                                     outputMsg.append(" " + request[i]);
@@ -160,10 +178,10 @@ public class CollaboardServer {
                 }
                 out.println(message.toString()); //send the list of whiteboards
                 for (String line = in.readLine(); line != null; line = in.readLine()) {
-                    //System.out.println("Processing: " + line);
+                    System.out.println("Received client message: " + line);
                     String output = handleRequest(line);
                     if (output != null) {
-                        System.out.println("server response to " + line + ": " + output);
+                        System.out.println("Server response to " + line + ": " + output);
                         out.println(output);
                     }
                 }
@@ -200,18 +218,16 @@ public class CollaboardServer {
          */
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"
-                    +"(draw -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
-                    +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye )";
+                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"+
+                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
+                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
+                    +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
                 System.out.println("client msg: " + input + " didn't match"); 
             }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
-                System.out.println(tokens[1]);
-                System.out.println(tokens[2]);
-                System.out.println("Trying to make user:"+ tokens[1]);
                 return(collaboard.addUser(Integer.parseInt(tokens[2]), tokens[1]));
             }
             if (tokens[0].equals("makeboard")){
@@ -224,7 +240,6 @@ public class CollaboardServer {
                 //addboard
             }
             if (tokens[0].equals("enter")){ //TODO: Notify all threads in the same whiteboard that a new user has entered.
-                System.out.println("received enter message");
                 //add user to the whiteboard's list of users.
                 currentWhiteboardID = Integer.parseInt(tokens[2]);
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
@@ -238,6 +253,7 @@ public class CollaboardServer {
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
+                    System.out.println("draw " + o.toString() + "\n");
                     message.append("draw " + o.toString() + "\n");
                 }
                 message.append("ready");
@@ -249,6 +265,7 @@ public class CollaboardServer {
             if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){
                 //throw it on the event queue.
                 requests.add(tokens);
+                System.out.println("added request to the queue.");
                 //add the message to the queue.
             }
             if (tokens[0].equals("bye")){

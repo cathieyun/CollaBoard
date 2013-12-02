@@ -84,7 +84,6 @@ public class Canvas extends JPanel{
         temp.put("l", new BasicStroke(20));
         thicknesses = temp;
     }
-    
 
     /**
      * Make a canvas.
@@ -95,9 +94,8 @@ public class Canvas extends JPanel{
      *            height in pixels
      */
     public Canvas(int width, int height, final ClientCanvasModel canvasModel2, User user, OutputStream outputStream) {
-
         this.user = user;
-        this.out = new PrintWriter(outputStream);
+        this.out = new PrintWriter(outputStream, true);
         this.canvasModel = canvasModel2;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();
@@ -105,56 +103,13 @@ public class Canvas extends JPanel{
         // works *after* this canvas has been added to a window. Have to
         // wait until paintComponent() is first called.
 
-        configureButtons();
     }
     
-    private void configureButtons() {
-
-        JButton undoButton = new JButton("Undo");
-        undoButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                undo();
-//                System.out.println("Undo Action performed.");
-//                System.out.println("Freehand List size: " + canvasModel.getListSize());
-//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
-            }
-        });
-        
-        undoButton.setLocation(0, 20);
-        this.add(undoButton);
-
-        JButton redoButton = new JButton("Redo");
-        redoButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                redo();
-//                System.out.println("Redo Action performed.");
-//                System.out.println("Freehand List size: " + canvasModel.getListSize());
-//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
-            }
-        });
-        
-        redoButton.setLocation(0, 40);
-        this.add(redoButton);
-        
-		JButton drawOvalButton = new JButton("Draw Oval");
-		drawOvalButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-//				System.out.println("drawingObjectList size: "
-//						+ canvasModel.getListSize());
-//				System.out.println("drawingObjectListUndoIndex: "
-//						+ canvasModel.getDrawingObjectListUndoIndex());
-				isDrawingOval = !isDrawingOval;
-			}
-		});
-		
-		drawOvalButton.setLocation(0, 60);
-        this.add(drawOvalButton);
+    public void toggleDrawingOval(){
+        isDrawingOval = !isDrawingOval;
     }
-    
-    public CanvasModel getCanvasModel(){
+
+    public ClientCanvasModel getCanvasModel(){
         return canvasModel;
     }
     /**
@@ -314,7 +269,7 @@ public class Canvas extends JPanel{
 	/**
 	 * Undos the last DrawingObject completed on the canvas.
 	 */
-	private void undo() {
+	public void undo() {
 	    //TODO: send message to server
 		fillWithWhite();
 		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
@@ -326,17 +281,21 @@ public class Canvas extends JPanel{
 		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
 			canvasModel.getAndDecrementIndex();
 		}
+		System.out.println("undo");
+		out.println("undo");
 	}
 
 	/**
 	 * Redraws the last DrawingObject to have been undone from the canvas.
 	 */
-	private void redo() {
+	public void redo() {
 		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
 			redrawDrawingObject(currentDrawingObject);
 			canvasModel.getAndIncrementIndex();
 		}
+		System.out.println("redo");
+		out.println("redo");
 	}
 	
 	/**
@@ -347,7 +306,7 @@ public class Canvas extends JPanel{
 	 * @param d
 	 *            the drawingObject to redraw onto the canvas
 	 */
-	private void redrawDrawingObject(DrawingObject d) {
+	public void redrawDrawingObject(DrawingObject d) {
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
 			drawLinesInFreehand(freehand);
@@ -463,6 +422,8 @@ public class Canvas extends JPanel{
 
 		public void mouseReleased(MouseEvent e) {
 			canvasModel.addDrawingObject(currentDrawingObject);
+			System.out.println("Current drawing object string: " + currentDrawingObject.toString());
+	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
 			canvasModel.getAndIncrementIndex();
 		}
 
