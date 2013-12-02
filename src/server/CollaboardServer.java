@@ -214,6 +214,23 @@ public class CollaboardServer {
             }
         }
         
+        /**
+         * Protocol for messages from the client to the server:
+		 * “makeuser” [0-9a-zA-Z]+
+		 * “makeboard” [0]|[1-9][0-9]*
+ 		 * “undo” userID whiteboardID
+		 * “redo” userID whiteboardID
+		 * “draw” startx starty endx endy color thickness userID whiteboardID
+		 * “enter” [0-9a-zA-Z]+ whiteboardID
+		 * “exit” [0-9a-zA-Z]+ whiteboardID
+		 * whiteboardID = some integer
+		 * “bye” userID whiteboardID 
+         * 
+         * 
+         * @param input
+         * @return
+         * @throws IOException
+         */
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
                     + "(redo -?\\d+ -?\\d+ -?\\d+)|"+
@@ -267,6 +284,7 @@ public class CollaboardServer {
             }
             if (tokens[0].equals("bye")){
                 //TODO: remove the user from the whiteboard's list of users, and from the list of taken usernames.
+            	requests.add(tokens);
             }
             return "";
             
