@@ -63,8 +63,9 @@ public class ToolbarGUI extends JPanel{
         med.addActionListener(new StrokeListener(5));
         JButton large = new JButton("Large");
         large.addActionListener(new StrokeListener(20));
-        JButton undo = new JButton("undo");//TODO: pass undo/redo events to Canvas
-        JButton redo = new JButton("redo");
+        JButton undo = new JButton("Undo");//TODO: pass undo/redo events to Canvas
+        JButton redo = new JButton("Redo");
+        JButton oval = new JButton("Draw Oval");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setAutoCreateGaps(true);
@@ -84,6 +85,7 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(buttons[7])
                 .addComponent(undo)
                 .addComponent(redo)
+                .addComponent(oval)
              );
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
@@ -100,9 +102,20 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(buttons[7])
                 .addComponent(undo)
                 .addComponent(redo)
+                .addComponent(oval)
              );
         
+    	undo.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                Canvas.undo();
+//                System.out.println("Undo Action performed.");
+//                System.out.println("Freehand List size: " + canvasModel.getListSize());
+//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
+            }
+        });
+    	
     }
+    
     
     public class StrokeListener implements ActionListener{
         private int thickness;

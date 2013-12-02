@@ -18,7 +18,7 @@ public class User {
     private ToolbarModel toolbar;
     public User(int userID){
         this.userID = userID;
-        toolbar = new ToolbarModel();
+        toolbar = new ToolbarModel(userID);
     }
     public int getUserID() {
         return userID;

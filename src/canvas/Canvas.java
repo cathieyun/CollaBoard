@@ -308,7 +308,7 @@ public class Canvas extends JPanel{
 	/**
 	 * Undos the last DrawingObject completed on the canvas.
 	 */
-	private void undo() {
+	public void undo() {
 	    //TODO: send message to server
 		fillWithWhite();
 		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {

@@ -10,7 +10,10 @@ public class ToolbarModel {
  */
     private Color color;
     private Stroke stroke;
-    public ToolbarModel(){
+    private int userID;
+    
+    public ToolbarModel(int userID){
+    	this.userID = userID;
         this.color = Color.BLACK;
         this.stroke = new BasicStroke(5);
     }
@@ -21,6 +24,10 @@ public class ToolbarModel {
     }
     public Color getColor(){
         return color;
+    }
+    
+    public int getUserID(){
+    	return userID;
     }
     
     public void setStroke(Stroke stroke){
