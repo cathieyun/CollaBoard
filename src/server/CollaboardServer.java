@@ -39,16 +39,52 @@ public class CollaboardServer {
     private final ServerSocket serverSocket;
     private Collaboard collaboard;
     private AtomicInteger numClients;
-    private HashMap<Integer, Thread> threads;
-    private BlockingQueue<String> requests;
+    private ArrayList<UserThread> threads;
+    private BlockingQueue<String[]> requests;
     public CollaboardServer(int port, Collaboard collaboard) throws IOException{
         this.serverSocket = new ServerSocket(port);
+        this.threads = new ArrayList<UserThread>();
         this.collaboard = collaboard;
         this.numClients = new AtomicInteger(0);
-        this.requests = new LinkedBlockingQueue<String>();
+        this.requests = new LinkedBlockingQueue<String[]>();
     }
     
     private void serve() throws IOException{
+        Thread requestHandler = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                while(true){
+                    String[] currentRequest = requests.poll();
+                }      
+            }
+            private void handleRequest(String[] request){
+                    int whiteboardID = Integer.parseInt(request[2]);
+                    int userID = Integer.parseInt(request[1]);
+                    for (UserThread t: threads){
+                        //find the threads that are on the same whiteboard and send the undo request to them.
+                        if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                            PrintWriter output = new PrintWriter(t.getOutputStream());
+                            if (request[0].equals("undo")|request[0].equals("redo")){
+                                output.println(request[0]);
+                                //TODO: make the necessary change to the CanvasModel's drawingObjectUndoIndex
+                                //get it by calling: collaboard.getWhiteboards().get(whiteboardID).getCanvas()
+                                //maybe make a helper method to avoid having to call this long chain all the time.
+                            }
+                            else if (request[0].equals("draw")){
+                                //TODO: process the request by creating a Freehand specified by this draw request
+                                //adding it to collaboard.getWhiteboards().get(whiteboardID).getCanvas().addDrawingObject()
+                                StringBuilder outputMsg = new StringBuilder("draw");
+                                for (int i = 1; i < request.length-2; i++){
+                                    outputMsg.append(" " + request[i]);
+                                }
+                                output.println(outputMsg.toString());
+                            }
+                        }
+                    }
+            }
+            
+        });
+        requestHandler.start();
         while (true) {
             // block until a client connects
             final Socket socket = serverSocket.accept();
@@ -62,10 +98,12 @@ public class CollaboardServer {
         private Socket socket;
         private User user;
         private int userID;
+        private int currentWhiteboardID;
         private InputStream inputStream;
         private OutputStream outputStream;
         public UserThread(Socket socket){
             this.socket= socket;
+            currentWhiteboardID = 0; //initialize to 0
             userID = 0; //not sure if i need this, but let's just keep it for now
             //ensure that no two threads can access and increment numClients at the same time
             synchronized(numClients){
@@ -75,6 +113,7 @@ public class CollaboardServer {
                 numClients.getAndIncrement();
             }
             this.user = new User(userID);
+            threads.add(this);
             try{
                 outputStream = socket.getOutputStream();
                 inputStream = socket.getInputStream();
@@ -82,7 +121,18 @@ public class CollaboardServer {
                 e.printStackTrace();
             }
         }
-
+        
+        public OutputStream getOutputStream(){
+            return outputStream;
+        }
+        
+        public int getCurrentWhiteboardID(){
+            return currentWhiteboardID;
+        }
+        
+        public int getUserID(){
+            return userID;
+        }
         @Override
         public void run() {
             try {
@@ -159,7 +209,8 @@ public class CollaboardServer {
             if (tokens[0].equals("enter")){ //TODO: Notify all threads in the same whiteboard that a new user has entered.
                 System.out.println("received enter message");
                 //add user to the whiteboard's list of users.
-                Whiteboard whiteboard = collaboard.getWhiteboards().get(Integer.parseInt(tokens[2]));
+                currentWhiteboardID = Integer.parseInt(tokens[2]);
+                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
                 whiteboard.addUser(tokens[1]);
                 StringBuilder message = new StringBuilder("users");
                 ArrayList<String> users = whiteboard.getUsers();
@@ -178,14 +229,10 @@ public class CollaboardServer {
                 System.out.println("Sending this message: " + message);
                 return message.toString();
             }
-            if (tokens[0].equals("undo")){
-                //undo, TODO: add to the server's event queue. (I think it would be easier to just implement a single queue for all whiteboards)
-            }
-            if (tokens[0].equals("redo")){
-                //redo
-            }
-            if (tokens[0].equals("draw")){
-                //draw
+            if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){
+                //throw it on the event queue.
+                requests.add(tokens);
+                //add the message to the queue.
             }
             if (tokens[0].equals("bye")){
                 //TODO: remove the user from the whiteboard's list of users, and from the list of taken usernames.

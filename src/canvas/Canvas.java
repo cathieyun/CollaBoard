@@ -50,7 +50,8 @@ import canvas.Oval;
  * Canvas represents a drawing surface that allows the user to draw on it
  * freehand, with the mouse.
  */
-
+//TODO: get the output stream for the client, and have it send messages to the server
+//according to the server grammar when it draws, undos, or redos.
 public class Canvas extends JPanel{
 
     // image where the user's drawing is stored
@@ -165,6 +166,7 @@ public class Canvas extends JPanel{
     public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
         for (int i = 0; i < points.size(); i=i+2){
             drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
+            //also add to clientcanvasModel
         }
     }
     

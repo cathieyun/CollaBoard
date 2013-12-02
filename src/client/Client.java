@@ -61,7 +61,7 @@ public class Client {
         String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
         		"(draw( -?\\d+ -?\\d+ -?\\d+ -?\\d+)* (bl|y|r|g|o|m|blk|w) (s|m|l))|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
-                +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+)";
+                +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             // invalid input
             System.out.println("server msg: "+ input + " didn't match");
