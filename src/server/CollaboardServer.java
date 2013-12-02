@@ -58,6 +58,7 @@ public class CollaboardServer {
                 while(true){
                     String[] currentRequest = requests.poll();
                     if (currentRequest != null){
+                        System.out.println("got a request");
                         handleRequest(currentRequest);
                     }
                 }      
@@ -200,8 +201,9 @@ public class CollaboardServer {
         
         public String handleRequest(String input) throws IOException{
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"
-                    +"(draw (freehand|oval) -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
+                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"+
+                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
+                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input

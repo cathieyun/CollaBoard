@@ -95,7 +95,7 @@ public class Canvas extends JPanel{
      */
     public Canvas(int width, int height, final ClientCanvasModel canvasModel2, User user, OutputStream outputStream) {
         this.user = user;
-        this.out = new PrintWriter(outputStream);
+        this.out = new PrintWriter(outputStream, true);
         this.canvasModel = canvasModel2;
         this.setPreferredSize(new Dimension(width, height));
         addDrawingController();

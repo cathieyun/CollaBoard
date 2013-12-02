@@ -62,7 +62,7 @@ public class Client {
     
     private void handletokens(String input){
         String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
-        		"(draw freehand( -?\\d+ -?\\d+ -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+        		"(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"draw|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
