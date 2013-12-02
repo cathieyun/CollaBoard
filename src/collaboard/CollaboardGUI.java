@@ -53,6 +53,7 @@ public class CollaboardGUI extends JFrame{
     private JTable currentUsers;
     private int currentWhiteboardID;
     private ClientCanvasModel clientModel;
+    private DefaultTableModel usersModel;
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
         this.user = user;
         this.clientModel = new ClientCanvasModel();
@@ -66,10 +67,13 @@ public class CollaboardGUI extends JFrame{
         //TODO: Add a windowlistener that sends a "bye" message to the server, so it will
         //remove the user from the whiteboard's list of users.
         
+        //this isn't working properly, because this gets closed automatically
+        //when it shifts to the canvas jframe.
+        //this doesn't work when the user closes the window manually.
 		this.addWindowListener(new WindowAdapter() {
-			public void windowClosed(WindowEvent e) {
+			public void windowClosing(WindowEvent e) {
 				System.out.println("Window was closed!");
-				out.println("bye " + userID + currentWhiteboardID);
+				out.println("bye");
 			}
 		});
         
@@ -208,7 +212,7 @@ public class CollaboardGUI extends JFrame{
      */
     public void initializeCanvas(){
         currentUsers = new JTable();
-        DefaultTableModel usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
+        usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
             //prevent user from editing cells
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -241,6 +245,12 @@ public class CollaboardGUI extends JFrame{
         container.add(toolbarGUI, c);
         window.setLocation(300,100);
         window.pack();
+      window.addWindowListener(new WindowAdapter() {
+          public void windowClosing(WindowEvent e) {
+              out.println("exit " + user.getUsername());
+              out.println("bye");
+              }
+      });
         window.setVisible(true);
         CollaboardGUI.this.dispose();
     }
@@ -321,9 +331,33 @@ public class CollaboardGUI extends JFrame{
     public ClientCanvasModel getCanvasModel() {
         return clientModel;
     }
-    
+    /**
+     * Draws the specified object.
+     * @param d
+     */
     public void drawObject(DrawingObject d){
         canvas.redrawDrawingObject(d);
     }
-
+    /**
+     * Adds the specified user to the table of active users.
+     * @param user
+     */
+    public void addUser(String user){
+        usersModel.addRow(new String[]{user});
+    }
+    /**
+     * Remove the specified user from the table.
+     * @param user
+     */
+    public void removeUser(String user){
+        int removeRow = -1;
+        System.out.println("Trying to remove: "+user);
+        for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
+            System.out.println(currentUsers.getValueAt(row,0));
+            if (user.equals(currentUsers.getValueAt(row,0))){
+                usersModel.removeRow(row);
+                break;
+            }
+        }
+    }
 }

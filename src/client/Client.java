@@ -66,7 +66,7 @@ public class Client {
         		"(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"draw|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
-                +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
+                +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             // invalid input
             System.out.println("server msg: "+ input + " didn't match");
@@ -99,6 +99,12 @@ public class Client {
             for (int i = 1; i < tokens.length; i++){
                 gui.getUsers().add(tokens[i]);
             }
+        }
+        if(tokens[0].equals("enter")){
+            gui.addUser(tokens[1]);
+        }
+        if(tokens[0].equals("exit")){
+            gui.removeUser(tokens[1]);
         }
         if (tokens[0].equals("ready")){
             gui.initializeCanvas();

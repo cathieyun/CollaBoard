@@ -94,19 +94,16 @@ public class CollaboardServer {
                         }
                         System.out.println("outputMsg: " + outputMsg.toString());
                     for (UserThread t: threads){
-                        System.out.println("Current whiteboardID: " + whiteboardID);
-                        System.out.println("Thread currentWhiteboardID: "+t.getCurrentWhiteboardID());
-                        System.out.println("Thread ID: " + t.getUserID());
-                        System.out.println("Thread that sent this update: " + userID);
+                        //System.out.println("Current whiteboardID: " + whiteboardID);
+                        //System.out.println("Thread currentWhiteboardID: "+t.getCurrentWhiteboardID());
+                        //System.out.println("Thread ID: " + t.getUserID());
+                        //System.out.println("Thread that sent this update: " + userID);
                         //find the threads that are on the same whiteboard and send the undo request to them.
                         if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                             System.out.println("Sending this to thread: " + t.getUserID());
-                            System.out.println("Output message: " + outputMsg.toString());
+                            //System.out.println("Output message: " + outputMsg.toString());
                             PrintWriter output = t.getPrintWriter();
                             output.println(outputMsg.toString());
-                        }
-                        else{
-                            System.out.println("Didn't send to thread: " + t.getUserID());
                         }
                             
                     }
@@ -274,7 +271,24 @@ public class CollaboardServer {
                 //message.append("ready");
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);
+                for (UserThread t: threads){
+                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                        PrintWriter output = t.getPrintWriter();
+                        output.println("enter " + tokens[1]);
+                    }
+                }
                 return message.toString();
+            }
+            if (tokens[0].equals("exit")){
+                for (UserThread t: threads){
+                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                        PrintWriter output = t.getPrintWriter();
+                        output.println("exit " + tokens[1]);
+                    }
+                }
+                currentWhiteboardID = 0;
             }
             if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){
                 //throw it on the event queue.
@@ -283,8 +297,8 @@ public class CollaboardServer {
                 //add the message to the queue.
             }
             if (tokens[0].equals("bye")){
-                //TODO: remove the user from the whiteboard's list of users, and from the list of taken usernames.
-            	requests.add(tokens);
+            	collaboard.removeUsername(this.user.getUsername());
+            	//then end the socket connection.
             }
             return "";
             

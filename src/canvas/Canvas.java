@@ -281,7 +281,6 @@ public class Canvas extends JPanel{
 		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
 			canvasModel.getAndDecrementIndex();
 		}
-		System.out.println("undo");
 		out.println("undo");
 	}
 
@@ -294,7 +293,6 @@ public class Canvas extends JPanel{
 			redrawDrawingObject(currentDrawingObject);
 			canvasModel.getAndIncrementIndex();
 		}
-		System.out.println("redo");
 		out.println("redo");
 	}
 	
@@ -422,7 +420,7 @@ public class Canvas extends JPanel{
 
 		public void mouseReleased(MouseEvent e) {
 			canvasModel.addDrawingObject(currentDrawingObject);
-			System.out.println("Current drawing object string: " + currentDrawingObject.toString());
+			//System.out.println("Current drawing object string: " + currentDrawingObject.toString());
 	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
 			canvasModel.getAndIncrementIndex();
 		}

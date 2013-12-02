@@ -46,6 +46,10 @@ public class Collaboard {
         return "validuser";
     }
     
+    public void removeUsername(String username){
+        usernames.remove(username);
+    }
+    
     public Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
     }

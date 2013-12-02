@@ -27,6 +27,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 public class ToolbarGUI extends JPanel{
     //In order of priority:
     //TODO: implement the action listener for undo/redo.
+    //below is low priority
     //TODO: Add an "exit" button.
     //TODO: Add a way to change whiteboards.
     private final ToolbarModel toolbar;
@@ -41,7 +42,6 @@ public class ToolbarGUI extends JPanel{
              //this throws some sort of error, i think because it conflicts with canvas 
              //but it doesn't really affect functionality. 
          }
-        System.out.println("hi");
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
         this.toolbar = toolbar;
         this.setSize(100,500);
