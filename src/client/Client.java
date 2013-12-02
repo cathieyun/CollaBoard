@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import canvas.Canvas;
 import canvas.Freehand;
 import canvas.Oval;
 
@@ -104,10 +105,10 @@ public class Client {
             gui.initializeCanvas();
         }
         if (tokens[0].equals("undo")){
-            //undo
+            gui.getCanvas().undo();
         }
         if (tokens[0].equals("redo")){
-            //redo
+        	gui.getCanvas().redo();
         }
         if (tokens[0].equals("draw")){
             System.out.println("received draw message");

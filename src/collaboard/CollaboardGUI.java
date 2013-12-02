@@ -312,6 +312,10 @@ public class CollaboardGUI extends JFrame{
         return canvas.getCanvasModel();
     }
     
+    public Canvas getCanvas() {
+        return canvas;
+    }
+    
     public void drawObject(DrawingObject d){
         canvas.redrawDrawingObject(d);
     }
