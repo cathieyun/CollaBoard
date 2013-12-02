@@ -212,8 +212,8 @@ public class CollaboardGUI extends JFrame{
         currentUsers.setModel(usersModel);
         JScrollPane usersList = new JScrollPane(currentUsers);
         usersList.setPreferredSize(new Dimension(100,200));
-        JPanel canvas = new Canvas(800, 600, clientModel, user, outputStream);
-        ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar());
+        Canvas canvas = new Canvas(800, 600, clientModel, user, outputStream);
+        ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
         JFrame window = new JFrame("Canvas " + currentWhiteboardID);    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = window.getContentPane();

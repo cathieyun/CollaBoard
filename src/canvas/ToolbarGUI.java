@@ -30,7 +30,9 @@ public class ToolbarGUI extends JPanel{
     //TODO: Add an "exit" button.
     //TODO: Add a way to change whiteboards.
     private final ToolbarModel toolbar;
-    public ToolbarGUI(final ToolbarModel toolbar){
+    private Canvas canvas;
+    public ToolbarGUI(final ToolbarModel toolbar, final Canvas canvas){
+        this.canvas = canvas;
         try {
             //make it so that button colors show up
             UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
@@ -107,10 +109,19 @@ public class ToolbarGUI extends JPanel{
         
     	undo.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                Canvas.undo();
-//                System.out.println("Undo Action performed.");
-//                System.out.println("Freehand List size: " + canvasModel.getListSize());
-//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
+                canvas.undo();
+            }
+        });
+    	
+        redo.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                canvas.redo();
+            }
+        });
+        
+        oval.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                canvas.toggleDrawingOval();
             }
         });
     	

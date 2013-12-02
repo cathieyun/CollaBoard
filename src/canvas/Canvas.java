@@ -105,55 +105,12 @@ public class Canvas extends JPanel{
         // works *after* this canvas has been added to a window. Have to
         // wait until paintComponent() is first called.
 
-        configureButtons();
     }
     
-    private void configureButtons() {
-
-        JButton undoButton = new JButton("Undo");
-        undoButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                undo();
-//                System.out.println("Undo Action performed.");
-//                System.out.println("Freehand List size: " + canvasModel.getListSize());
-//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
-            }
-        });
-        
-        undoButton.setLocation(0, 20);
-        this.add(undoButton);
-
-        JButton redoButton = new JButton("Redo");
-        redoButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                redo();
-//                System.out.println("Redo Action performed.");
-//                System.out.println("Freehand List size: " + canvasModel.getListSize());
-//                System.out.println("freehandListUndoIndex: " + canvasModel.getDrawingObjectListUndoIndex());
-            }
-        });
-        
-        redoButton.setLocation(0, 40);
-        this.add(redoButton);
-        
-		JButton drawOvalButton = new JButton("Draw Oval");
-		drawOvalButton.addActionListener(new ActionListener() {
-
-			public void actionPerformed(ActionEvent e) {
-//				System.out.println("drawingObjectList size: "
-//						+ canvasModel.getListSize());
-//				System.out.println("drawingObjectListUndoIndex: "
-//						+ canvasModel.getDrawingObjectListUndoIndex());
-				isDrawingOval = !isDrawingOval;
-			}
-		});
-		
-		drawOvalButton.setLocation(0, 60);
-        this.add(drawOvalButton);
+    public void toggleDrawingOval(){
+        isDrawingOval = !isDrawingOval;
     }
-    
+
     public CanvasModel getCanvasModel(){
         return canvasModel;
     }
@@ -331,7 +288,7 @@ public class Canvas extends JPanel{
 	/**
 	 * Redraws the last DrawingObject to have been undone from the canvas.
 	 */
-	private void redo() {
+	public void redo() {
 		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
 			redrawDrawingObject(currentDrawingObject);
