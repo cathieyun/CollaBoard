@@ -17,7 +17,10 @@ public class Freehand implements DrawingObject{
 	public Freehand(ArrayList<Line> lineList) {
 		this.lineList = lineList;
 	}
-
+	
+	/**
+	 * returns a list of the line objects that comprise the DrawingObject.
+	 */
 	public ArrayList<Line> getLineList() {
 		return lineList;
 	}
