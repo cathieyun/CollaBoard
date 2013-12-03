@@ -56,9 +56,8 @@ public class CanvasModel{
 	 * 
 	 * @return the current undo index
 	 */
-    public synchronized int getAndDecrementIndex(){
-        --drawingObjectListUndoIndex;
-        return drawingObjectListUndoIndex;
+    public synchronized void decrementIndex(){
+        drawingObjectListUndoIndex--;
     }
 
 	/**
@@ -66,9 +65,8 @@ public class CanvasModel{
 	 * 
 	 * @return the current undo index.
 	 */
-    public synchronized int getAndIncrementIndex(){
-        ++drawingObjectListUndoIndex;
-        return drawingObjectListUndoIndex;
+    public synchronized void incrementIndex(){
+        drawingObjectListUndoIndex++;
     }
     
 	/**

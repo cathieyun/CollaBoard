@@ -69,8 +69,14 @@ public class CollaboardServer {
                     CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("undo")|request[0].equals("redo")){
+                        System.out.println("Handling undo/redo request");
                         outputMsg.append(request[0]);
-                        //TODO: make the necessary change to the currentModel's drawingObjectUndoIndex
+                        if (request[0].equals("undo")){
+                            currentModel.decrementIndex();
+                        }
+                        else{
+                            currentModel.incrementIndex();
+                        }
                     }
                     else if (request[0].equals("draw")){
                         String color = request[request.length-4];
@@ -88,27 +94,21 @@ public class CollaboardServer {
                             Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
                             currentModel.addDrawingObject(oval);
                         }
+                        currentModel.incrementIndex();
+                        currentModel.preventRedoAfterThisEdit();
                         outputMsg.append("draw");
                         for (int i = 1; i < request.length-2; i++){
                             outputMsg.append(" " + request[i]);
                         }
-                        System.out.println("outputMsg: " + outputMsg.toString());
+                    }
+                    System.out.println("outputMsg: " + outputMsg.toString());
                     for (UserThread t: threads){
-                        //System.out.println("Current whiteboardID: " + whiteboardID);
-                        //System.out.println("Thread currentWhiteboardID: "+t.getCurrentWhiteboardID());
-                        //System.out.println("Thread ID: " + t.getUserID());
-                        //System.out.println("Thread that sent this update: " + userID);
-                        //find the threads that are on the same whiteboard and send the undo request to them.
                         if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                             System.out.println("Sending this to thread: " + t.getUserID());
                             //System.out.println("Output message: " + outputMsg.toString());
                             PrintWriter output = t.getPrintWriter();
                             output.println(outputMsg.toString());
                         }
-                            
-                    }
-
-
                     }
             }
             
@@ -229,8 +229,8 @@ public class CollaboardServer {
          * @throws IOException
          */
         public String handleRequest(String input) throws IOException{
-            String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"+
+            String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
+                    + "(redo -?\\d+ -?\\d+)|"+
                     "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
                     "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
@@ -261,15 +261,14 @@ public class CollaboardServer {
                 for (int i=0; i < users.size(); i++){
                     message.append(" " + users.get(i));
                 }
-                message.append("\nready");
+                message.append("\nready");    
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
+                message.append("\nundoindex " + canvasModel.getDrawingObjectListUndoIndex());
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
-                    System.out.println("draw " + o.toString() + "\n");
-                    message.append("\ndraw " + o.toString());
+                    message.append("\ninitdraw " + o.toString());
                 }
-                message.append("\nundoindex " + canvasModel.getDrawingObjectListUndoIndex());
-                //message.append("ready");
+                message.append("\ninitdone");
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);
                 for (UserThread t: threads){

@@ -4,6 +4,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
 
+import client.User;
+
 public class ToolbarModel {
 /**
  * Each connection has a toolbar
@@ -13,7 +15,7 @@ public class ToolbarModel {
     private int userID;
     
     public ToolbarModel(int userID){
-    	this.userID = userID;
+        this.userID = userID;
         this.color = Color.BLACK;
         this.stroke = new BasicStroke(5);
     }

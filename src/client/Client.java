@@ -62,14 +62,16 @@ public class Client {
     
     private void handletokens(String input){
         String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
-        		"(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"(draw)|(undoindex [0-9]+)|"
+        		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+        		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+        		"(initdraw)|(initdone)|(undoindex [0-9]+)|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
-            // invalid input
-            System.out.println("server msg: "+ input + " didn't match");
+            if (!input.equals("")){ //ignore newlines
+                // invalid input
+                System.out.println("server msg: "+ input + " didn't match");
+            }
         }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("userID")){
@@ -107,6 +109,7 @@ public class Client {
             gui.removeUser(tokens[1]);
         }
         if (tokens[0].equals("ready")){
+            //TODO: Make helper methods for these.
             gui.initializeCanvas();
         }
         if (tokens[0].equals("undoindex")){
@@ -118,6 +121,32 @@ public class Client {
         }
         if (tokens[0].equals("redo")){
             gui.getCanvas().redo();
+        }
+        if (tokens[0].equals("initdraw")){
+            System.out.println("received initdraw message");
+            String color = tokens[tokens.length-2];
+            String thickness = tokens[tokens.length-1];
+            ClientCanvasModel currentModel = gui.getCanvasModel();
+            //add the objects to the model.
+            if(tokens[1].equals("freehand")){
+                int [] points = new int[tokens.length-4];
+                for (int i=0; i < points.length; i++){
+                    points[i] = Integer.parseInt(tokens[i+2]);
+                }
+                Freehand freehand = new Freehand(points, color, thickness);
+                currentModel.addDrawingObject(freehand);
+            }
+            if(tokens[1].equals("oval")){
+                Oval oval = new Oval(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), color, thickness);
+                currentModel.addDrawingObject(oval);
+            }
+        }
+        if (tokens[0].equals("initdone")){
+            System.out.println("drawing initial objects up until index: " + gui.getCanvasModel().getDrawingObjectListUndoIndex());
+            //draw the objects up until the undoindex.
+            for (int i = 0; i < gui.getCanvasModel().getDrawingObjectListUndoIndex(); i++){
+                gui.drawObject(gui.getCanvasModel().getIthDrawingObject(i));
+            }
         }
         if (tokens[0].equals("draw")){
             System.out.println("received draw message");
@@ -139,6 +168,8 @@ public class Client {
                 currentModel.addDrawingObject(oval);
                 gui.drawObject(oval);
             }
+            gui.getCanvasModel().incrementIndex();//increment the undo index.
+            gui.getCanvasModel().preventRedoAfterThisEdit();
        }
     }
     public static void main(String[]args){

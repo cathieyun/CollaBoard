@@ -279,11 +279,22 @@ public class Canvas extends JPanel{
 
 		// prevent the index from going below 0.
 		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
-			canvasModel.getAndDecrementIndex();
+			canvasModel.decrementIndex();
 		}
-		out.println("undo");
 	}
+	/**
+	 * Send the undo/redo message to the server.
+	 * @param undo - True if undo message, false if redo message
+	 */
+	public void sendUndoRedoMessage(boolean undo){
+	    if (undo){
+	        out.println("undo " + user.getUserID() + " " + user.getWhiteboardID());
+	    }
+	    else{
 
+	        out.println("redo " + user.getUserID() + " " + user.getWhiteboardID());
+	    }
+	}
 	/**
 	 * Redraws the last DrawingObject to have been undone from the canvas.
 	 */
@@ -291,9 +302,8 @@ public class Canvas extends JPanel{
 		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
 			redrawDrawingObject(currentDrawingObject);
-			canvasModel.getAndIncrementIndex();
+			canvasModel.incrementIndex();
 		}
-		out.println("redo");
 	}
 	
 	/**
@@ -422,7 +432,7 @@ public class Canvas extends JPanel{
 			canvasModel.addDrawingObject(currentDrawingObject);
 			//System.out.println("Current drawing object string: " + currentDrawingObject.toString());
 	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
-			canvasModel.getAndIncrementIndex();
+			canvasModel.incrementIndex();
 		}
 
 		public void mouseEntered(MouseEvent e) {
