@@ -64,7 +64,7 @@ public class Client {
         String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
         		"(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"draw|"
+        		"(draw)|(undoindex [0-9]+)|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
@@ -109,11 +109,15 @@ public class Client {
         if (tokens[0].equals("ready")){
             gui.initializeCanvas();
         }
+        if (tokens[0].equals("undoindex")){
+            gui.getCanvasModel().setDrawingObjectListUndoIndex(Integer.parseInt(tokens[1]));
+            //set the undo index.
+        }
         if (tokens[0].equals("undo")){
-            //undo
+            gui.getCanvas().undo();
         }
         if (tokens[0].equals("redo")){
-            //redo
+            gui.getCanvas().redo();
         }
         if (tokens[0].equals("draw")){
             System.out.println("received draw message");

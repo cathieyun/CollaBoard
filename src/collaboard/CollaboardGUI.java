@@ -328,6 +328,10 @@ public class CollaboardGUI extends JFrame{
         }
         
     }
+    
+    public Canvas getCanvas(){
+        return canvas;
+    }
     public ClientCanvasModel getCanvasModel() {
         return clientModel;
     }

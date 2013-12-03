@@ -268,6 +268,7 @@ public class CollaboardServer {
                     System.out.println("draw " + o.toString() + "\n");
                     message.append("\ndraw " + o.toString());
                 }
+                message.append("\nundoindex " + canvasModel.getDrawingObjectListUndoIndex());
                 //message.append("ready");
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);

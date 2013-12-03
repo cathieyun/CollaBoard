@@ -20,7 +20,6 @@ public class Whiteboard {
     private CanvasModel canvas;
     private ArrayList<String> users;
     private final int whiteboardID;
-    private BlockingQueue requests;
     
 	/**
 	 * The constructor method for Whiteboard.
@@ -32,11 +31,6 @@ public class Whiteboard {
         this.whiteboardID = whiteboardID;
         canvas = new CanvasModel();
         this.users = new ArrayList<String>();
-        requests = new LinkedBlockingQueue<String>(); //stores the requests to be handled
-    }
-    
-    public BlockingQueue getRequests(){
-        return requests;
     }
     
     public ArrayList<String> getUsers(){

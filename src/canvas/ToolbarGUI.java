@@ -65,7 +65,7 @@ public class ToolbarGUI extends JPanel{
         med.addActionListener(new StrokeListener(5));
         JButton large = new JButton("Large");
         large.addActionListener(new StrokeListener(20));
-        JButton undo = new JButton("Undo");//TODO: pass undo/redo events to Canvas
+        JButton undo = new JButton("Undo");
         JButton redo = new JButton("Redo");
         JButton oval = new JButton("Draw Oval");
         GroupLayout layout = new GroupLayout(this);
@@ -127,7 +127,10 @@ public class ToolbarGUI extends JPanel{
     	
     }
     
-    
+    /**
+     * Listener that alters the thickness of the user's strokes according to the button pressed.
+     *
+     */
     public class StrokeListener implements ActionListener{
         private int thickness;
         public StrokeListener(int thickness){
@@ -139,15 +142,7 @@ public class ToolbarGUI extends JPanel{
         }
         
     }
-//    public static void main(final String[] args){
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                ToolbarModel toolbar = new ToolbarModel();
-//                ToolbarGUI main = new ToolbarGUI(toolbar);
-//                main.setVisible(true);
-//            }
-//        });
-//    }
+
 
     
     

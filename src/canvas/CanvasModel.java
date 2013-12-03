@@ -44,6 +44,13 @@ public class CanvasModel{
         return drawingObjectListUndoIndex;
     }
 
+    /**
+     * 
+     * @return the current undo index
+     */
+    public synchronized void setDrawingObjectListUndoIndex(int index){
+        drawingObjectListUndoIndex = index;
+    }
 	/**
 	 * Decrements the undo index.
 	 * 
