@@ -112,19 +112,19 @@ public class Canvas extends JPanel{
     public ClientCanvasModel getCanvasModel(){
         return canvasModel;
     }
-    /**
-     * Draws the freehand defined by the input.
-     * @param points - list of x and y coordinates (alternating)
-     * @param color - color of the freehand
-     * @param stroke - stroke of the freehand
-     */
-    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
-        for (int i = 0; i < points.size(); i=i+2){
-            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
-            //also add to clientcanvasModel
-        }
-    }
-    
+//    /**
+//     * Draws the freehand defined by the input.
+//     * @param points - list of x and y coordinates (alternating)
+//     * @param color - color of the freehand
+//     * @param stroke - stroke of the freehand
+//     */
+//    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
+//        for (int i = 0; i < points.size(); i=i+2){
+//            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
+//            //also add to clientcanvasModel
+//        }
+//    }
+//    
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
@@ -226,33 +226,45 @@ public class Canvas extends JPanel{
 		this.repaint();
 	}
 
-	private void drawOval(int x, int y, int width, int height, String color, String thickness, boolean areUndoingOrRedoing) {
-		fillWithWhite();
+	/**
+	 * Draws an oval on the screen. Because this method is continuously called
+	 * when the mouse is dragged, it gives the appearance that the "Draw Oval"
+	 * function on the whiteboard draws a resizable oval.
+	 * 
+	 * This method assumes that the oval is being drawn for the first time. As
+	 * such, no redos after possible after this operation.
+	 * 
+	 * @param oval
+	 *            the oval to draw on the screen; includes thickness and color
+	 *            information
+	 */
+	private void drawOval(Oval oval) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
 		// redraw all the drawinObjects on the canvas in order for the circle to appear as if it's resizing
+		fillWithWhite();
 		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex(); i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
-			redrawDrawingObject(currentDrawingObject);
-		}
-
-		// configure the color and thickness depending on we are undoing/redoing or not
-		if (areUndoingOrRedoing){
-	        g.setStroke(thicknesses.get(thickness));
-	        g.setColor(colors.get(color));
-		}
-		else{
-	        g.setColor(user.getToolbar().getColor());
-	        g.setStroke(user.getToolbar().getStroke());
+			drawDrawingObject(currentDrawingObject);
 		}
 		
+		// get information about the oval to be drawn
+		int width = oval.getWidth();
+		int height = oval.getHeight();
+		int x = oval.getTopLeftX();
+		int y = oval.getTopLeftY();
+		String color = oval.getColor();
+		String thickness = oval.getThickness();
+
+		// get and set the color and thickness of the oval
+	    g.setStroke(thicknesses.get(thickness));
+	    g.setColor(colors.get(color));
+
 		g.drawOval(x, y, width, height);
 		
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
-		if (!areUndoingOrRedoing) {
-			canvasModel.preventRedoAfterThisEdit();
-		}
+		canvasModel.preventRedoAfterThisEdit();
 
 		this.repaint();
 	}
@@ -274,7 +286,7 @@ public class Canvas extends JPanel{
 		fillWithWhite();
 		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
-			redrawDrawingObject(currentDrawingObject);
+			drawDrawingObject(currentDrawingObject);
 		}
 
 		// prevent the index from going below 0.
@@ -301,7 +313,7 @@ public class Canvas extends JPanel{
 	public void redo() {
 		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
-			redrawDrawingObject(currentDrawingObject);
+			drawDrawingObject(currentDrawingObject);
 			canvasModel.incrementIndex();
 		}
 	}
@@ -311,13 +323,15 @@ public class Canvas extends JPanel{
 	 * particular drawingObject and calling the appropriate methods to redraw
 	 * the type.
 	 * 
+	 * Draws the specified drawing object.
+	 * 
 	 * @param d
 	 *            the drawingObject to redraw onto the canvas
 	 */
-	public void redrawDrawingObject(DrawingObject d) {
+	public void drawDrawingObject(DrawingObject d) {
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
-			drawLinesInFreehand(freehand);
+			redrawLinesInFreehand(freehand);
 		}
 		else if (d instanceof Oval) {
 			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -332,6 +346,9 @@ public class Canvas extends JPanel{
 			
 			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
 		}
+		
+		// if the DrawingObject is being drawn for the first time, 
+		// we need to increment the undo index
 		this.repaint();
 	}
 	
@@ -341,7 +358,7 @@ public class Canvas extends JPanel{
 	 * @param freehand
 	 *            the Freehand object whose lines are to be redrawn onto the GUI
 	 */
-	private void drawLinesInFreehand(Freehand freehand) {
+	private void redrawLinesInFreehand(Freehand freehand) {
 	    //TODO: send message to server
 		for (Line l : freehand.getLineList()) {
 			int x1 = l.getX1();
@@ -405,11 +422,7 @@ public class Canvas extends JPanel{
 			if (isDrawingOval) {
 				Oval oval = new Oval(shapeStartX, shapeStartY, x, y, color, thickness);
 				currentDrawingObject = oval;
-				int width = oval.getWidth();
-				int height = oval.getHeight();
-				int x1 = oval.getTopLeftX();
-				int y1 = oval.getTopLeftY();
-				drawOval(x1, y1, width, height, color, thickness, false);
+				drawOval(oval);
 			} else if (currentDrawingObject instanceof Freehand) {
 	                Freehand freehand = (Freehand) currentDrawingObject;
 	                freehand.getLineList()

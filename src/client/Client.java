@@ -168,8 +168,9 @@ public class Client {
                 currentModel.addDrawingObject(oval);
                 gui.drawObject(oval);
             }
-            gui.getCanvasModel().incrementIndex();//increment the undo index.
+            gui.getCanvasModel().incrementIndex();//increment the index.
             gui.getCanvasModel().preventRedoAfterThisEdit();
+            //increment the undo index.
        }
     }
     public static void main(String[]args){
