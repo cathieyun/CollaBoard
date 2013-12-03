@@ -24,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import client.ClientCanvasModel;
@@ -52,7 +53,7 @@ public class CollaboardGUI extends JFrame{
     private int currentWhiteboardID;
     private ClientCanvasModel clientModel;
     private DefaultTableModel usersModel;
-    public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
+    public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){
         this.user = user;
         this.clientModel = new ClientCanvasModel();
         this.canvas = new Canvas(800, 600, clientModel, user, outputStream);
@@ -236,11 +237,8 @@ public class CollaboardGUI extends JFrame{
         c.gridheight = 2;
         container.add(canvas, c);
         c.gridx = 1;
-        c.gridy = 0;
-        //c.weightx = 0;
         c.gridheight = 1;
         container.add(usersList, c);
-        c.gridx = 1;
         c.gridy = 1;
         container.add(toolbarGUI, c);
         window.setLocation(300,100);

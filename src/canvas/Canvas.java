@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import client.ClientCanvasModel;
 import client.User;
@@ -80,6 +81,11 @@ public class Canvas extends JPanel{
         this.out = new PrintWriter(outputStream, true);
         this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
+        try { //make it so that lookAndFeel is consistent with the toolbarGUI.
+            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+         } catch (Exception e) {
+              e.printStackTrace();
+         }
         addDrawingController();
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window. Have to
