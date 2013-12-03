@@ -340,7 +340,9 @@ public class CollaboardGUI extends JFrame{
      * @param d
      */
     public void drawObject(DrawingObject d){
-        canvas.redrawDrawingObject(d);
+    	// we pass in the string draw so that the undo list is incremented
+    	// during the call to drawOrRedrawDrawingObject
+        canvas.drawOrRedrawDrawingObject(d, "draw");
     }
     /**
      * Adds the specified user to the table of active users.
