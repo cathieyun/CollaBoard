@@ -45,7 +45,9 @@ public class Freehand implements DrawingObject{
 	    for (int i=0; i < lineList.size() - 1; i++){
 	        string.append(lineList.get(i).firstPointToString() + " ");
 	    }
-	    string.append(lineList.get(lineList.size() - 1).toString());
+	    if (lineList.size() > 0){
+	        string.append(lineList.get(lineList.size() - 1).toString());
+	    }
 		return string.toString();
 	}
 

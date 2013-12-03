@@ -25,8 +25,6 @@ public class Client {
     private Socket socket;
     private CollaboardGUI gui;
     private User user;
-    //private PrintWriter out;
-    //private BufferedReader in;
     public Client(String host, int port){
         this.host = host;
         this.port = port;
@@ -50,12 +48,13 @@ public class Client {
         PrintWriter out = new PrintWriter(outputStream, true);
         String fromServer = in.readLine(); //get the userID and initialize userObject first.
         handletokens(fromServer);
-        System.out.println("msg from server: " + fromServer);
         gui = new CollaboardGUI(user, outputStream, inputStream);
         gui.setVisible(true);
         while ((fromServer = in.readLine()) != null){
-            System.out.println("From server: "+ fromServer);
-            handletokens(fromServer);
+            if (!fromServer.equals("")){ //ignore newlines
+                System.out.println("From server: "+ fromServer);
+                handletokens(fromServer);
+            }
        }
         
     }
@@ -68,14 +67,12 @@ public class Client {
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
-            if (!input.equals("")){ //ignore newlines
-                // invalid input
-                System.out.println("server msg: "+ input + " didn't match");
-            }
+            System.out.println("server msg: "+ input + " didn't match");
         }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("userID")){
             this.userID = Integer.parseInt(tokens[1]);
+            System.out.println("I am thread: "+userID);
             user = new User(userID);
         }
         if (tokens[0].equals("validuser")){
@@ -109,7 +106,6 @@ public class Client {
             gui.removeUser(tokens[1]);
         }
         if (tokens[0].equals("ready")){
-            //TODO: Make helper methods for these.
             gui.initializeCanvas();
         }
         if (tokens[0].equals("undoindex")){
@@ -142,17 +138,16 @@ public class Client {
             }
         }
         if (tokens[0].equals("initdone")){
-            System.out.println("drawing initial objects up until index: " + gui.getCanvasModel().getDrawingObjectListUndoIndex());
-            //draw the objects up until the undoindex.
+            //only draw the objects up until the undoindex.
             for (int i = 0; i < gui.getCanvasModel().getDrawingObjectListUndoIndex(); i++){
                 gui.drawObject(gui.getCanvasModel().getIthDrawingObject(i));
             }
         }
         if (tokens[0].equals("draw")){
-            System.out.println("received draw message");
             String color = tokens[tokens.length-2];
             String thickness = tokens[tokens.length-1];
             ClientCanvasModel currentModel = gui.getCanvasModel();
+            gui.getCanvasModel().preventRedoAfterThisEdit(); 
             if(tokens[1].equals("freehand")){
                 int [] points = new int[tokens.length-4];
                 for (int i=0; i < points.length; i++){
@@ -169,8 +164,6 @@ public class Client {
                 gui.drawObject(oval);
             }
             gui.getCanvasModel().incrementIndex();//increment the index.
-            gui.getCanvasModel().preventRedoAfterThisEdit();
-            //increment the undo index.
        }
     }
     public static void main(String[]args){

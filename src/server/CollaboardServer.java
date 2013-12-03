@@ -69,7 +69,6 @@ public class CollaboardServer {
                     CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("undo")|request[0].equals("redo")){
-                        System.out.println("Handling undo/redo request");
                         outputMsg.append(request[0]);
                         if (request[0].equals("undo")){
                             currentModel.decrementIndex();
@@ -233,7 +232,7 @@ public class CollaboardServer {
                     + "(redo -?\\d+ -?\\d+)|"+
                     "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
                     "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
-                    +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
+                    +"(enter [A-Za-z0-9]+ -?\\d+)|(exit [A-Za-z0-9]+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
                 System.out.println("client msg: " + input + " didn't match"); 
