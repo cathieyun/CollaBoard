@@ -1,7 +1,6 @@
 package canvas;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -9,35 +8,19 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Stroke;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
 
 import client.ClientCanvasModel;
 import client.User;
@@ -50,8 +33,7 @@ import canvas.Oval;
  * Canvas represents a drawing surface that allows the user to draw on it
  * freehand, with the mouse.
  */
-//TODO: get the output stream for the client, and have it send messages to the server
-//according to the server grammar when it draws, undos, or redos.
+
 public class Canvas extends JPanel{
 
     // image where the user's drawing is stored
@@ -296,7 +278,7 @@ public class Canvas extends JPanel{
 	}
 	/**
 	 * Send the undo/redo message to the server.
-	 * @param undo - True if undo message, false if redo message
+	 * @param undo - true if undo message, false if redo message
 	 */
 	public void sendUndoRedoMessage(boolean undo){
 	    if (undo){
@@ -347,8 +329,6 @@ public class Canvas extends JPanel{
 			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
 		}
 		
-		// if the DrawingObject is being drawn for the first time, 
-		// we need to increment the undo index
 		this.repaint();
 	}
 	
@@ -443,7 +423,6 @@ public class Canvas extends JPanel{
 
 		public void mouseReleased(MouseEvent e) {
 			canvasModel.addDrawingObject(currentDrawingObject);
-			//System.out.println("Current drawing object string: " + currentDrawingObject.toString());
 	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
 			canvasModel.incrementIndex();
 		}
@@ -454,23 +433,23 @@ public class Canvas extends JPanel{
 		public void mouseExited(MouseEvent e) {
 		}
 	}
-
-	/*
-	 * Main program. Make a window containing a Canvas.
-	 */
-	public static void main(String[] args) {
-		// set up the UI (on the event-handling thread)
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				JFrame window = new JFrame("Freehand Canvas");
-				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				window.setLayout(new BorderLayout());
-				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
-						new User(1), new DataOutputStream(null));
-				window.add(canvas, BorderLayout.CENTER);
-				window.pack();
-				window.setVisible(true);
-			}
-		});
-	}
+//
+//	/*
+//	 * Main program. Make a window containing a Canvas.
+//	 */
+//	public static void main(String[] args) {
+//		// set up the UI (on the event-handling thread)
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				JFrame window = new JFrame("Freehand Canvas");
+//				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//				window.setLayout(new BorderLayout());
+//				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
+//						new User(1), new DataOutputStream(null));
+//				window.add(canvas, BorderLayout.CENTER);
+//				window.pack();
+//				window.setVisible(true);
+//			}
+//		});
+//	}
 }

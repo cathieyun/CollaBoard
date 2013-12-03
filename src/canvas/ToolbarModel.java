@@ -3,13 +3,12 @@ package canvas;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Stroke;
-
-import client.User;
-
-public class ToolbarModel {
 /**
- * Each connection has a toolbar
+ * Class representing a user's toolbar settings (color and thickness).
+ *
  */
+public class ToolbarModel {
+
     private Color color;
     private Stroke stroke;
     private int userID;
@@ -21,7 +20,6 @@ public class ToolbarModel {
     }
     
     public void setColor(Color color){
-        System.out.println("I am now this color: "+ color.toString());
         this.color = color;
     }
     public Color getColor(){
@@ -33,7 +31,6 @@ public class ToolbarModel {
     }
     
     public void setStroke(Stroke stroke){
-//    	System.out.println("I am now this stroke: " + stroke);
         this.stroke = stroke;
     }
     

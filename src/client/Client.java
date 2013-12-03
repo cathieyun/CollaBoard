@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -14,7 +13,7 @@ import canvas.Oval;
 
 import collaboard.CollaboardGUI;
 /**
- * Client class for Collaboard.
+ * Client class for Collaboard. Represents a single client connection.
  * Handles inputs/outputs to the server and acts as a controller for the GUI.
  *
  */
@@ -40,27 +39,49 @@ public class Client {
                 System.out.println("Server not running");
             }
     }
-    
+    /**
+     * Handles the connection to the server.
+     * @throws IOException
+     */
     private void handleServer() throws IOException{
         OutputStream outputStream = socket.getOutputStream();
         InputStream inputStream = socket.getInputStream();
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-        PrintWriter out = new PrintWriter(outputStream, true);
         String fromServer = in.readLine(); //get the userID and initialize userObject first.
-        handletokens(fromServer);
+        handleMessage(fromServer);
         gui = new CollaboardGUI(user, outputStream, inputStream);
         gui.setVisible(true);
         while ((fromServer = in.readLine()) != null){
             if (!fromServer.equals("")){ //ignore newlines
                 System.out.println("From server: "+ fromServer);
-                handletokens(fromServer);
+                handleMessage(fromServer);
             }
        }
         
     }
-    
-    private void handletokens(String input){
-        String regex = "(userID [0-9]+)|(update)|(validuser)|(validwhiteboard)|(ready)|" +
+    /**
+     * Handles messages from the server according to the following grammar:<br>
+     * USERID: [0-9]+<br>
+     * VALIDUSER: validuser<br>
+     * VALIDWHITEBOARD: validwhiteboard<br>
+     * READY: ready<br>
+     * COLOR: bl|y|r|g|o|m|blk|w<br>
+     * THICKNESS: s|m|l<br>
+     * INITDRAW: initdraw ((freehand ([0-9]+ [0-9]+ )([0-9]+ [0-9]+ )+)|<br>
+     *      (oval [0-9]+ [0-9]+ [0-9]+ [0-9]+ ) COLOR THICKNESS<br>
+     * INITDONE: initdone<br>
+     * UNDOINDEX: undoindex [0-9]+<br>
+     * USERTAKEN: usertaken<br>
+     * WHITEBOARDTAKEN: whiteboardtaken<br>
+     * ENTER: enter USERNAME<br>
+     * EXIT: exit USERNAME<br>
+     * UNDO: undo<br>
+     * REDO: redo<br>
+     * 
+     * @param input - message from the server
+     */
+    private void handleMessage(String input){
+        String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
         		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"(initdraw)|(initdone)|(undoindex [0-9]+)|"
@@ -166,6 +187,9 @@ public class Client {
             gui.getCanvasModel().incrementIndex();//increment the index.
        }
     }
+    /**
+     * Creates a connection to the server.
+     */
     public static void main(String[]args){
         Client client = new Client("127.0.0.1", 4444);
         client.run();

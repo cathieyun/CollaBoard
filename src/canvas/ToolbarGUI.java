@@ -23,10 +23,11 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
-
+/**
+ * GUI by which the user can call undo, redo, draw ovals, and change the color and thickness of the stroke.
+ *
+ */
 public class ToolbarGUI extends JPanel{
-    //In order of priority:
-    //TODO: implement the action listener for undo/redo.
     //below is low priority
     //TODO: Add an "exit" button.
     //TODO: Add a way to change whiteboards.

@@ -1,12 +1,10 @@
 package client;
 
-import java.awt.Graphics2D;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-
 import canvas.ToolbarModel;
-
+/**
+ * Class representing a user. Stores its userID, current username, and ID of the current whiteboard.
+ *
+ */
 public class User {
     //for identification purposes, in case we want to add the functionality to change usernames
     private final int userID; 
@@ -35,6 +33,9 @@ public class User {
     public void setWhiteboardID(int whiteboardID) {
         this.whiteboardID = whiteboardID;
     }
+    /**
+     * @return the ToolbarModel associated with the user.
+     */
     public ToolbarModel getToolbar() {
         return toolbar;
     }
