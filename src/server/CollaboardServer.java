@@ -57,7 +57,7 @@ public class CollaboardServer {
                 while(true){
                     String[] currentRequest = requests.poll();
                     if (currentRequest != null){
-                        System.out.println("got a request");
+                        //System.out.println("got a request");
                         handleRequest(currentRequest);
                     }
                 }      

@@ -33,34 +33,28 @@ import canvas.ToolbarGUI;
 
 
 public class CollaboardGUI extends JFrame{
-    private JPanel whiteboardSelect; 
-    private JPanel userSelect;
-    private Canvas canvas;
-    private JPanel panels;
-    private final JTextField usernameField;
-    private final JTextField whiteboardField;
-    private final JTextField changeWhiteboardField;
-    private final JLabel error;
-    private User user; //ID of the user using this instance of CollaboardGUI
-    private int userID;
-    private OutputStream outputStream;
-    private PrintWriter out;
-    private ArrayList<Integer> whiteboards;
-    private ArrayList<String> users;
-    private JLabel createWhiteboard;
-    private JTable currentUsers;
-    private int currentWhiteboardID;
-    private DefaultTableModel usersModel;
-    private JFrame window;
+    private JPanel userSelect; //username selection pane 
+    private JPanel whiteboardSelect; //whiteboard selection pane
+    private Canvas canvas; //canvas for user to draw on
+    private JPanel panels; //contains userSelect and whiteboardSelect. used for CardLayout
+    private final JTextField usernameField; //field in which user enters a username
+    private final JTextField whiteboardField; //field in which user enters a whiteboardID to create a new whiteboard at the selection page
+    private final JTextField changeWhiteboardField; //field in which user enters a whiteboardID to switch whiteboards from the main whiteboard pane
+    private final JLabel error; //error message to display for invalid username inputs
+    private User user; //user that is using the whiteboard
+    private PrintWriter out; //sends messages to the server
+    private ArrayList<Integer> whiteboards; //stores the list of active whiteboardIDs
+    private ArrayList<String> users; //stores the list of active users on the current whiteboard
+    private JLabel createWhiteboard; //displays instruction to create a whiteboard, and changes to an error message in the case of an error
+    private JTable currentUsers; //table displaying the list of active users on the current whiteboard
+    private DefaultTableModel usersModel; //model for currentUsers
+    private JFrame window; //the JFrame containing canvas, the toolbar, currentUsers, and the whiteboard switching header
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){
         this.user = user;
-        ClientCanvasModel clientModel = new ClientCanvasModel();
-        this.canvas = new Canvas(800, 600, clientModel, user, outputStream);
+        this.canvas = new Canvas(800, 600, new ClientCanvasModel(), user, outputStream);
         this.users = new ArrayList<String>();
-        this.outputStream = outputStream;
         this.out = new PrintWriter(outputStream, true);
         this.whiteboards = new ArrayList<Integer>();
-        this.userID = user.getUserID();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
 		this.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -142,7 +136,7 @@ public class CollaboardGUI extends JFrame{
     }
     /**
      * Method that initializes the whiteboard selection pane.
-     * Called after receiving a list of active whiteboards from the server.
+     * Called after receiving a list of active Whiteboards from the server.
      */
     public void initializeWhiteboardPane(){
         JButton chooseWhiteboard = new JButton("Go");
@@ -198,25 +192,6 @@ public class CollaboardGUI extends JFrame{
     }
     
     /**
-     * ActionListener that listens for the actions pertaining to creation of a new username
-     */
-    private class UsernameListener implements ActionListener{
-        @Override
-        public void actionPerformed(ActionEvent arg0) {
-            error.setVisible(false);
-            String desiredUsername = usernameField.getText();
-            String regex = "[a-zA-Z0-9]+";
-            if ( ! desiredUsername.matches(regex)) {
-                displayUserTakenError();
-            }
-            else{
-                new ProtocolWorker("makeuser " + desiredUsername + " " + user.getUserID()).execute();
-                //send to the server
-                user.setUsername(desiredUsername);
-            }        
-        }   
-    }
-    /**
      * Advances GUI to the whiteboard selection page. 
      * Called after receiving a "validuser" message from the server.
      */
@@ -254,7 +229,7 @@ public class CollaboardGUI extends JFrame{
         changeWhiteboard.setPreferredSize(new Dimension(900,50));
         usersList.setPreferredSize(new Dimension(100,200));
         ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
-        window = new JFrame("Canvas " + currentWhiteboardID);    
+        window = new JFrame("Canvas " + user.getWhiteboardID());    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = window.getContentPane();
         container.setLayout(new GridBagLayout());
@@ -296,18 +271,34 @@ public class CollaboardGUI extends JFrame{
      * Called by client after receiving a "validwhiteboard" message.
      */
     public void enterCanvas(){
-        currentWhiteboardID = Integer.parseInt(whiteboardField.getText());
-        user.setWhiteboardID(currentWhiteboardID);
-        System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
-        new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();     
+        user.setWhiteboardID(Integer.parseInt(whiteboardField.getText()));
+        System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
+        new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();     
     }
-    
+    /**
+     * ActionListener that listens for the actions pertaining to creation of a new username
+     */
+    private class UsernameListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            error.setVisible(false);
+            String desiredUsername = usernameField.getText();
+            String regex = "[a-zA-Z0-9]+";
+            if ( ! desiredUsername.matches(regex)) {
+                displayUserTakenError();
+            }
+            else{
+                new ProtocolWorker("makeuser " + desiredUsername + " " + user.getUserID()).execute();
+                //send to the server
+                user.setUsername(desiredUsername);
+            }        
+        }   
+    }
     /**
      * ActionListener that listens for actions pertaining to the creation of a new whiteboard.
      *
      */
     private class CreateWhiteboardListener implements ActionListener{
-
         @Override
         public void actionPerformed(ActionEvent e) {
             try{
@@ -333,27 +324,29 @@ public class CollaboardGUI extends JFrame{
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            currentWhiteboardID = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
-            user.setWhiteboardID(currentWhiteboardID);
-            System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
-            new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();
+            // = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
+            user.setWhiteboardID(Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn())));
+            System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
+            new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();
         }
         
     }
-    
+    /**
+     * ActionListener that is called when the user tries to switch whiteboards
+     * from the main Whiteboard JFrame (window).
+     */
     private class SwitchWhiteboardListener implements ActionListener{
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
             try{
                 int targetWhiteboard = Integer.parseInt(changeWhiteboardField.getText());
-                if (targetWhiteboard < 0 || targetWhiteboard == currentWhiteboardID){
+                if (targetWhiteboard < 0 || targetWhiteboard == user.getWhiteboardID()){
                     throw new NumberFormatException(); //do nothing
                 }
-                changeWhiteboardField.setText("");
-                currentWhiteboardID = targetWhiteboard;
+                changeWhiteboardField.setText(""); //clear the field
                 user.setWhiteboardID(targetWhiteboard);
-                window.setTitle("Canvas " + currentWhiteboardID);
+                window.setTitle("Canvas " + user.getWhiteboardID());
                 clearCanvas();
                 //clear the current users
                 usersModel = new DefaultTableModel(new String[]{"Current Users"},0){

@@ -87,7 +87,7 @@ public class Client {
         		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"(initdraw)|(initdone)|(undoindex [0-9]+)|"
                 + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
-                +"(enter [A-Za-z0-9]+)| (exit [A-Za-z0-9]+)|(undo)|(redo)";
+                +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             System.out.println("server msg: "+ input + " didn't match");
         }
@@ -132,6 +132,7 @@ public class Client {
         }
         if (tokens[0].equals("undoindex")){
             gui.getCanvasModel().setUndoIndex(Integer.parseInt(tokens[1]));
+            System.out.println("Set the undo index to: "+ Integer.parseInt(tokens[1]));
             //set the undo index.
         }
         if (tokens[0].equals("undo")){

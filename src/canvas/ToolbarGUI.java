@@ -30,7 +30,6 @@ import javax.swing.plaf.basic.BasicButtonUI;
 public class ToolbarGUI extends JPanel{
     //below is low priority
     //TODO: Add an "exit" button.
-    //TODO: Add a way to change whiteboards.
     private final ToolbarModel toolbar;
     private Canvas canvas;
     public ToolbarGUI(final ToolbarModel toolbar, final Canvas canvas){
@@ -39,9 +38,7 @@ public class ToolbarGUI extends JPanel{
             //make it so that button colors show up
             UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
          } catch (Exception e) {
-              //e.printStackTrace();
-             //this throws some sort of error, i think because it conflicts with canvas 
-             //but it doesn't really affect functionality. 
+              e.printStackTrace();
          }
         Color[] colors = {Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.BLACK, Color.MAGENTA, Color.WHITE};
         this.toolbar = toolbar;
