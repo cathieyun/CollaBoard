@@ -271,8 +271,7 @@ public class CollaboardServer {
                 return "validwhiteboard";
                 //addboard
             }
-            if (tokens[0].equals("enter")){ //TODO: Notify all threads in the same whiteboard that a new user has entered.
-                //add user to the whiteboard's list of users.
+            if (tokens[0].equals("enter")){ 
                 currentWhiteboardID = Integer.parseInt(tokens[2]);
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
                 whiteboard.addUser(tokens[1]);

@@ -3,7 +3,6 @@ package collaboard;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -24,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import client.ClientCanvasModel;
@@ -106,9 +104,28 @@ public class CollaboardGUI extends JFrame{
      * Helper method that initializes the username selection pane. Called in the constructor.
      */
     private void initializeUserPane(){
-        userSelect.setLayout(new FlowLayout(FlowLayout.CENTER));
+        GroupLayout layout = new GroupLayout(userSelect);
+        userSelect.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
         JLabel instruction = new JLabel("Please select a username.");
         JButton newUsernameButton = new JButton("Go!");
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(instruction)
+                .addGroup(layout.createSequentialGroup()
+                   .addComponent(usernameField)
+                   .addComponent(newUsernameButton))
+                .addComponent(error)
+             );
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                    .addComponent(instruction)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(usernameField)
+                        .addComponent(newUsernameButton))
+                    .addComponent(error)
+             );
         userSelect.add(instruction);
         userSelect.add(usernameField);
         userSelect.add(newUsernameButton);

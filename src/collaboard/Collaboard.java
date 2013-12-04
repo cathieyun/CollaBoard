@@ -10,7 +10,8 @@ import whiteboard.Whiteboard;
 /**
  * Class that stores all the active Whiteboards on the server, and the current list
  * of taken usernames.
- *
+ * Threadsafe through use of the monitor pattern, so that other threads won't be able to 
+ * access Collaboard's fields while they are being mutated.
  */
 public class Collaboard {
 
@@ -20,24 +21,31 @@ public class Collaboard {
     public Collaboard(){
         this.whiteboards = new HashMap<Integer, Whiteboard>();
         this.usernames = new HashSet<String>();
-        usernames.add("bob");
     }
     /**
      * Adds a new whiteboard to the list of whiteboards.
      * @param ID - of the Whiteboard to be added
      * @return the newly created Whiteboard
+     * @throws RuntimeException if the ID is already taken
+     * (shouldn't happen, since this method is only called after verifying
+     * that the ID is available for creation).
      */
-    public Whiteboard createNewWhiteboard(int ID){
-        Whiteboard w = new Whiteboard(ID);
-        whiteboards.put(ID, w);
-        return w;
+    public synchronized Whiteboard createNewWhiteboard(int ID){
+        if (!existingWhiteboard(ID)){
+            Whiteboard w = new Whiteboard(ID);
+            whiteboards.put(ID, w);
+            return w;
+        }
+        else{
+            throw new RuntimeException("This whiteboard ID is already taken");
+        }
     }
     /**
      * Checks whether the desired whiteboardID is already taken
      * @param ID - to be checked.
      * @return true if already taken, false if not
      */
-    public boolean existingWhiteboard(int ID){
+    public synchronized boolean existingWhiteboard(int ID){
         return (whiteboards.keySet().contains(ID));
     }
     /**
@@ -46,7 +54,7 @@ public class Collaboard {
      * @param username - desired username to check
      * @return - "usertaken" if the username is taken, "validuser" if not.
      */
-    public String addUser(String username){
+    public synchronized String addUser(String username){
         if (usernames.contains(username)){
             return "usertaken";
         } 
@@ -54,11 +62,11 @@ public class Collaboard {
         return "validuser";
     }
     
-    public void removeUsername(String username){
+    public synchronized void removeUsername(String username){
         usernames.remove(username);
     }
     
-    public Map<Integer, Whiteboard> getWhiteboards(){
+    public synchronized Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
     }
 
