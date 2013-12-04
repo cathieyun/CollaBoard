@@ -1,44 +1,60 @@
 package collaboard;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import client.User;
-
 
 import whiteboard.Whiteboard;
-
-public class Collaboard {
 /**
- * Contains a collection of whiteboards.
+ * Class that stores all the active Whiteboards on the server, and the current list
+ * of taken usernames.
+ * Threadsafe through use of the monitor pattern, so that other threads won't be able to 
+ * access Collaboard's fields while they are being mutated.
  */
+public class Collaboard {
+
     private Map<Integer, Whiteboard>whiteboards;
-    private HashMap<Integer, User> users;
     private Set<String> usernames;
     
     public Collaboard(){
         this.whiteboards = new HashMap<Integer, Whiteboard>();
-        this.users = new HashMap<Integer, User>();
         this.usernames = new HashSet<String>();
-        usernames.add("bob");
     }
-    
-    public Whiteboard createNewWhiteboard(int ID){
-        Whiteboard w = new Whiteboard(ID);
-        whiteboards.put(ID, w);
-        return w;
+    /**
+     * Adds a new whiteboard to the list of whiteboards.
+     * @param ID - of the Whiteboard to be added
+     * @return the newly created Whiteboard
+     * @throws RuntimeException if the ID is already taken
+     * (shouldn't happen, since this method is only called after verifying
+     * that the ID is available for creation).
+     */
+    public synchronized Whiteboard createNewWhiteboard(int ID){
+        if (!existingWhiteboard(ID)){
+            Whiteboard w = new Whiteboard(ID);
+            whiteboards.put(ID, w);
+            return w;
+        }
+        else{
+            throw new RuntimeException("This whiteboard ID is already taken");
+        }
     }
- 
-    public boolean existingWhiteboard(int ID){
+    /**
+     * Checks whether the desired whiteboardID is already taken
+     * @param ID - to be checked.
+     * @return true if already taken, false if not
+     */
+    public synchronized boolean existingWhiteboard(int ID){
         return (whiteboards.keySet().contains(ID));
     }
-    
-    public String addUser(int userID, String username){
+    /**
+     * Checks whether the desired username is taken, and returns the message the server
+     * should return to the client. If it's not taken, add it to the list.
+     * @param username - desired username to check
+     * @return - "usertaken" if the username is taken, "validuser" if not.
+     */
+    public synchronized String addUser(String username){
         if (usernames.contains(username)){
             return "usertaken";
         } 
@@ -46,7 +62,11 @@ public class Collaboard {
         return "validuser";
     }
     
-    public Map<Integer, Whiteboard> getWhiteboards(){
+    public synchronized void removeUsername(String username){
+        usernames.remove(username);
+    }
+    
+    public synchronized Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
     }
 

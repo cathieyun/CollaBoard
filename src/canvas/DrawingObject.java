@@ -1,7 +1,9 @@
 package canvas;
 
-import java.util.ArrayList;
-
+/**
+ * Interface representing various drawing objects that represent marks on the canvas.
+ *
+ */
 public interface DrawingObject {
 	
 	/**

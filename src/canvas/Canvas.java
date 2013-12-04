@@ -1,7 +1,6 @@
 package canvas;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -9,35 +8,20 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Stroke;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import client.ClientCanvasModel;
 import client.User;
@@ -50,8 +34,7 @@ import canvas.Oval;
  * Canvas represents a drawing surface that allows the user to draw on it
  * freehand, with the mouse.
  */
-//TODO: get the output stream for the client, and have it send messages to the server
-//according to the server grammar when it draws, undos, or redos.
+
 public class Canvas extends JPanel{
 
     // image where the user's drawing is stored
@@ -93,11 +76,16 @@ public class Canvas extends JPanel{
      * @param height
      *            height in pixels
      */
-    public Canvas(int width, int height, final ClientCanvasModel canvasModel2, User user, OutputStream outputStream) {
+    public Canvas(int width, int height, final ClientCanvasModel canvasModel, User user, OutputStream outputStream) {
         this.user = user;
         this.out = new PrintWriter(outputStream, true);
-        this.canvasModel = canvasModel2;
+        this.canvasModel = canvasModel;
         this.setPreferredSize(new Dimension(width, height));
+        try { //make it so that lookAndFeel is consistent with the toolbarGUI.
+            UIManager.setLookAndFeel( UIManager.getCrossPlatformLookAndFeelClassName() );
+         } catch (Exception e) {
+              e.printStackTrace();
+         }
         addDrawingController();
         // note: we can't call makeDrawingBuffer here, because it only
         // works *after* this canvas has been added to a window. Have to
@@ -112,19 +100,19 @@ public class Canvas extends JPanel{
     public ClientCanvasModel getCanvasModel(){
         return canvasModel;
     }
-    /**
-     * Draws the freehand defined by the input.
-     * @param points - list of x and y coordinates (alternating)
-     * @param color - color of the freehand
-     * @param stroke - stroke of the freehand
-     */
-    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
-        for (int i = 0; i < points.size(); i=i+2){
-            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
-            //also add to clientcanvasModel
-        }
-    }
-    
+//    /**
+//     * Draws the freehand defined by the input.
+//     * @param points - list of x and y coordinates (alternating)
+//     * @param color - color of the freehand
+//     * @param stroke - stroke of the freehand
+//     */
+//    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
+//        for (int i = 0; i < points.size(); i=i+2){
+//            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
+//            //also add to clientcanvasModel
+//        }
+//    }
+//    
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
@@ -226,33 +214,45 @@ public class Canvas extends JPanel{
 		this.repaint();
 	}
 
-	private void drawOval(int x, int y, int width, int height, String color, String thickness, boolean areUndoingOrRedoing) {
-		fillWithWhite();
+	/**
+	 * Draws an oval on the screen. Because this method is continuously called
+	 * when the mouse is dragged, it gives the appearance that the "Draw Oval"
+	 * function on the whiteboard draws a resizable oval.
+	 * 
+	 * This method assumes that the oval is being drawn for the first time. As
+	 * such, no redos after possible after this operation.
+	 * 
+	 * @param oval
+	 *            the oval to draw on the screen; includes thickness and color
+	 *            information
+	 */
+	private void drawOval(Oval oval) {
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
 		// redraw all the drawinObjects on the canvas in order for the circle to appear as if it's resizing
-		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex(); i++) {
+		fillWithWhite();
+		for (int i = 0; i < canvasModel.getUndoIndex(); i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
-			redrawDrawingObject(currentDrawingObject);
-		}
-
-		// configure the color and thickness depending on we are undoing/redoing or not
-		if (areUndoingOrRedoing){
-	        g.setStroke(thicknesses.get(thickness));
-	        g.setColor(colors.get(color));
-		}
-		else{
-	        g.setColor(user.getToolbar().getColor());
-	        g.setStroke(user.getToolbar().getStroke());
+			drawDrawingObject(currentDrawingObject);
 		}
 		
+		// get information about the oval to be drawn
+		int width = oval.getWidth();
+		int height = oval.getHeight();
+		int x = oval.getTopLeftX();
+		int y = oval.getTopLeftY();
+		String color = oval.getColor();
+		String thickness = oval.getThickness();
+
+		// get and set the color and thickness of the oval
+	    g.setStroke(thicknesses.get(thickness));
+	    g.setColor(colors.get(color));
+
 		g.drawOval(x, y, width, height);
 		
 		// after a series of undo operations, if a user begins to draw again,
 		// all edits after the current edit are discarded
-		if (!areUndoingOrRedoing) {
-			canvasModel.preventRedoAfterThisEdit();
-		}
+		canvasModel.preventRedoAfterThisEdit();
 
 		this.repaint();
 	}
@@ -272,30 +272,38 @@ public class Canvas extends JPanel{
 	public void undo() {
 	    //TODO: send message to server
 		fillWithWhite();
-		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
+		for (int i = 0; i < canvasModel.getUndoIndex() - 1; i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
-			redrawDrawingObject(currentDrawingObject);
+			drawDrawingObject(currentDrawingObject);
 		}
 
 		// prevent the index from going below 0.
-		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
-			canvasModel.getAndDecrementIndex();
+		if (canvasModel.getUndoIndex() > 0) {
+			canvasModel.decrementIndex();
 		}
-		System.out.println("undo");
-		out.println("undo");
 	}
+	/**
+	 * Send the undo/redo message to the server.
+	 * @param undo - true if undo message, false if redo message
+	 */
+	public void sendUndoRedoMessage(boolean undo){
+	    if (undo){
+	        out.println("undo " + user.getUserID() + " " + user.getWhiteboardID());
+	    }
+	    else{
 
+	        out.println("redo " + user.getUserID() + " " + user.getWhiteboardID());
+	    }
+	}
 	/**
 	 * Redraws the last DrawingObject to have been undone from the canvas.
 	 */
 	public void redo() {
-		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
-			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
-			redrawDrawingObject(currentDrawingObject);
-			canvasModel.getAndIncrementIndex();
+		if (canvasModel.getUndoIndex() < canvasModel.getListSize()) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getUndoIndex());
+			drawDrawingObject(currentDrawingObject);
+			canvasModel.incrementIndex();
 		}
-		System.out.println("redo");
-		out.println("redo");
 	}
 	
 	/**
@@ -303,13 +311,15 @@ public class Canvas extends JPanel{
 	 * particular drawingObject and calling the appropriate methods to redraw
 	 * the type.
 	 * 
+	 * Draws the specified drawing object.
+	 * 
 	 * @param d
 	 *            the drawingObject to redraw onto the canvas
 	 */
-	public void redrawDrawingObject(DrawingObject d) {
+	public void drawDrawingObject(DrawingObject d) {
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
-			drawLinesInFreehand(freehand);
+			redrawLinesInFreehand(freehand);
 		}
 		else if (d instanceof Oval) {
 			Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
@@ -324,6 +334,7 @@ public class Canvas extends JPanel{
 			
 			g.drawOval(oval.getTopLeftX(), oval.getTopLeftY(), oval.getWidth(), oval.getHeight());
 		}
+		
 		this.repaint();
 	}
 	
@@ -333,7 +344,7 @@ public class Canvas extends JPanel{
 	 * @param freehand
 	 *            the Freehand object whose lines are to be redrawn onto the GUI
 	 */
-	private void drawLinesInFreehand(Freehand freehand) {
+	private void redrawLinesInFreehand(Freehand freehand) {
 	    //TODO: send message to server
 		for (Line l : freehand.getLineList()) {
 			int x1 = l.getX1();
@@ -397,11 +408,7 @@ public class Canvas extends JPanel{
 			if (isDrawingOval) {
 				Oval oval = new Oval(shapeStartX, shapeStartY, x, y, color, thickness);
 				currentDrawingObject = oval;
-				int width = oval.getWidth();
-				int height = oval.getHeight();
-				int x1 = oval.getTopLeftX();
-				int y1 = oval.getTopLeftY();
-				drawOval(x1, y1, width, height, color, thickness, false);
+				drawOval(oval);
 			} else if (currentDrawingObject instanceof Freehand) {
 	                Freehand freehand = (Freehand) currentDrawingObject;
 	                freehand.getLineList()
@@ -422,9 +429,8 @@ public class Canvas extends JPanel{
 
 		public void mouseReleased(MouseEvent e) {
 			canvasModel.addDrawingObject(currentDrawingObject);
-			System.out.println("Current drawing object string: " + currentDrawingObject.toString());
 	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
-			canvasModel.getAndIncrementIndex();
+			canvasModel.incrementIndex();
 		}
 
 		public void mouseEntered(MouseEvent e) {
@@ -433,23 +439,23 @@ public class Canvas extends JPanel{
 		public void mouseExited(MouseEvent e) {
 		}
 	}
-
-	/*
-	 * Main program. Make a window containing a Canvas.
-	 */
-	public static void main(String[] args) {
-		// set up the UI (on the event-handling thread)
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				JFrame window = new JFrame("Freehand Canvas");
-				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				window.setLayout(new BorderLayout());
-				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
-						new User(1), new DataOutputStream(null));
-				window.add(canvas, BorderLayout.CENTER);
-				window.pack();
-				window.setVisible(true);
-			}
-		});
-	}
+//
+//	/*
+//	 * Main program. Make a window containing a Canvas.
+//	 */
+//	public static void main(String[] args) {
+//		// set up the UI (on the event-handling thread)
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				JFrame window = new JFrame("Freehand Canvas");
+//				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//				window.setLayout(new BorderLayout());
+//				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
+//						new User(1), new DataOutputStream(null));
+//				window.add(canvas, BorderLayout.CENTER);
+//				window.pack();
+//				window.setVisible(true);
+//			}
+//		});
+//	}
 }

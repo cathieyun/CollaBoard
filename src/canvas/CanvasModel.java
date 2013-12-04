@@ -1,21 +1,19 @@
 package canvas;
 
 import java.util.ArrayList;
-import java.util.Observable;
 
 /**
- * Model for the Canvas GUI.
+ * Model by which the server stores the information for each individual Whiteboard.
  * Threadsafe through use of the monitor pattern.
  * No thread can gain direct access to drawingObjectList.
- * @author KateYu
  *
  */
 public class CanvasModel{
     private ArrayList<DrawingObject> drawingObjectList;
-    private int drawingObjectListUndoIndex;
+    private int undoIndex;
     public CanvasModel(){
         drawingObjectList = new ArrayList<DrawingObject>();
-        drawingObjectListUndoIndex = 0;
+        undoIndex = 0;
     }
     /**
      * 
@@ -28,8 +26,7 @@ public class CanvasModel{
 	/**
 	 * Requires: 0 <= index < drawingObjectList.size()
 	 * 
-	 * @param i
-	 *            index of the DrawingObject to retrieve
+	 * @param i - index of the DrawingObject to retrieve
 	 * @return DrawingObject at the ith index in drawingObjectList
 	 */
     public synchronized DrawingObject getIthDrawingObject(int i){
@@ -40,36 +37,35 @@ public class CanvasModel{
 	 * 
 	 * @return the current undo index
 	 */
-    public synchronized int getDrawingObjectListUndoIndex(){
-        return drawingObjectListUndoIndex;
+    public synchronized int getUndoIndex(){
+        return undoIndex;
     }
 
+    /**
+     * Set the undo index to the input index.
+     */
+    public synchronized void setUndoIndex(int index){
+        undoIndex = index;
+    }
 	/**
 	 * Decrements the undo index.
-	 * 
-	 * @return the current undo index
 	 */
-    public synchronized int getAndDecrementIndex(){
-        --drawingObjectListUndoIndex;
-        return drawingObjectListUndoIndex;
+    public synchronized void decrementIndex(){
+        undoIndex--;
     }
 
 	/**
 	 * Increments the undo index.
-	 * 
-	 * @return the current undo index.
 	 */
-    public synchronized int getAndIncrementIndex(){
-        ++drawingObjectListUndoIndex;
-        return drawingObjectListUndoIndex;
+    public synchronized void incrementIndex(){
+        undoIndex++;
     }
     
 	/**
 	 * Requires: 0 <= index < drawingObjectList.size(). Removes a DrawingObject
 	 * from drawingObjectList.
 	 * 
-	 * @param index
-	 *            index of the DrawingObject to be removed
+	 * @param index of the DrawingObject to be removed
 	 */
     public synchronized void removeDrawingObject(int index){
         drawingObjectList.remove(index);
@@ -78,8 +74,7 @@ public class CanvasModel{
 	/**
 	 * Adds a DrawingObject to drawingObjectList.
 	 * 
-	 * @param d
-	 *            DrawingObject object to be added.
+	 * @param d - DrawingObject object to be added.
 	 */
     public synchronized void addDrawingObject(DrawingObject d){
         drawingObjectList.add(d);
@@ -90,7 +85,7 @@ public class CanvasModel{
 	 *  all edits after the current edit are discarded.
 	 */
 	public synchronized void preventRedoAfterThisEdit() {
-		for (int i = getListSize() - 1; getDrawingObjectListUndoIndex() < getListSize(); i--) {
+		for (int i = getListSize() - 1; getUndoIndex() < getListSize(); i--) {
 			removeDrawingObject(i);
 		}
 	}

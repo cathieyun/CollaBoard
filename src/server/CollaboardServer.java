@@ -2,9 +2,7 @@ package server;
 
 
 
-import java.awt.List;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,11 +11,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.NoSuchElementException;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,11 +24,12 @@ import canvas.Oval;
 import client.User;
 
 import collaboard.Collaboard;
-import collaboard.CollaboardGUI;
 
-//TODO: Add a requests queue for the server to handle (I think it would be easier to
-//implement than a BlockingQueue for each whiteboard.
-//Make a new thread that is dedicated to handling requests.
+/**
+ * Class representing the Collaboard server.
+ * Stores the set of all Whiteboards and their current states, as well as current
+ * active threads.
+ */
 public class CollaboardServer {
 
     private final ServerSocket serverSocket;
@@ -52,6 +46,10 @@ public class CollaboardServer {
     }
     
     private void serve() throws IOException{
+        /**
+         * Thread that handles requests from the requests BlockingQueue, to ensure that edits are made
+         * to each whiteboard in the order they are put on the queue, to ensure thread safety.
+         */
         Thread requestHandler = new Thread(new Runnable(){
             @Override
             public void run() {
@@ -63,40 +61,53 @@ public class CollaboardServer {
                     }
                 }      
             }
+            /**
+             * Method by which to handle requests put on the queue.
+             * @param request - draw, undo, or redo request
+             */
             private void handleRequest(String[] request){
                     int whiteboardID = Integer.parseInt(request[request.length-1]);
                     int userID = Integer.parseInt(request[request.length-2]);
+                    CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
+                    StringBuilder outputMsg = new StringBuilder();
+                    if (request[0].equals("undo")|request[0].equals("redo")){
+                        outputMsg.append(request[0]);
+                        if (request[0].equals("undo")){
+                            currentModel.decrementIndex();
+                        }
+                        else{
+                            currentModel.incrementIndex();
+                        }
+                    }
+                    else if (request[0].equals("draw")){
+                        String color = request[request.length-4];
+                        String thickness = request[request.length-3];
+                        currentModel.preventRedoAfterThisEdit();
+                        if(request[1].equals("freehand")){
+                            int [] points = new int[request.length-6];
+                            for (int i=0; i < points.length; i++){
+                                points[i] = Integer.parseInt(request[i+2]);
+                            }
+                            Freehand freehand = new Freehand(points, color, thickness);
+                            currentModel.addDrawingObject(freehand);
+                            
+                        }
+                        if(request[1].equals("oval")){
+                            Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
+                            currentModel.addDrawingObject(oval);
+                        }
+                        currentModel.incrementIndex();
+                        outputMsg.append("draw");
+                        for (int i = 1; i < request.length-2; i++){
+                            outputMsg.append(" " + request[i]);
+                        }
+                    }
+                    System.out.println("outputMsg: " + outputMsg.toString());
+                    //Send the message to all other threads in the same whiteboard to update their canvases.
                     for (UserThread t: threads){
-                        //find the threads that are on the same whiteboard and send the undo request to them.
                         if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
-                            PrintWriter output = new PrintWriter(t.getOutputStream());
-                            CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
-                            if (request[0].equals("undo")|request[0].equals("redo")){
-                                output.println(request[0]);
-                                //TODO: make the necessary change to the currentModel's drawingObjectUndoIndex
-                            }
-                            else if (request[0].equals("draw")){
-                                String color = request[request.length-4];
-                                String thickness = request[request.length-3];
-                                if(request[1].equals("freehand")){
-                                    int [] points = new int[request.length-6];
-                                    for (int i=0; i < points.length; i++){
-                                        points[i] = Integer.parseInt(request[i+2]);
-                                    }
-                                    Freehand freehand = new Freehand(points, color, thickness);
-                                    currentModel.addDrawingObject(freehand);
-                                    
-                                }
-                                if(request[1].equals("oval")){
-                                    Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
-                                    currentModel.addDrawingObject(oval);
-                                }
-                                StringBuilder outputMsg = new StringBuilder("draw");
-                                for (int i = 1; i < request.length-2; i++){
-                                    outputMsg.append(" " + request[i]);
-                                }
-                                output.println(outputMsg.toString());
-                            }
+                            PrintWriter output = t.getPrintWriter();
+                            output.println(outputMsg.toString());
                         }
                     }
             }
@@ -112,6 +123,10 @@ public class CollaboardServer {
             thread.start();
         }
     }
+    /**
+     * Class representing a single user connection.
+     *
+     */
     public class UserThread extends Thread{
         private Socket socket;
         private User user;
@@ -119,10 +134,10 @@ public class CollaboardServer {
         private int currentWhiteboardID;
         private InputStream inputStream;
         private OutputStream outputStream;
+        private PrintWriter out;
         public UserThread(Socket socket){
             this.socket= socket;
             currentWhiteboardID = 0; //initialize to 0
-            userID = 0; //not sure if i need this, but let's just keep it for now
             //ensure that no two threads can access and increment numClients at the same time
             synchronized(numClients){
                 //assign integer ID based on how many clients there are. doesn't really have to
@@ -139,15 +154,21 @@ public class CollaboardServer {
                 e.printStackTrace();
             }
         }
-        
-        public OutputStream getOutputStream(){
-            return outputStream;
+        /**
+         * @return the PrintWriter associated with this thread.
+         */
+        public PrintWriter getPrintWriter(){
+            return out;
         }
-        
+        /**
+         * @return the WhiteboardID of the whiteboard the thread is currently in.
+         */
         public int getCurrentWhiteboardID(){
             return currentWhiteboardID;
         }
-        
+        /**
+         * @return the unique userID of the thread
+         */
         public int getUserID(){
             return userID;
         }
@@ -167,9 +188,16 @@ public class CollaboardServer {
                 }
             } 
         }
+        /**
+         * Method used to handle a single client connection.
+         * 
+         * @param socket
+         * @param userID - Unique userID assigned to each socket. Used for identification purposes.
+         * @throws IOException
+         */
         private void handleConnection(Socket socket, int userID) throws IOException{
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-            PrintWriter out = new PrintWriter(outputStream, true);
+            out = new PrintWriter(outputStream, true);
             try {
                 out.println("userID " + userID); //send the userID
                 StringBuilder message = new StringBuilder("list");
@@ -200,35 +228,39 @@ public class CollaboardServer {
         }
         
         /**
-         * Protocol for messages from the client to the server:
-		 * “makeuser” [0-9a-zA-Z]+
-		 * “makeboard” [0]|[1-9][0-9]*
- 		 * “undo” userID whiteboardID
-		 * “redo” userID whiteboardID
-		 * “draw” startx starty endx endy color thickness userID whiteboardID
-		 * “enter” [0-9a-zA-Z]+ whiteboardID
-		 * “exit” [0-9a-zA-Z]+ whiteboardID
-		 * whiteboardID = some integer
-		 * “bye” userID whiteboardID 
-         * 
+         * Handles messages from each client according to the following grammar: <br>
+         * WHITEBOARDID: [0]|[1-9][0-9]* <br>
+         * USERID: [1-9][0-9]*<br>
+         * USERNAME: [0-9a-zA-Z]+<br>
+		 * MAKEUSER: makeuser USERNAME WHITEBOARDID<br>
+		 * MAKEBOARD: makeboard WHITEBOARDID<br>
+		 * UNDO: undo USERID WHITEBOARDID<br>
+ 		 * REDO: redo USERID WHITEBOARDID<br>
+ 		 * COLOR: bl|y|r|g|o|m|blk|w<br>
+ 		 * THICKNESS: s|m|l<br>
+		 * DRAWFREEHAND: draw freehand ([0-9]+ [0-9]+ )([0-9]+ [0-9]+ )+ COLOR THICKNESS USERID WHITEBOARDID<br>
+		 * DRAWOVAL: draw oval [0-9]+ [0-9]+ [0-9]+ [0-9]+ COLOR THICKNESS USERID WHITEBOARDID<br>
+		 * ENTER: enter USERNAME WHITEBOARDID<br>
+		 * EXIT: exit USERNAME<br>
+		 * BYE: bye
          * 
          * @param input
          * @return
          * @throws IOException
          */
         public String handleRequest(String input) throws IOException{
-            String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+ -?\\d+)|"+
+            String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
+                    + "(redo -?\\d+ -?\\d+)|"+
                     "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
                     "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
-                    +"(enter [A-Za-z0-9]+ -?\\d+)| (exit [A-Za-z0-9]+ -?\\d+)|(bye)";
+                    +"(enter [A-Za-z0-9]+ -?\\d+)|(exit [A-Za-z0-9]+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
                 System.out.println("client msg: " + input + " didn't match"); 
             }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
-                return(collaboard.addUser(Integer.parseInt(tokens[2]), tokens[1]));
+                return(collaboard.addUser(tokens[1]));
             }
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
@@ -239,8 +271,7 @@ public class CollaboardServer {
                 return "validwhiteboard";
                 //addboard
             }
-            if (tokens[0].equals("enter")){ //TODO: Notify all threads in the same whiteboard that a new user has entered.
-                //add user to the whiteboard's list of users.
+            if (tokens[0].equals("enter")){ 
                 currentWhiteboardID = Integer.parseInt(tokens[2]);
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
                 whiteboard.addUser(tokens[1]);
@@ -249,28 +280,42 @@ public class CollaboardServer {
                 for (int i=0; i < users.size(); i++){
                     message.append(" " + users.get(i));
                 }
-                message.append("\n");
+                message.append("\nready");    
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
+                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
-                    System.out.println("draw " + o.toString() + "\n");
-                    message.append("draw " + o.toString() + "\n");
+                    message.append("\ninitdraw " + o.toString());
                 }
-                message.append("ready");
-                //this only works for freehands right now.
+                message.append("\ninitdone");
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);
+                for (UserThread t: threads){
+                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                        PrintWriter output = t.getPrintWriter();
+                        output.println("enter " + tokens[1]);
+                    }
+                }
                 return message.toString();
             }
+            if (tokens[0].equals("exit")){
+                for (UserThread t: threads){
+                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                        PrintWriter output = t.getPrintWriter();
+                        output.println("exit " + tokens[1]);
+                    }
+                }
+                currentWhiteboardID = 0;
+            }
             if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){
-                //throw it on the event queue.
+                //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
                 requests.add(tokens);
-                System.out.println("added request to the queue.");
-                //add the message to the queue.
             }
             if (tokens[0].equals("bye")){
-                //TODO: remove the user from the whiteboard's list of users, and from the list of taken usernames.
-            	requests.add(tokens);
+            	collaboard.removeUsername(this.user.getUsername());
+            	//then end the socket connection.
             }
             return "";
             
@@ -278,17 +323,18 @@ public class CollaboardServer {
     }
 
     public static void main(String[] args) {
-        // Command-line argument parsing is provided. Do not change this method.
-        
         int port = 4444; // default port
-
         try {
             runCollaboardServer(port);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
+    /**
+     * Run the server.
+     * @param port
+     * @throws IOException
+     */
     public static void runCollaboardServer(int port) throws IOException {
         CollaboardServer server = new CollaboardServer(port, new Collaboard());
         server.serve();

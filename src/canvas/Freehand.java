@@ -11,7 +11,6 @@ import java.util.ArrayList;
  */
 public class Freehand implements DrawingObject{
 	private ArrayList<Line> lineList;
-	private ArrayList<Integer> pointsList;
 	public Freehand(ArrayList<Line> lineList) {
 		this.lineList = lineList;
 	}
@@ -23,13 +22,13 @@ public class Freehand implements DrawingObject{
 	public Freehand(int[] pointsList, String color, String thickness){
 	    lineList = new ArrayList<Line>();
 	    for (int i = 0; i < pointsList.length-2; i=i+2){
-	       Line line = new Line(pointsList[0], pointsList[1], pointsList[2], pointsList[3], color, thickness);
+	       Line line = new Line(pointsList[i], pointsList[i+1], pointsList[i+2], pointsList[i+3], color, thickness);
 	       lineList.add(line);
 	    }
 	}
 	
 	/**
-	 * returns a list of the line objects that comprise the DrawingObject.
+	 * Returns a list of the line objects that comprise the DrawingObject.
 	 */
 	public ArrayList<Line> getLineList() {
 		return lineList;
@@ -37,7 +36,7 @@ public class Freehand implements DrawingObject{
 
 	@Override
 	/**
-	 * returns a String representation of a Freehand as a list of alternating x and y values
+	 * Returns a String representation of a Freehand as a list of alternating x and y values
 	 * followed by a color and a thickness.
 	 */
 	public String toString() {
@@ -45,7 +44,9 @@ public class Freehand implements DrawingObject{
 	    for (int i=0; i < lineList.size() - 1; i++){
 	        string.append(lineList.get(i).firstPointToString() + " ");
 	    }
-	    string.append(lineList.get(lineList.size() - 1).toString());
+	    if (lineList.size() > 0){
+	        string.append(lineList.get(lineList.size() - 1).toString());
+	    }
 		return string.toString();
 	}
 

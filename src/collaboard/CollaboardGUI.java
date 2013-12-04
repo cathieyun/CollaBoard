@@ -3,16 +3,13 @@ package collaboard;
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -52,26 +49,25 @@ public class CollaboardGUI extends JFrame{
     private JLabel createWhiteboard;
     private JTable currentUsers;
     private int currentWhiteboardID;
-    public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){ 
+    private ClientCanvasModel clientModel;
+    private DefaultTableModel usersModel;
+    public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){
         this.user = user;
+        this.clientModel = new ClientCanvasModel();
+        this.canvas = new Canvas(800, 600, clientModel, user, outputStream);
         this.users = new ArrayList<String>();
         this.outputStream = outputStream;
         this.out = new PrintWriter(outputStream, true);
         this.whiteboards = new ArrayList<Integer>();
         this.userID = user.getUserID();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        //TODO: Add a windowlistener that sends a "bye" message to the server, so it will
-        //remove the user from the whiteboard's list of users.
-        
 		this.addWindowListener(new WindowAdapter() {
-			public void windowClosed(WindowEvent e) {
+			public void windowClosing(WindowEvent e) {
 				System.out.println("Window was closed!");
-				out.println("bye " + userID + currentWhiteboardID);
+				out.println("bye");
 			}
 		});
-        
-        
-        
+             
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
         panels = new JPanel(layout);
@@ -98,13 +94,38 @@ public class CollaboardGUI extends JFrame{
     public ArrayList<String> getUsers(){
         return users;
     }
+    /**
+     * Display the error message for a invalid username input.
+     */
     public void displayUserTakenError(){
         error.setVisible(true);
     }
+    /**
+     * Helper method that initializes the username selection pane. Called in the constructor.
+     */
     private void initializeUserPane(){
-        userSelect.setLayout(new FlowLayout(FlowLayout.CENTER));
+        GroupLayout layout = new GroupLayout(userSelect);
+        userSelect.setLayout(layout);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
         JLabel instruction = new JLabel("Please select a username.");
         JButton newUsernameButton = new JButton("Go!");
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(instruction)
+                .addGroup(layout.createSequentialGroup()
+                   .addComponent(usernameField)
+                   .addComponent(newUsernameButton))
+                .addComponent(error)
+             );
+        layout.setVerticalGroup(
+                layout.createSequentialGroup()
+                    .addComponent(instruction)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(usernameField)
+                        .addComponent(newUsernameButton))
+                    .addComponent(error)
+             );
         userSelect.add(instruction);
         userSelect.add(usernameField);
         userSelect.add(newUsernameButton);
@@ -118,14 +139,16 @@ public class CollaboardGUI extends JFrame{
         usernameField.addActionListener(u);
         newUsernameButton.addActionListener(u);
     }
-    
+    /**
+     * Method that initializes the whiteboard selection pane.
+     * Called after receiving a list of active whiteboards from the server.
+     */
     public void initializeWhiteboardPane(){
         JButton chooseWhiteboard = new JButton("Go");
         JButton makeNewWhiteboard = new JButton("Create!");
         makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard below");
         JTable whiteboardIDs = new JTable();
-        //whiteboardIDs.setTableHeader(null);
         chooseWhiteboard.addActionListener(new SelectWhiteboardListener(whiteboardIDs));
         createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
         JScrollPane whiteboardsList = new JScrollPane(whiteboardIDs);
@@ -175,7 +198,6 @@ public class CollaboardGUI extends JFrame{
     
     /**
      * ActionListener that listens for the actions pertaining to creation of a new username
-     *
      */
     private class UsernameListener implements ActionListener{
         @Override
@@ -194,7 +216,8 @@ public class CollaboardGUI extends JFrame{
         }   
     }
     /**
-     * advances GUI to the whiteboard selection page
+     * Advances GUI to the whiteboard selection page. 
+     * Called after receiving a "validuser" message from the server.
      */
     public void goToWhiteboardSelect(){
         CollaboardGUI.this.setSize(500,500);
@@ -203,11 +226,11 @@ public class CollaboardGUI extends JFrame{
     }
     /**
      * Helper method to initialize the canvas.
+     * Called after receiving a "ready" message from the server.
      */
     public void initializeCanvas(){
-        ClientCanvasModel clientModel = new ClientCanvasModel();
         currentUsers = new JTable();
-        DefaultTableModel usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
+        usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
             //prevent user from editing cells
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -220,7 +243,6 @@ public class CollaboardGUI extends JFrame{
         currentUsers.setModel(usersModel);
         JScrollPane usersList = new JScrollPane(currentUsers);
         usersList.setPreferredSize(new Dimension(100,200));
-        Canvas canvas = new Canvas(800, 600, clientModel, user, outputStream);
         ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
         JFrame window = new JFrame("Canvas " + currentWhiteboardID);    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -232,15 +254,18 @@ public class CollaboardGUI extends JFrame{
         c.gridheight = 2;
         container.add(canvas, c);
         c.gridx = 1;
-        c.gridy = 0;
-        //c.weightx = 0;
         c.gridheight = 1;
         container.add(usersList, c);
-        c.gridx = 1;
         c.gridy = 1;
         container.add(toolbarGUI, c);
         window.setLocation(300,100);
         window.pack();
+      window.addWindowListener(new WindowAdapter() {
+          public void windowClosing(WindowEvent e) {
+              out.println("exit " + user.getUsername());
+              out.println("bye");
+              }
+      });
         window.setVisible(true);
         CollaboardGUI.this.dispose();
     }
@@ -260,14 +285,16 @@ public class CollaboardGUI extends JFrame{
                 new ProtocolWorker("makeboard "+newWhiteboard).execute();
                 //send a message to the server to create a new whiteboard
             }catch(NumberFormatException e1){
-                //if it's not a valid value
-                //display error message
+                //display an error.
+                createWhiteboard.setText("Invalid input. Try again or choose a whiteboard from below.");
             }
-            // TODO Auto-generated method stub
             
         }
     }
-    
+    /**
+     * Displays an error message if the desired whiteboard ID is already taken.
+     * Called after receiving a "whiteboardtaken" message from the server.
+     */
     public void displayWhiteboardTakenError(){
         createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
     }
@@ -284,7 +311,6 @@ public class CollaboardGUI extends JFrame{
     
     /**
      * ActionListener that is called when the user selects an existing canvas.
-     *
      */
     private class SelectWhiteboardListener implements ActionListener{
         private JTable table;
@@ -303,7 +329,6 @@ public class CollaboardGUI extends JFrame{
     
     /**
      * SwingWorker that passes messages to the server in a background thread.
-     *
      */
     public class ProtocolWorker extends SwingWorker<String, Object>{
         private String message; //message to be sent
@@ -318,16 +343,46 @@ public class CollaboardGUI extends JFrame{
         }
         
     }
+    
+    public Canvas getCanvas(){
+        return canvas;
+    }
     public ClientCanvasModel getCanvasModel() {
-        return canvas.getCanvasModel();
+        return clientModel;
     }
     
     public Canvas getCanvas() {
         return canvas;
     }
     
+    /**
+     * Draws the specified object.
+     * @param d
+     */
     public void drawObject(DrawingObject d){
-        canvas.redrawDrawingObject(d);
+    	// we pass in the string draw so that the undo list is incremented
+    	// during the call to drawOrRedrawDrawingObject
+        canvas.drawDrawingObject(d);
     }
 
+    /**
+     * Adds the specified user to the table of active users.
+     * @param user
+     */
+    public void addUser(String user){
+        usersModel.addRow(new String[]{user});
+    }
+    /**
+     * Remove the specified user from the table.
+     * @param user
+     */
+    public void removeUser(String user){
+        for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
+            System.out.println(currentUsers.getValueAt(row,0));
+            if (user.equals(currentUsers.getValueAt(row,0))){
+                usersModel.removeRow(row);
+                break;
+            }
+        }
+    }
 }
