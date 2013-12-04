@@ -282,7 +282,7 @@ public class CollaboardServer {
                 }
                 message.append("\nready");    
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
-                message.append("\nundoindex " + canvasModel.getDrawingObjectListUndoIndex());
+                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     message.append("\ninitdraw " + o.toString());

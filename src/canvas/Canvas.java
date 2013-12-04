@@ -231,7 +231,7 @@ public class Canvas extends JPanel{
 
 		// redraw all the drawinObjects on the canvas in order for the circle to appear as if it's resizing
 		fillWithWhite();
-		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex(); i++) {
+		for (int i = 0; i < canvasModel.getUndoIndex(); i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
 			drawDrawingObject(currentDrawingObject);
 		}
@@ -272,13 +272,13 @@ public class Canvas extends JPanel{
 	public void undo() {
 	    //TODO: send message to server
 		fillWithWhite();
-		for (int i = 0; i < canvasModel.getDrawingObjectListUndoIndex() - 1; i++) {
+		for (int i = 0; i < canvasModel.getUndoIndex() - 1; i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
 			drawDrawingObject(currentDrawingObject);
 		}
 
 		// prevent the index from going below 0.
-		if (canvasModel.getDrawingObjectListUndoIndex() > 0) {
+		if (canvasModel.getUndoIndex() > 0) {
 			canvasModel.decrementIndex();
 		}
 	}
@@ -299,8 +299,8 @@ public class Canvas extends JPanel{
 	 * Redraws the last DrawingObject to have been undone from the canvas.
 	 */
 	public void redo() {
-		if (canvasModel.getDrawingObjectListUndoIndex() < canvasModel.getListSize()) {
-			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getDrawingObjectListUndoIndex());
+		if (canvasModel.getUndoIndex() < canvasModel.getListSize()) {
+			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(canvasModel.getUndoIndex());
 			drawDrawingObject(currentDrawingObject);
 			canvasModel.incrementIndex();
 		}

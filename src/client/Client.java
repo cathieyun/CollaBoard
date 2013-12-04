@@ -130,7 +130,7 @@ public class Client {
             gui.initializeCanvas();
         }
         if (tokens[0].equals("undoindex")){
-            gui.getCanvasModel().setDrawingObjectListUndoIndex(Integer.parseInt(tokens[1]));
+            gui.getCanvasModel().setUndoIndex(Integer.parseInt(tokens[1]));
             //set the undo index.
         }
         if (tokens[0].equals("undo")){
@@ -160,7 +160,7 @@ public class Client {
         }
         if (tokens[0].equals("initdone")){
             //only draw the objects up until the undoindex.
-            for (int i = 0; i < gui.getCanvasModel().getDrawingObjectListUndoIndex(); i++){
+            for (int i = 0; i < gui.getCanvasModel().getUndoIndex(); i++){
                 gui.drawObject(gui.getCanvasModel().getIthDrawingObject(i));
             }
         }

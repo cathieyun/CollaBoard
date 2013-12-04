@@ -10,10 +10,10 @@ import java.util.ArrayList;
  */
 public class CanvasModel{
     private ArrayList<DrawingObject> drawingObjectList;
-    private int drawingObjectListUndoIndex;
+    private int undoIndex;
     public CanvasModel(){
         drawingObjectList = new ArrayList<DrawingObject>();
-        drawingObjectListUndoIndex = 0;
+        undoIndex = 0;
     }
     /**
      * 
@@ -37,28 +37,28 @@ public class CanvasModel{
 	 * 
 	 * @return the current undo index
 	 */
-    public synchronized int getDrawingObjectListUndoIndex(){
-        return drawingObjectListUndoIndex;
+    public synchronized int getUndoIndex(){
+        return undoIndex;
     }
 
     /**
      * Set the undo index to the input index.
      */
-    public synchronized void setDrawingObjectListUndoIndex(int index){
-        drawingObjectListUndoIndex = index;
+    public synchronized void setUndoIndex(int index){
+        undoIndex = index;
     }
 	/**
 	 * Decrements the undo index.
 	 */
     public synchronized void decrementIndex(){
-        drawingObjectListUndoIndex--;
+        undoIndex--;
     }
 
 	/**
 	 * Increments the undo index.
 	 */
     public synchronized void incrementIndex(){
-        drawingObjectListUndoIndex++;
+        undoIndex++;
     }
     
 	/**
@@ -85,7 +85,7 @@ public class CanvasModel{
 	 *  all edits after the current edit are discarded.
 	 */
 	public synchronized void preventRedoAfterThisEdit() {
-		for (int i = getListSize() - 1; getDrawingObjectListUndoIndex() < getListSize(); i--) {
+		for (int i = getListSize() - 1; getUndoIndex() < getListSize(); i--) {
 			removeDrawingObject(i);
 		}
 	}
