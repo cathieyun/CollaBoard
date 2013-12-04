@@ -39,6 +39,7 @@ public class CollaboardGUI extends JFrame{
     private JPanel panels;
     private final JTextField usernameField;
     private final JTextField whiteboardField;
+    private final JTextField changeWhiteboardField;
     private final JLabel error;
     private User user; //ID of the user using this instance of CollaboardGUI
     private int userID;
@@ -49,11 +50,11 @@ public class CollaboardGUI extends JFrame{
     private JLabel createWhiteboard;
     private JTable currentUsers;
     private int currentWhiteboardID;
-    private ClientCanvasModel clientModel;
     private DefaultTableModel usersModel;
+    private JFrame window;
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){
         this.user = user;
-        this.clientModel = new ClientCanvasModel();
+        ClientCanvasModel clientModel = new ClientCanvasModel();
         this.canvas = new Canvas(800, 600, clientModel, user, outputStream);
         this.users = new ArrayList<String>();
         this.outputStream = outputStream;
@@ -67,7 +68,6 @@ public class CollaboardGUI extends JFrame{
 				out.println("bye");
 			}
 		});
-             
         //instantiate the panels in the CardLayout and add them
         CardLayout layout = new CardLayout();
         panels = new JPanel(layout);
@@ -77,6 +77,7 @@ public class CollaboardGUI extends JFrame{
         panels.add(whiteboardSelect,"whiteboard");
         
         this.setTitle("Collaboard");
+        this.changeWhiteboardField = new JTextField(15);
         usernameField = new JTextField(15);
         error = new JLabel("Invalid username or username taken.");
         whiteboardField = new JTextField(15);
@@ -242,21 +243,34 @@ public class CollaboardGUI extends JFrame{
         }
         currentUsers.setModel(usersModel);
         JScrollPane usersList = new JScrollPane(currentUsers);
+        JPanel changeWhiteboard = new JPanel();
+        JLabel changeWhiteboardLabel = new JLabel("Input a whiteboard number to switch to that board");
+        JButton changeWhiteboardButton = new JButton("Go!");
+        changeWhiteboardField.addActionListener(new SwitchWhiteboardListener());
+        changeWhiteboardButton.addActionListener(new SwitchWhiteboardListener());
+        changeWhiteboard.add(changeWhiteboardLabel);
+        changeWhiteboard.add(changeWhiteboardField);
+        changeWhiteboard.add(changeWhiteboardButton);
+        changeWhiteboard.setPreferredSize(new Dimension(900,50));
         usersList.setPreferredSize(new Dimension(100,200));
         ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
-        JFrame window = new JFrame("Canvas " + currentWhiteboardID);    
+        window = new JFrame("Canvas " + currentWhiteboardID);    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = window.getContentPane();
         container.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
+        c.gridwidth = 2;
+        container.add(changeWhiteboard, c);
+        c.gridwidth = 1;
+        c.gridy = 1;
         c.gridheight = 2;
         container.add(canvas, c);
         c.gridx = 1;
         c.gridheight = 1;
         container.add(usersList, c);
-        c.gridy = 1;
+        c.gridy = 2;
         container.add(toolbarGUI, c);
         window.setLocation(300,100);
         window.pack();
@@ -268,6 +282,24 @@ public class CollaboardGUI extends JFrame{
       });
         window.setVisible(true);
         CollaboardGUI.this.dispose();
+    }
+ 
+    /**
+     * Displays an error message if the desired whiteboard ID is already taken.
+     * Called after receiving a "whiteboardtaken" message from the server.
+     */
+    public void displayWhiteboardTakenError(){
+        createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
+    }
+    
+    /**
+     * Called by client after receiving a "validwhiteboard" message.
+     */
+    public void enterCanvas(){
+        currentWhiteboardID = Integer.parseInt(whiteboardField.getText());
+        user.setWhiteboardID(currentWhiteboardID);
+        System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
+        new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();     
     }
     
     /**
@@ -292,24 +324,6 @@ public class CollaboardGUI extends JFrame{
         }
     }
     /**
-     * Displays an error message if the desired whiteboard ID is already taken.
-     * Called after receiving a "whiteboardtaken" message from the server.
-     */
-    public void displayWhiteboardTakenError(){
-        createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
-    }
-    
-    /**
-     * Called by client after receiving a "validwhiteboard" message.
-     */
-    public void enterCanvas(){
-        currentWhiteboardID = Integer.parseInt(whiteboardField.getText());
-        user.setWhiteboardID(currentWhiteboardID);
-        System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
-        new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();     
-    }
-    
-    /**
      * ActionListener that is called when the user selects an existing canvas.
      */
     private class SelectWhiteboardListener implements ActionListener{
@@ -323,6 +337,41 @@ public class CollaboardGUI extends JFrame{
             user.setWhiteboardID(currentWhiteboardID);
             System.out.println("enter "+ user.getUsername()+ " " + currentWhiteboardID);
             new ProtocolWorker("enter "+ user.getUsername()+ " " + currentWhiteboardID).execute();
+        }
+        
+    }
+    
+    private class SwitchWhiteboardListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            try{
+                int targetWhiteboard = Integer.parseInt(changeWhiteboardField.getText());
+                if (targetWhiteboard < 0 || targetWhiteboard == currentWhiteboardID){
+                    throw new NumberFormatException(); //do nothing
+                }
+                changeWhiteboardField.setText("");
+                currentWhiteboardID = targetWhiteboard;
+                user.setWhiteboardID(targetWhiteboard);
+                window.setTitle("Canvas " + currentWhiteboardID);
+                clearCanvas();
+                //clear the current users
+                usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
+                    //prevent user from editing cells
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                       return false;
+                    }
+                };
+                currentUsers.setModel(usersModel);
+                //clear the Jtable
+                canvas.setCanvasModel(new ClientCanvasModel()); //new clientcanvasmodel
+                //send a message to the server 
+                new ProtocolWorker("exit "+ user.getUsername() + "\nswitchboard " + user.getUsername() + " " + targetWhiteboard).execute();
+            }catch(NumberFormatException e){
+                //do nothing
+            }
+            
         }
         
     }
@@ -343,12 +392,17 @@ public class CollaboardGUI extends JFrame{
         }
         
     }
-    
+    public void clearCanvas(){
+        canvas.fillWithWhite();
+    }
     public Canvas getCanvas(){
         return canvas;
     }
     public ClientCanvasModel getCanvasModel() {
-        return clientModel;
+        return canvas.getCanvasModel();
+    }
+    public void setCanvasModel(ClientCanvasModel c){
+        canvas.setCanvasModel(c);
     }
     /**
      * Draws the specified object.
@@ -365,6 +419,7 @@ public class CollaboardGUI extends JFrame{
      * @param user
      */
     public void addUser(String user){
+        users.add(user);
         usersModel.addRow(new String[]{user});
     }
     /**
@@ -372,6 +427,7 @@ public class CollaboardGUI extends JFrame{
      * @param user
      */
     public void removeUser(String user){
+        users.remove(user);
         for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
             System.out.println(currentUsers.getValueAt(row,0));
             if (user.equals(currentUsers.getValueAt(row,0))){

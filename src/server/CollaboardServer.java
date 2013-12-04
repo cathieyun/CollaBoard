@@ -234,6 +234,7 @@ public class CollaboardServer {
          * USERNAME: [0-9a-zA-Z]+<br>
 		 * MAKEUSER: makeuser USERNAME WHITEBOARDID<br>
 		 * MAKEBOARD: makeboard WHITEBOARDID<br>
+		 * SWITCH: switchboard USERNAME WHITEBOARDID<br>
 		 * UNDO: undo USERID WHITEBOARDID<br>
  		 * REDO: redo USERID WHITEBOARDID<br>
  		 * COLOR: bl|y|r|g|o|m|blk|w<br>
@@ -252,7 +253,8 @@ public class CollaboardServer {
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
                     + "(redo -?\\d+ -?\\d+)|"+
                     "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
-                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|"
+                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
+                    "(switchboard [A-Za-z0-9]+ -?\\d+)|"
                     +"(enter [A-Za-z0-9]+ -?\\d+)|(exit [A-Za-z0-9]+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
@@ -270,6 +272,39 @@ public class CollaboardServer {
                 collaboard.createNewWhiteboard(whiteboardID);
                 return "validwhiteboard";
                 //addboard
+            }
+            if (tokens[0].equals("switchboard")){
+                currentWhiteboardID = Integer.parseInt(tokens[2]);
+                if (!collaboard.existingWhiteboard(currentWhiteboardID)){ 
+                    //if the whiteboard doesn't already exist, create a new one
+                    collaboard.createNewWhiteboard(currentWhiteboardID);
+                }
+                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
+                whiteboard.addUser(tokens[1]);
+                StringBuilder message = new StringBuilder();
+                ArrayList<String> users = whiteboard.getUsers();
+                for (int i=0; i < users.size(); i++){
+                    message.append("\nenter " + users.get(i));
+                } 
+                CanvasModel canvasModel = whiteboard.getCanvasModel();
+                message.append("\nundoindex " + canvasModel.getUndoIndex());
+                for (int i = 0; i < canvasModel.getListSize(); i++){
+                    DrawingObject o = canvasModel.getIthDrawingObject(i);
+                    message.append("\ninitdraw " + o.toString());
+                }
+                message.append("\ninitdone");
+                for (UserThread t: threads){
+                    System.out.println("currentwhiteboardID: "+ currentWhiteboardID);
+                    System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
+                    System.out.println("UserID "+ userID);
+                    System.out.println("Thread UserID "+ t.getUserID());
+                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (userID != t.getUserID())){
+                        PrintWriter output = t.getPrintWriter();
+                        output.println("enter " + tokens[1]);
+                    }
+                }
+                return message.toString();
             }
             if (tokens[0].equals("enter")){ 
                 currentWhiteboardID = Integer.parseInt(tokens[2]);
@@ -307,6 +342,8 @@ public class CollaboardServer {
                         output.println("exit " + tokens[1]);
                     }
                 }
+                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
+                whiteboard.removeUser(tokens[1]);
                 currentWhiteboardID = 0;
             }
             if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){

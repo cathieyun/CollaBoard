@@ -100,6 +100,9 @@ public class Canvas extends JPanel{
     public ClientCanvasModel getCanvasModel(){
         return canvasModel;
     }
+    public void setCanvasModel(ClientCanvasModel c){
+        canvasModel = c;
+    }
 //    /**
 //     * Draws the freehand defined by the input.
 //     * @param points - list of x and y coordinates (alternating)
@@ -139,7 +142,7 @@ public class Canvas extends JPanel{
     /*
      * Make the drawing buffer entirely white.
      */
-    private void fillWithWhite() {
+    public void fillWithWhite() {
         final Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
         g.setColor(Color.WHITE);
