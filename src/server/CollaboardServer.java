@@ -259,6 +259,7 @@ public class CollaboardServer {
             if ( ! input.matches(regex)) {
                 // invalid input
                 System.out.println("client msg: " + input + " didn't match"); 
+                return null;
             }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
