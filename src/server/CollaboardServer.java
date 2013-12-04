@@ -37,6 +37,7 @@ public class CollaboardServer {
     private AtomicInteger numClients;
     private ArrayList<UserThread> threads;
     private BlockingQueue<String[]> requests;
+    
     public CollaboardServer(int port, Collaboard collaboard) throws IOException{
         this.serverSocket = new ServerSocket(port);
         this.threads = new ArrayList<UserThread>();

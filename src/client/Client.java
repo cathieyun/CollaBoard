@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import canvas.Canvas;
 import canvas.Freehand;
 import canvas.Oval;
 

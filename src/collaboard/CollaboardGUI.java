@@ -404,6 +404,7 @@ public class CollaboardGUI extends JFrame{
     public void setCanvasModel(ClientCanvasModel c){
         canvas.setCanvasModel(c);
     }
+    
     /**
      * Draws the specified object.
      * @param d
