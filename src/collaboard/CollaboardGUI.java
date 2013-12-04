@@ -351,10 +351,6 @@ public class CollaboardGUI extends JFrame{
         return clientModel;
     }
     
-    public Canvas getCanvas() {
-        return canvas;
-    }
-    
     /**
      * Draws the specified object.
      * @param d
