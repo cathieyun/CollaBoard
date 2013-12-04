@@ -107,15 +107,13 @@ public class ToolbarGUI extends JPanel{
         
     	undo.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                canvas.undo();
-                canvas.sendUndoRedoMessage(true);
+                canvas.sendUndoRedoMessage(true); //send message to the server
             }
         });
     	
         redo.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                canvas.redo();
-                canvas.sendUndoRedoMessage(false);
+                canvas.sendUndoRedoMessage(false); //send message to the server
             }
         });
         

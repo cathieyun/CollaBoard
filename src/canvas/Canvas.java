@@ -431,9 +431,7 @@ public class Canvas extends JPanel{
 		}
 
 		public void mouseReleased(MouseEvent e) {
-			canvasModel.addDrawingObject(currentDrawingObject);
 	        out.println("draw "+ currentDrawingObject.toString() + " " + user.getUserID() + " " + user.getWhiteboardID());
-			canvasModel.incrementIndex();
 		}
 
 		public void mouseEntered(MouseEvent e) {

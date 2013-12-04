@@ -68,7 +68,6 @@ public class CollaboardServer {
              */
             private void handleRequest(String[] request){
                     int whiteboardID = Integer.parseInt(request[request.length-1]);
-                    int userID = Integer.parseInt(request[request.length-2]);
                     CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("undo")|request[0].equals("redo")){
@@ -106,7 +105,7 @@ public class CollaboardServer {
                     System.out.println("outputMsg: " + outputMsg.toString());
                     //Send the message to all other threads in the same whiteboard to update their canvases.
                     for (UserThread t: threads){
-                        if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                        if ((whiteboardID == t.getCurrentWhiteboardID())){
                             PrintWriter output = t.getPrintWriter();
                             output.println(outputMsg.toString());
                         }
