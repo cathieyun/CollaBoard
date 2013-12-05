@@ -8,7 +8,10 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.swing.SwingUtilities;
+
 import canvas.Canvas;
+import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Oval;
 
@@ -33,7 +36,7 @@ public class Client {
     public void run(){
         try {
             socket = new Socket(host, port);
-            handleServer();
+            handleServer(); //TODO: add swingworker so that all edits happen on event handling thread
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -79,6 +82,8 @@ public class Client {
      * UNDO: undo<br>
      * REDO: redo<br>
      * 
+     * All edits to the GUI are done on the event handling thread through the use of
+     * SwingUtilities.invokeLater().
      * @param input - message from the server
      */
     private void handleMessage(String input){
@@ -98,23 +103,48 @@ public class Client {
             user = new User(userID);
         }
         if (tokens[0].equals("validuser")){
-            gui.goToWhiteboardSelect();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.goToWhiteboardSelect();            
+                }                
+            });
         }
         if (tokens[0].equals("validwhiteboard")){
             System.out.println("Entering canvas");
-            gui.enterCanvas();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.enterCanvas();            
+                }                
+            });
         }
         if (tokens[0].equals("usertaken")){
-            gui.displayUserTakenError();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.displayUserTakenError();            
+                }                
+            });
         }
         if (tokens[0].equals("whiteboardtaken")){
-            gui.displayWhiteboardTakenError();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.displayWhiteboardTakenError();            
+                }                
+            });
         }
         if (tokens[0].equals("list")){
             for (int i = 1; i < tokens.length; i++){
                gui.getWhiteboards().add(new Integer(tokens[i]));
             }
-            gui.initializeWhiteboardPane();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.initializeWhiteboardPane();              
+                }                
+            });
         }
         if (tokens[0].equals("users")){
             for (int i = 1; i < tokens.length; i++){
@@ -122,13 +152,30 @@ public class Client {
             }
         }
         if(tokens[0].equals("enter")){
-            gui.addUser(tokens[1]);
+            final String username = tokens[1];
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.addUser(username);             
+                }                
+            });
         }
         if(tokens[0].equals("exit")){
-            gui.removeUser(tokens[1]);
+            final String username = tokens[1];
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.removeUser(username);             
+                }                
+            });
         }
         if (tokens[0].equals("ready")){
-            gui.initializeCanvas();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.initializeCanvas();             
+                }                
+            });
         }
         if (tokens[0].equals("undoindex")){
             gui.getCanvasModel().setUndoIndex(Integer.parseInt(tokens[1]));
@@ -136,10 +183,20 @@ public class Client {
             //set the undo index.
         }
         if (tokens[0].equals("undo")){
-            gui.getCanvas().undo();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.getCanvas().undo();               
+                }                
+            });
         }
         if (tokens[0].equals("redo")){
-            gui.getCanvas().redo();
+            SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                @Override
+                public void run() {
+                    gui.getCanvas().redo();               
+                }                
+            });
         }
         if (tokens[0].equals("initdraw")){
             System.out.println("received initdraw message");
@@ -163,7 +220,13 @@ public class Client {
         if (tokens[0].equals("initdone")){
             //only draw the objects up until the undoindex.
             for (int i = 0; i < gui.getCanvasModel().getUndoIndex(); i++){
-                gui.drawObject(gui.getCanvasModel().getIthDrawingObject(i));
+                final int index = i;
+                SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                    @Override
+                    public void run() {
+                       gui.drawObject(gui.getCanvasModel().getIthDrawingObject(index));               
+                    }                
+                });
             }
         }
         if (tokens[0].equals("draw")){
@@ -176,15 +239,25 @@ public class Client {
                 for (int i=0; i < points.length; i++){
                     points[i] = Integer.parseInt(tokens[i+2]);
                 }
-                Freehand freehand = new Freehand(points, color, thickness);
+                final Freehand freehand = new Freehand(points, color, thickness);
                 currentModel.addDrawingObject(freehand);
-                gui.drawObject(freehand);
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run() {
+                        gui.drawObject(freehand);    
+                    }                
+                });
                 
             }
             if(tokens[1].equals("oval")){
-                Oval oval = new Oval(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), color, thickness);
+                final Oval oval = new Oval(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), color, thickness);
                 currentModel.addDrawingObject(oval);
-                gui.drawObject(oval);
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run() {
+                        gui.drawObject(oval);    
+                    }                
+                });
             }
             gui.getCanvasModel().incrementIndex();//increment the index.
        }

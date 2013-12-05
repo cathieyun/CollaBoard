@@ -49,7 +49,7 @@ public class Canvas extends JPanel{
     static Map<String,Color> colors; //HashMap storing all the colors and their string representations.
     {
         Map<String,Color> temp = new HashMap<String, Color>();
-        temp.put("b", Color.BLUE);
+        temp.put("bl", Color.BLUE);
         temp.put("y", Color.YELLOW);
         temp.put("r", Color.RED);
         temp.put("o", Color.ORANGE);
