@@ -229,7 +229,7 @@ public class CollaboardGUI extends JFrame{
         changeWhiteboard.setPreferredSize(new Dimension(900,50));
         usersList.setPreferredSize(new Dimension(100,200));
         ToolbarGUI toolbarGUI = new ToolbarGUI(user.getToolbar(), canvas);
-        window = new JFrame("Canvas " + user.getWhiteboardID());    
+        window = new JFrame("Whiteboard " + user.getWhiteboardID());    
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container container = window.getContentPane();
         container.setLayout(new GridBagLayout());
@@ -341,12 +341,12 @@ public class CollaboardGUI extends JFrame{
         public void actionPerformed(ActionEvent arg0) {
             try{
                 int targetWhiteboard = Integer.parseInt(changeWhiteboardField.getText());
-                if (targetWhiteboard < 0 || targetWhiteboard == user.getWhiteboardID()){
+                if (targetWhiteboard < 1 || targetWhiteboard == user.getWhiteboardID()){
                     throw new NumberFormatException(); //do nothing
                 }
                 changeWhiteboardField.setText(""); //clear the field
                 user.setWhiteboardID(targetWhiteboard);
-                window.setTitle("Canvas " + user.getWhiteboardID());
+                window.setTitle("Whiteboard " + user.getWhiteboardID());
                 clearCanvas();
                 //clear the current users
                 usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
