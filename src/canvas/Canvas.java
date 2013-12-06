@@ -31,8 +31,7 @@ import canvas.Line;
 import canvas.Oval;
 
 /**
- * Canvas represents a drawing surface that allows the user to draw on it
- * freehand, with the mouse.
+ * Canvas represents a drawing surface on which a user can draw.
  */
 
 public class Canvas extends JPanel{

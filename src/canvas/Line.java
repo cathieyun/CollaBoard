@@ -5,8 +5,6 @@ package canvas;
  * are packaged together in the Freehand class in order to provide meaningful
  * undos/redos.
  * 
- * @author Eric Ruleman
- * 
  */
 public class Line {
 	int x1;
@@ -32,7 +30,7 @@ public class Line {
 	}
 	
     public String firstPointToString() {
-        String s = x1 + " " + y1;// + " " + x2 + " "  + y2;
+        String s = x1 + " " + y1;
         return s;
     }	
 	
