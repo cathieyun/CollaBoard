@@ -61,11 +61,18 @@ public class Collaboard {
         usernames.add(username);
         return "validuser";
     }
-    
+    /**
+     * Removes the specified username from the collaboard's list of usernames.
+     * Doing so allows a new client to use that username.
+     * Requires: username must be currently in the set of usernames.
+     * @param username - to be removed
+     */
     public synchronized void removeUsername(String username){
         usernames.remove(username);
     }
-    
+    /**
+     * @return HashMap mapping whiteboardIDs to whiteboards.
+     */
     public synchronized Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
     }

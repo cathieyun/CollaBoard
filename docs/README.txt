@@ -7,3 +7,6 @@ The files in this directory should be:
 
 If you add any other documents to this directory, please add the filenames to
 the above list.
+
+To run the server: Run the CollaboardServer.java file.
+To run the client: Run the Client.java file. Each time it is run, a new Client socket connection is created.

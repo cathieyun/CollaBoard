@@ -266,7 +266,7 @@ public class Client {
      * Creates a connection to the server.
      */
     public static void main(String[]args){
-        Client client = new Client("127.0.0.1", 4444);
+        Client client = new Client("localhost", 4444);
         client.run();
     }
 }

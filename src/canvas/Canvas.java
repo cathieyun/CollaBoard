@@ -58,7 +58,7 @@ public class Canvas extends JPanel{
         temp.put("m", Color.MAGENTA);
         colors = Collections.unmodifiableMap(temp);
     }
-    static Map<String,Stroke> thicknesses;
+    static Map<String,Stroke> thicknesses; //HashMap storing all thicknesses and their string representations
     {
         Map<String,Stroke> temp = new HashMap<String, Stroke>();
         temp.put("s", new BasicStroke(2));
@@ -92,6 +92,9 @@ public class Canvas extends JPanel{
 
     }
     
+    /**
+     * Toggles the state of the canvas from drawing/not drawing an oval.
+     */
     public void toggleDrawingOval(){
         isDrawingOval = !isDrawingOval;
     }
@@ -99,22 +102,11 @@ public class Canvas extends JPanel{
     public ClientCanvasModel getCanvasModel(){
         return canvasModel;
     }
+    
     public void setCanvasModel(ClientCanvasModel c){
         canvasModel = c;
     }
-//    /**
-//     * Draws the freehand defined by the input.
-//     * @param points - list of x and y coordinates (alternating)
-//     * @param color - color of the freehand
-//     * @param stroke - stroke of the freehand
-//     */
-//    public void drawFreehand(ArrayList<Integer> points, String color, String stroke){
-//        for (int i = 0; i < points.size(); i=i+2){
-//            drawLineSegment(points.get(i), points.get(i+1), points.get(i+2), points.get(i+3), color, stroke, false);
-//            //also add to clientcanvasModel
-//        }
-//    }
-//    
+    
     /**
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
@@ -260,7 +252,8 @@ public class Canvas extends JPanel{
 	}
 
 	/*
-	 * Add the mouse listener that supports the user's freehand drawing.
+	 * Helper method that adds the mouse listener that supports the user's freehand drawing.
+	 * Called by the constructor.
 	 */
 	private void addDrawingController() {
 		DrawingController controller = new DrawingController();
@@ -286,9 +279,10 @@ public class Canvas extends JPanel{
 	}
 	/**
 	 * Send the undo/redo message to the server.
+	 * Called when the user clicks the undo or redo button on the toolbar.
 	 * @param undo - true if undo message, false if redo message
 	 */
-	public void sendUndoRedoMessage(boolean undo){
+	protected void sendUndoRedoMessage(boolean undo){
 	    if (undo){
 	        out.println("undo " + user.getUserID() + " " + user.getWhiteboardID());
 	    }
@@ -439,23 +433,4 @@ public class Canvas extends JPanel{
 		public void mouseExited(MouseEvent e) {
 		}
 	}
-//
-//	/*
-//	 * Main program. Make a window containing a Canvas.
-//	 */
-//	public static void main(String[] args) {
-//		// set up the UI (on the event-handling thread)
-//		SwingUtilities.invokeLater(new Runnable() {
-//			public void run() {
-//				JFrame window = new JFrame("Freehand Canvas");
-//				window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//				window.setLayout(new BorderLayout());
-//				Canvas canvas = new Canvas(800, 600, new ClientCanvasModel(),
-//						new User(1), new DataOutputStream(null));
-//				window.add(canvas, BorderLayout.CENTER);
-//				window.pack();
-//				window.setVisible(true);
-//			}
-//		});
-//	}
 }
