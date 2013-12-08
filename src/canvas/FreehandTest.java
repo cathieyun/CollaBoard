@@ -19,7 +19,12 @@ public class FreehandTest {
         Freehand f2 = new Freehand(points, "bl", "s");
         assertEquals(f1.toString(),f2.toString());
     }
-    
+	//Test that an FreeHand is an instance of a DrawingObject
+	public void instanceOfDrawingObjectTest(){
+		int [] points = {1,1,2,2,3,3};
+		Freehand f1 = new Freehand(points, "bl", "s");
+        assertEquals(true, f1 instanceof DrawingObject);
+	}
     //Test that the freehand's toString() method produces the expected string representation.
     @Test
     public void toStringTest(){
