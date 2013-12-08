@@ -129,7 +129,7 @@ public class CollaboardServer {
      */
     public class UserThread extends Thread{
         private Socket socket;
-        private User user;
+        private String username;
         private int userID;
         private int currentWhiteboardID;
         private InputStream inputStream;
@@ -145,7 +145,6 @@ public class CollaboardServer {
                 userID = numClients.intValue();
                 numClients.getAndIncrement();
             }
-            this.user = new User(userID);
             threads.add(this);
             try{
                 outputStream = socket.getOutputStream();
@@ -263,6 +262,7 @@ public class CollaboardServer {
             }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
+                this.username = tokens[1];
                 return(collaboard.addUser(tokens[1]));
             }
             if (tokens[0].equals("makeboard")){
@@ -288,12 +288,11 @@ public class CollaboardServer {
                     message.append("\nenter " + users.get(i));
                 } 
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
-                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     message.append("\ninitdraw " + o.toString());
                 }
-                message.append("\ninitdone");
+                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (UserThread t: threads){
                     System.out.println("currentwhiteboardID: "+ currentWhiteboardID);
                     System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
@@ -318,12 +317,12 @@ public class CollaboardServer {
                 }
                 message.append("\nready");    
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
-                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (int i = 0; i < canvasModel.getListSize(); i++){
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     message.append("\ninitdraw " + o.toString());
                 }
-                message.append("\ninitdone");
+
+                message.append("\nundoindex " + canvasModel.getUndoIndex());
                 //send the user a list of users and a list of objects already drawn.
                 System.out.println("Sending this message: " + message);
                 for (UserThread t: threads){
@@ -352,7 +351,7 @@ public class CollaboardServer {
                 requests.add(tokens);
             }
             if (tokens[0].equals("bye")){
-            	collaboard.removeUsername(this.user.getUsername());
+            	collaboard.removeUsername(this.username);
             	//then end the socket connection.
             }
             return "";

@@ -23,7 +23,6 @@ import collaboard.CollaboardGUI;
  */
 public class Client {
     private String host;
-    private int userID;
     private int port;
     private Socket socket;
     private CollaboardGUI gui;
@@ -73,7 +72,6 @@ public class Client {
      * THICKNESS: s|m|l<br>
      * INITDRAW: initdraw ((freehand ([0-9]+ [0-9]+ )([0-9]+ [0-9]+ )+)|<br>
      *      (oval [0-9]+ [0-9]+ [0-9]+ [0-9]+ ) COLOR THICKNESS<br>
-     * INITDONE: initdone<br>
      * UNDOINDEX: undoindex [0-9]+<br>
      * USERTAKEN: usertaken<br>
      * WHITEBOARDTAKEN: whiteboardtaken<br>
@@ -98,7 +96,7 @@ public class Client {
         }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("userID")){
-            this.userID = Integer.parseInt(tokens[1]);
+            int userID = Integer.parseInt(tokens[1]);
             System.out.println("I am thread: "+userID);
             user = new User(userID);
         }
@@ -178,9 +176,18 @@ public class Client {
             });
         }
         if (tokens[0].equals("undoindex")){
-            gui.getCanvasModel().setUndoIndex(Integer.parseInt(tokens[1]));
+            gui.getCanvasModel().setUndoIndex(Integer.parseInt(tokens[1]));//set the undo index.
             System.out.println("Set the undo index to: "+ Integer.parseInt(tokens[1]));
-            //set the undo index.
+            //only draw the objects up until the undoindex.
+            for (int i = 0; i < gui.getCanvasModel().getUndoIndex(); i++){
+                final int index = i;
+                SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
+                    @Override
+                    public void run() {
+                       gui.drawObject(gui.getCanvasModel().getIthDrawingObject(index));               
+                    }                
+                });
+            }
         }
         if (tokens[0].equals("undo")){
             SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
@@ -215,18 +222,6 @@ public class Client {
             if(tokens[1].equals("oval")){
                 Oval oval = new Oval(Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]), color, thickness);
                 currentModel.addDrawingObject(oval);
-            }
-        }
-        if (tokens[0].equals("initdone")){
-            //only draw the objects up until the undoindex.
-            for (int i = 0; i < gui.getCanvasModel().getUndoIndex(); i++){
-                final int index = i;
-                SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
-                    @Override
-                    public void run() {
-                       gui.drawObject(gui.getCanvasModel().getIthDrawingObject(index));               
-                    }                
-                });
             }
         }
         if (tokens[0].equals("draw")){
@@ -266,7 +261,7 @@ public class Client {
      * Creates a connection to the server.
      */
     public static void main(String[]args){
-        Client client = new Client("localhost", 4444);
+        Client client = new Client("18.111.7.141", 4444);
         client.run();
     }
 }

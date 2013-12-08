@@ -256,6 +256,7 @@ public class CollaboardGUI extends JFrame{
               }
       });
         window.setVisible(true);
+        window.setResizable(false); //don't let the user resize the window.
         CollaboardGUI.this.dispose();
     }
  
