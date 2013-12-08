@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import canvas.CanvasModel;
+
 
 import whiteboard.Whiteboard;
 /**
@@ -75,6 +77,14 @@ public class Collaboard {
      */
     public synchronized Map<Integer, Whiteboard> getWhiteboards(){
         return whiteboards;
+    }
+    
+    /**
+     * @param ID - of the target whiteboard
+     * @return CanvasModel corresponding to the inputted Whiteboard ID
+     */
+    public synchronized CanvasModel getCanvasModelByID(int ID){
+        return whiteboards.get(ID).getCanvasModel();
     }
 
 }

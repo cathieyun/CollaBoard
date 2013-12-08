@@ -107,13 +107,13 @@ From the Client to the Server:
      \item \textbf{UNDO} Client wants to undo a change. Put on the shared BlockingQueue to be handled.
      \item \textbf{REDO} Client wants to redo a change. Put on the shared BlockingQueue to be handled.
      \item \textbf{DRAW} Client made a change to the canvas. Put on the shared BlockingQueue to be handled.
-     \item \textbf {ENTER} Client is entering a new Whiteboard. 
-     \item \textbf {EXIT} Client is exiting a Whiteboard.
+     \item \textbf {ENTER} Client is entering a new Whiteboard. Adds the client from the Whiteboard's list of active users.
+     \item \textbf {EXIT} Client is exiting a Whiteboard. Removes the client from the Whiteboard's list of active users.
 \end{itemize}
 
 \section{Concurrency Strategy}
 We will have a shared message blocking queue for the server. All edits will be stored in the queue to be handled by a dedicated edits-handling thread in order. Therefore “clashing” edits cannot occur. “draw”, “undo”, and “redo” messages are put in this queue, since they have the potential to clash. All other messages are handled in each client’s UserThread.\\\\
-CanvasModel, Whiteboard, and Collaboard, whose information is stored on the server, are threadsafe through use of the monitor pattern, to ensure that multiple threads won’t mutate them concurrently, and cause edits to be lost, and to ensure that they won’t view any of these objects while they are being mutated. Accesses to these objects occur on the server when the user first connects (the server will access collaboard’s list of users and active whiteboards and send the appropriate messages to the client), and when the user connects to a specific whiteboard (the server will send the user a list of the Whiteboard’s list of active users, its CanvasModel’s undoIndex, and its list of DrawingObjects). Since these methods are all observing the state of these objects and not mutating them, it is sufficient to just use locking to achieve thread safety.\\\\
+CanvasModel, Whiteboard, and Collaboard, whose information is stored on the server, are threadsafe through use of the monitor pattern, to ensure that multiple threads won’t mutate them concurrently, and cause edits to be lost, and to ensure that they won’t view any of these objects while they are being mutated. Accesses to these objects occur on the server when the user first connects (the server will access collaboard’s list of users and active whiteboards and send the appropriate messages to the client), and when the user connects to a specific whiteboard (the server will send the user a list of the Whiteboard’s list of active users, its CanvasModel’s undoIndex, and its list of DrawingObjects). Since these methods are all observing the state of these objects and not mutating them, it is sufficient to just use locking to achieve thread safety. Deadlock will not occur, because if a particular request requires access to more than one of these objects, they will always obtain references/locks to these objects in the order: Collaboard, Whiteboard, CanvasModel. \\\\
 On the client side, all edits to the GUI are made in the event handling thread through the use of SwingUtilities.invokeLater(). All client threads have their own instance of ClientCanvasModel, which ensures thread safety through confinement.
 
 \section{Testing Strategy}

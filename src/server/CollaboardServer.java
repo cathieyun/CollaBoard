@@ -68,35 +68,34 @@ public class CollaboardServer {
              */
             private void handleRequest(String[] request){
                     int whiteboardID = Integer.parseInt(request[request.length-1]);
-                    CanvasModel currentModel = collaboard.getWhiteboards().get(whiteboardID).getCanvasModel();
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("undo")|request[0].equals("redo")){
                         outputMsg.append(request[0]);
                         if (request[0].equals("undo")){
-                            currentModel.decrementIndex();
+                            collaboard.getCanvasModelByID(whiteboardID).decrementIndex();
                         }
                         else{
-                            currentModel.incrementIndex();
+                            collaboard.getCanvasModelByID(whiteboardID).incrementIndex();
                         }
                     }
                     else if (request[0].equals("draw")){
                         String color = request[request.length-4];
                         String thickness = request[request.length-3];
-                        currentModel.preventRedoAfterThisEdit();
+                        collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
                         if(request[1].equals("freehand")){
                             int [] points = new int[request.length-6];
                             for (int i=0; i < points.length; i++){
                                 points[i] = Integer.parseInt(request[i+2]);
                             }
                             Freehand freehand = new Freehand(points, color, thickness);
-                            currentModel.addDrawingObject(freehand);
+                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(freehand);
                             
                         }
                         if(request[1].equals("oval")){
                             Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
-                            currentModel.addDrawingObject(oval);
+                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(oval);
                         }
-                        currentModel.incrementIndex();
+                        collaboard.getWhiteboards().get(whiteboardID).getCanvasModel().incrementIndex();
                         outputMsg.append("draw");
                         for (int i = 1; i < request.length-2; i++){
                             outputMsg.append(" " + request[i]);
