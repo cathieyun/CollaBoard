@@ -17,11 +17,11 @@
 
 Our implementation of the collaborative whiteboard currently allows users to draw ovals and make freehand marks. We also allow users to undo and redo changes to each whiteboard. Each client has a reference to its own model that stores the state of a given whiteboard, but these models are not shared between clients, or client and the server. They are each altered the same way (given that they all pertain to the same whiteboard) through message passing and a shared edits queue in the server. All edits must be processed by the server before they are populated on a client's canvas, ensuring that no concurrency bugs occur.\\\\
 Each whiteboard is identified by a numerical integer ID number. Users can access a specific whiteboard from the whiteboard selection pane upon first entry, or they can switch between whiteboards once they have already
-entered a whiteboard.
+entered a whiteboard. A user can only be on one Whiteboard at a time, and usernames are unique (no duplicates are allowed). 
 
 \section{Snapshot Diagram}
 \begin{figure}[ht!]
-\centerline{\includegraphics[width=200mm]{snapshot}}
+\centerline{\includegraphics[width=210mm]{snapshot}}
 \end{figure}
 
 \section{Datatype Design}
@@ -117,7 +117,91 @@ CanvasModel, Whiteboard, and Collaboard, whose information is stored on the serv
 On the client side, all edits to the GUI are made in the event handling thread through the use of SwingUtilities.invokeLater(). All client threads have their own instance of ClientCanvasModel, which ensures thread safety through confinement.
 
 \section{Testing Strategy}
-We have 3 levels of testing: 1. Testing our abstract data types. 2. Integrated Tests 3. GUI Testing
+We have 3 levels of testing.
+\subsection{Testing abstract data types}
+Test methods that may mutate the state of each of our Data types (beyond getter and setter methods)
+\begin{itemize}
+\item CanvasModel/ClientCanvasModel: preventRedoAfterThisEdit() - make sure that if this method is called while the undoIndex < the length of the DrawingObjects array, the DrawingObjects array removes its members whose indices exceed the undoIndex.
+\item Freehand/Oval: Make sure that their toString() methods output a String representation consistent with our protocol's grammar.
+\item Collaboard: Make sure that when addUser() is called, it adds the inputted username to the list of active usernames and returns "validuser" if the username is not taken, and if it is taken return "usertaken."
+\item Whiteboard: addUser() and removeUser() function correctly.
+\end{itemize}
+\subsection{Integrated Tests}
 *Flesh this one out please*
-
+\subsection{GUI Testing}
+Assume a new server is started at the beginning of each of these tests.
+\subsubsection{Basic Tests}
+Updating the list of active users - new user entering
+\begin{itemize}
+\item One person opens a client connection and creates whiteboard 1.
+\item A second person opens a new client connection and enters whiteboard 1.
+\item The first person should see their GUI update to show both his/her own username and the second person's username. The second person should see both usernames on the list of active users as well.
+\end{itemize}
+Updating the list of active users - user switching whiteboards.
+\begin{itemize}
+\item One person opens a client connection and creates whiteboard 1.
+\item A second person opens a new client connection and enters whiteboard 2.
+\item The second person switches to whiteboard 1.
+\item The first person should see their GUI update to show both his/her own username and the second person's username. The second person should see both usernames on the list of active users as well.
+\end{itemize}
+Users on the same Whiteboard can see each other's edits
+\begin{itemize}
+\item Two people each open a client connection and go to whiteboard 1.
+\item Person 1 draws something. 
+\item Both of their GUIs should look identical and update in roughly real time.
+\item Person 2 draws something.
+\item Both of their GUIs should look identical and update in roughly real time. (To make sure that it works both ways)
+\end{itemize}
+Users on different Whiteboards won't see each other's edits
+\begin{itemize}
+\item Two people each open a client connection.
+\item The first person goes to whiteboard 1, and the second goes to whiteboard 2.
+\item The first person draws something. The second person's GUI should remain unchanged.
+\item The second person draws something. The first person's GUI should remain unchanged.
+\end{itemize}
+\subsubsection{Testing concurrency}
+Edits to the Whiteboard will be the same on the GUIs of all users viewing the same whiteboard
+\begin{itemize}
+\item Two people each open a client connection and go to whiteboard 1.
+\item Person one draws a freehand, keeping the mouse held down. (The message won't be sent to the server until the mouse is released)
+\item Person two draws a freehand and releases the mouse.
+\item Person one releases the mouse.
+\item Both GUIs should look identical.
+\end{itemize}
+\subsubsection{Testing invalid inputs}
+Invalid characters for usernames
+\begin{itemize}
+\item On the username selection panel, a user types in "hello 1" (no spaces are allowed) and "\$\%\^\&" (no special characters are allowed) (two separate sessions).
+\item An error message should be displayed.
+\end{itemize}
+Duplicate usernames
+\begin{itemize}
+\item One person opens a client connection and creates a user with the username "bob".
+\item A second person opens a client connection and tries to create a user with the username "bob".
+\item An error message should be displayed.
+\end{itemize}
+Invalid whiteboardIDs
+\begin{itemize}
+\item Once a person gets to the whiteboard selection screen, (s)he will enter "abc" (non numerical), "0.123" (non integer), "0"(zero is not allowed), and "-123"(negative integer).
+\item An error message should be displayed.
+\end{itemize}
+Duplicate whiteboardIDs
+\begin{itemize}
+\item The first person creates a whiteboard with ID 1.
+\item A second person tries to create a whiteboard with ID 1.
+\item An error message should be displayed.
+\end{itemize}
+\subsubsection{Testing persistence of whiteboards}
+Single user
+\begin{itemize}
+\item Enter whiteboard 1. 
+\item Draw something.
+\item Switch to whiteboard 2.
+\item Switch back to whiteboard 1. It should be in the same state as you left it.
+\end{itemize}
+Multiple User
+\begin{itemize}
+\item A person enters whiteboard 1 and draws something, and leaves.
+\item A second person enters whiteboard 1. It should be in the same state as person one left it.
+\end{itemize}
 \end{document}
