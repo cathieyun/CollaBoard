@@ -5,19 +5,20 @@ import java.util.ArrayList;
 
 /**
  * Freehand aggregates all the line segments that a user draws between the time
- * when the mouse is pressed and when the mouse is released. The Freehand class
- * allows for meaningful undos/redos.
- * 
+ * when the mouse is pressed and when the mouse is released. 
  */
 public class Freehand implements DrawingObject{
-	private ArrayList<Line> lineList;
+	private ArrayList<Line> lineList; 
 	public Freehand(ArrayList<Line> lineList) {
 		this.lineList = lineList;
 	}
 	/**
-	 * initialize a Freehand by an array of integers representing points.
+	 * Initialize a Freehand by an array of integers representing points.
 	 * Requires: length of pointsList%2 == 0, length of pointsList >=4
-	 * @param pointsList
+	 * @param thickness - String representation corresponding to one of the supported thicknesses. (s|m|l)
+	 * @param color - String representation corresponding to one of the supported colors. (bl|y|r|g|o|m|blk|w)
+	 * @param pointsList - array of integers representing x and y coordinates pairs. 
+	 * even indexed values correspond to x coordinates and the value at the index immediately following is the corresponding y coordinate.
 	 */
 	public Freehand(int[] pointsList, String color, String thickness){
 	    lineList = new ArrayList<Line>();
@@ -28,7 +29,7 @@ public class Freehand implements DrawingObject{
 	}
 	
 	/**
-	 * Returns a list of the line objects that comprise the DrawingObject.
+	 * Returns a list of the Line objects that comprise the DrawingObject.
 	 */
 	public ArrayList<Line> getLineList() {
 		return lineList;
@@ -36,7 +37,7 @@ public class Freehand implements DrawingObject{
 
 	@Override
 	/**
-	 * Returns a String representation of a Freehand as a list of alternating x and y values
+	 * Returns a String representation of a Freehand as a list of pairs of x and y values in order
 	 * followed by a color and a thickness.
 	 */
 	public String toString() {

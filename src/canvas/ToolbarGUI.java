@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JComponent;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -65,7 +66,7 @@ public class ToolbarGUI extends JPanel{
         large.addActionListener(new StrokeListener(20));
         JButton undo = new JButton("Undo");
         JButton redo = new JButton("Redo");
-        JButton oval = new JButton("Draw Oval");
+        JToggleButton oval = new JToggleButton("Draw Oval");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setAutoCreateGaps(true);

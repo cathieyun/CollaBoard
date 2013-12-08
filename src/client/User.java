@@ -8,7 +8,6 @@ import canvas.ToolbarModel;
 public class User {
     //for identification purposes, in case we want to add the functionality to change usernames
     private final int userID; 
-    //current username
     private String username;
     //current ID of the whiteboard the user is viewing
     private int whiteboardID;

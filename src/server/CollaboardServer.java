@@ -21,7 +21,6 @@ import canvas.CanvasModel;
 import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Oval;
-import client.User;
 
 import collaboard.Collaboard;
 
@@ -34,9 +33,9 @@ public class CollaboardServer {
 
     private final ServerSocket serverSocket;
     private Collaboard collaboard;
-    private AtomicInteger numClients;
+    private AtomicInteger numClients; //keeps track of the number of clients in order to assign them each a unique user ID.
     private ArrayList<UserThread> threads;
-    private BlockingQueue<String[]> requests;
+    private BlockingQueue<String[]> requests; 
     
     public CollaboardServer(int port, Collaboard collaboard) throws IOException{
         this.serverSocket = new ServerSocket(port);
@@ -46,18 +45,23 @@ public class CollaboardServer {
         this.requests = new LinkedBlockingQueue<String[]>();
     }
     
+    /**
+     * Runs the server, listening for client connections and handling them.
+     * Also starts a requestHandler thread dedicated to handling possible concurrent edits.
+     * @throws IOException if the main server socket is broken.
+     */
     private void serve() throws IOException{
-        /**
-         * Thread that handles requests from the requests BlockingQueue, to ensure that edits are made
-         * to each whiteboard in the order they are put on the queue, to ensure thread safety.
-         */
+
         Thread requestHandler = new Thread(new Runnable(){
+            /**
+             * Thread that handles requests from the requests BlockingQueue, to ensure that edits are made
+             * to each whiteboard in the order they are put on the queue, to ensure thread safety.
+             */
             @Override
             public void run() {
                 while(true){
                     String[] currentRequest = requests.poll();
                     if (currentRequest != null){
-                        //System.out.println("got a request");
                         handleRequest(currentRequest);
                     }
                 }      
@@ -101,8 +105,7 @@ public class CollaboardServer {
                             outputMsg.append(" " + request[i]);
                         }
                     }
-                    System.out.println("outputMsg: " + outputMsg.toString());
-                    //Send the message to all other threads in the same whiteboard to update their canvases.
+                    //Send the message to all other threads on the same whiteboard to update their canvases.
                     for (UserThread t: threads){
                         if ((whiteboardID == t.getCurrentWhiteboardID())){
                             PrintWriter output = t.getPrintWriter();
@@ -122,9 +125,9 @@ public class CollaboardServer {
             thread.start();
         }
     }
+    
     /**
      * Class representing a single user connection.
-     *
      */
     public class UserThread extends Thread{
         private Socket socket;
@@ -137,13 +140,7 @@ public class CollaboardServer {
         public UserThread(Socket socket){
             this.socket= socket;
             currentWhiteboardID = 0; //initialize to 0
-            //ensure that no two threads can access and increment numClients at the same time
-            synchronized(numClients){
-                //assign integer ID based on how many clients there are. doesn't really have to
-                //reflect the actual # of clients, everyone just has to have a unique ID
-                userID = numClients.intValue();
-                numClients.getAndIncrement();
-            }
+            userID = numClients.getAndIncrement();
             threads.add(this);
             try{
                 outputStream = socket.getOutputStream();
@@ -179,6 +176,7 @@ public class CollaboardServer {
             } finally {
                 try {
                     socket.close();
+                    threads.remove(this);
                     inputStream.close();
                     outputStream.close();
                 } catch (IOException e) {
@@ -191,7 +189,7 @@ public class CollaboardServer {
          * 
          * @param socket
          * @param userID - Unique userID assigned to each socket. Used for identification purposes.
-         * @throws IOException
+         * @throws IOException if the connection has an error or terminates unexpectedly
          */
         private void handleConnection(Socket socket, int userID) throws IOException{
             BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
@@ -220,6 +218,7 @@ public class CollaboardServer {
                         ioe.printStackTrace();
                     }
                 }
+                threads.remove(this);
                 out.close();
                 in.close();
             }
@@ -244,10 +243,9 @@ public class CollaboardServer {
 		 * BYE: bye
          * 
          * @param input
-         * @return
-         * @throws IOException
+         * @return server response to the Client's message.
          */
-        public String handleRequest(String input) throws IOException{
+        public String handleRequest(String input){
             String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
                     + "(redo -?\\d+ -?\\d+)|"+
                     "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
@@ -262,7 +260,7 @@ public class CollaboardServer {
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
                 this.username = tokens[1];
-                return(collaboard.addUser(tokens[1]));
+                return(collaboard.addUser(tokens[1])); //returns "validuser" if not taken, else "usertaken"
             }
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
@@ -280,23 +278,19 @@ public class CollaboardServer {
                     collaboard.createNewWhiteboard(currentWhiteboardID);
                 }
                 Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
-                whiteboard.addUser(tokens[1]);
+                whiteboard.addUser(tokens[1]); //add the user to the list of active users
                 StringBuilder message = new StringBuilder();
                 ArrayList<String> users = whiteboard.getUsers();
-                for (int i=0; i < users.size(); i++){
+                for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
                     message.append("\nenter " + users.get(i));
                 } 
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
-                for (int i = 0; i < canvasModel.getListSize(); i++){
+                for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects in the CanvasModel
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     message.append("\ninitdraw " + o.toString());
                 }
                 message.append("\nundoindex " + canvasModel.getUndoIndex());
                 for (UserThread t: threads){
-                    System.out.println("currentwhiteboardID: "+ currentWhiteboardID);
-                    System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
-                    System.out.println("UserID "+ userID);
-                    System.out.println("Thread UserID "+ t.getUserID());
                     //find the threads that are on the same whiteboard and send the enter request to them.
                     if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (userID != t.getUserID())){
                         PrintWriter output = t.getPrintWriter();
@@ -311,19 +305,16 @@ public class CollaboardServer {
                 whiteboard.addUser(tokens[1]);
                 StringBuilder message = new StringBuilder("users");
                 ArrayList<String> users = whiteboard.getUsers();
-                for (int i=0; i < users.size(); i++){
+                for (int i=0; i < users.size(); i++){ //send the list of users currently on the Whiteboard.
                     message.append(" " + users.get(i));
                 }
-                message.append("\nready");    
+                message.append("\nready"); //tell the client to initialize the Canvas.
                 CanvasModel canvasModel = whiteboard.getCanvasModel();
-                for (int i = 0; i < canvasModel.getListSize(); i++){
+                for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects currently in the CanvasModel
                     DrawingObject o = canvasModel.getIthDrawingObject(i);
                     message.append("\ninitdraw " + o.toString());
                 }
-
                 message.append("\nundoindex " + canvasModel.getUndoIndex());
-                //send the user a list of users and a list of objects already drawn.
-                System.out.println("Sending this message: " + message);
                 for (UserThread t: threads){
                     //find the threads that are on the same whiteboard and send the enter request to them.
                     if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
@@ -335,7 +326,7 @@ public class CollaboardServer {
             }
             if (tokens[0].equals("exit")){
                 for (UserThread t: threads){
-                    //find the threads that are on the same whiteboard and send the enter request to them.
+                    //find the threads that are on the same whiteboard and send the exit request to them.
                     if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                         PrintWriter output = t.getPrintWriter();
                         output.println("exit " + tokens[1]);
