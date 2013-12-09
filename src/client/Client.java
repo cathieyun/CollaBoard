@@ -22,7 +22,7 @@ import collaboard.CollaboardGUI;
  *
  */
 public class Client {
-    private String host;
+    private String host; //corresponds to IP of the machine running the server
     private int port;
     private Socket socket;
     private CollaboardGUI gui;
@@ -269,7 +269,8 @@ public class Client {
      * Creates a connection to the server.
      */
     public static void main(String[]args){
-        Client client = new Client("18.111.7.141", 4444);
+        //if you want to access the server from multiple machines, change "localhost" to the IP address of the machine running the server.
+        Client client = new Client("localhost", 4444); 
         client.run();
     }
 }
