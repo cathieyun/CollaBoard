@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Model by which the server stores the information for each individual Whiteboard.
  * Threadsafe through use of the monitor pattern.
  * No thread can gain direct access to drawingObjectList.
- *
+ * Rep Invariant: undoIndex >= 0.
  */
 public class CanvasModel{
     private ArrayList<DrawingObject> drawingObjectList;
@@ -88,5 +88,9 @@ public class CanvasModel{
 		for (int i = getListSize() - 1; getUndoIndex() < getListSize(); i--) {
 			removeDrawingObject(i);
 		}
+	}
+	
+	public boolean checkRep(){
+	    return undoIndex >=0;
 	}
 }

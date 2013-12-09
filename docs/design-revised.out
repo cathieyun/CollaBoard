@@ -4,3 +4,10 @@
 \BOOKMARK [1][-]{section.4}{Protocol}{}% 4
 \BOOKMARK [1][-]{section.5}{Concurrency Strategy}{}% 5
 \BOOKMARK [1][-]{section.6}{Testing Strategy}{}% 6
+\BOOKMARK [2][-]{subsection.6.1}{Testing abstract data types}{section.6}% 7
+\BOOKMARK [2][-]{subsection.6.2}{Integrated Tests}{section.6}% 8
+\BOOKMARK [2][-]{subsection.6.3}{GUI Testing}{section.6}% 9
+\BOOKMARK [3][-]{subsubsection.6.3.1}{Basic Tests}{subsection.6.3}% 10
+\BOOKMARK [3][-]{subsubsection.6.3.2}{Testing concurrency}{subsection.6.3}% 11
+\BOOKMARK [3][-]{subsubsection.6.3.3}{Testing invalid inputs}{subsection.6.3}% 12
+\BOOKMARK [3][-]{subsubsection.6.3.4}{Testing persistence of whiteboards}{subsection.6.3}% 13

@@ -1,9 +1,8 @@
 package canvas;
 
 /**
- * Line represents a line segment that a user draws by dragging his mouse. Lines
- * are packaged together in the Freehand class in order to provide meaningful
- * undos/redos.
+ * Line represents a line segment that a user draws by dragging his mouse. 
+ * Freehand objects are composed of one or more Lines.
  * 
  */
 public class Line {
