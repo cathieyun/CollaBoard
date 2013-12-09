@@ -1,5 +1,6 @@
 package client;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,6 @@ import javax.swing.SwingUtilities;
 import canvas.Freehand;
 import canvas.Oval;
 
-import collaboard.CollaboardGUI;
 /**
  * Client class for Collaboard. Represents a single client connection.
  * Handles inputs/outputs to the server and acts as a controller for the GUI.

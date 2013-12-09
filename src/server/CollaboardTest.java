@@ -1,6 +1,7 @@
-package collaboard;
+package server;
 import static org.junit.Assert.*;
 import org.junit.Test;
+
 public class CollaboardTest {
     
     //check that "validuser" is returned when trying to add a username that has not been taken

@@ -15,14 +15,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import whiteboard.Whiteboard;
 
 import canvas.CanvasModel;
 import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Oval;
 
-import collaboard.Collaboard;
 
 /**
  * Class representing the Collaboard server.
@@ -342,7 +340,6 @@ public class CollaboardServer {
             }
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
-            	//then end the socket connection.
             }
             return "";
             

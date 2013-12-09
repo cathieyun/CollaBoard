@@ -1,4 +1,4 @@
-package collaboard;
+package server;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +8,6 @@ import java.util.Set;
 import canvas.CanvasModel;
 
 
-import whiteboard.Whiteboard;
 /**
  * Class that stores all the active Whiteboards on the server, and the current list
  * of taken usernames.

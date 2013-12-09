@@ -1,4 +1,4 @@
-package canvas;
+package client;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -23,9 +23,8 @@ import java.util.Map.Entry;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-import client.ClientCanvasModel;
-import client.User;
 
+import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Line;
 import canvas.Oval;
@@ -277,7 +276,6 @@ public class Canvas extends JPanel{
 	 * Undos the last DrawingObject completed on the canvas.
 	 */
 	public void undo() {
-	    //TODO: send message to server
 		fillWithWhite();
 		for (int i = 0; i < canvasModel.getUndoIndex() - 1; i++) {
 			DrawingObject currentDrawingObject = canvasModel.getIthDrawingObject(i);
@@ -299,7 +297,6 @@ public class Canvas extends JPanel{
 	        out.println("undo " + user.getUserID() + " " + user.getWhiteboardID());
 	    }
 	    else{
-
 	        out.println("redo " + user.getUserID() + " " + user.getWhiteboardID());
 	    }
 	}
@@ -315,17 +312,16 @@ public class Canvas extends JPanel{
 	}
 	
 	/**
-	 * Redraws a drawingObject onto the screen by checking the type of
-	 * particular drawingObject and calling the appropriate methods to redraw
+	 * Redraws a DrawingObject onto the screen by checking the type of
+	 * particular DrawingObject and calling the appropriate methods to redraw
 	 * the type.
 	 * 
-	 * Draws the specified drawing object.
+	 * Draws the specified DrawingObject.
 	 * 
-	 * @param d
-	 *            the drawingObject to redraw onto the canvas
+	 * @param d - the DrawingObject to redraw onto the canvas
 	 */
 	public void drawDrawingObject(DrawingObject d) {
-		// check if drawingBuffer is null; if it is, create the drawingBuffer
+		//check if DrawingBuffer is null; if it is, create the DrawingBuffer
 		checkIfDrawingBufferIsNull();
 		
 		if (d instanceof Freehand) {
@@ -350,13 +346,10 @@ public class Canvas extends JPanel{
 	}
 	
 	/**
-	 * This method is used to redaw the lines in a Freehand object.
-	 * 
-	 * @param freehand
-	 *            the Freehand object whose lines are to be redrawn onto the GUI
+	 * This method is used to redaw the lines in a Freehand object onto the Canvas.
+	 * @param freehand - the Freehand object whose lines are to be redrawn onto the GUI
 	 */
 	private void redrawLinesInFreehand(Freehand freehand) {
-	    //TODO: send message to server
 		for (Line l : freehand.getLineList()) {
 			int x1 = l.getX1();
 			int x2 = l.getX2();
@@ -373,9 +366,8 @@ public class Canvas extends JPanel{
 	 */
 	private class DrawingController implements MouseListener,
 			MouseMotionListener {
-		// store the coordinates of the last mouse event, so we can
-		// draw a line segment from that last point to the point of the next
-		// mouse event.
+		//store the coordinates of the last mouse event, so we can draw 
+	    //a line segment from that last point to the point of the next mouse event.
 		private int lastX, lastY;
 		private DrawingObject currentDrawingObject;
 		private int shapeStartX;
@@ -402,8 +394,8 @@ public class Canvas extends JPanel{
 			int x = e.getX();
 			int y = e.getY();
 			
-			// configure the color and thickness
-		    String color = "b";
+			//default to black and medium thickness
+		    String color = "b"; 
 			String thickness = "m";
 			for (Entry<String, Color> entry: colors.entrySet()){
 			    if (entry.getValue().equals(user.getToolbar().getColor())){

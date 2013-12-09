@@ -1,4 +1,5 @@
-package canvas;
+package client;
+
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -24,6 +25,9 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
+
+
+import canvas.ToolbarModel;
 /**
  * GUI by which the user can call undo, redo, draw ovals, and change the color and thickness of the stroke.
  *
@@ -66,6 +70,7 @@ public class ToolbarGUI extends JPanel{
         large.addActionListener(new StrokeListener(20));
         JButton undo = new JButton("Undo");
         JButton redo = new JButton("Redo");
+        JButton exit = new JButton("Exit");
         JToggleButton oval = new JToggleButton("Draw Oval");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -87,6 +92,7 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(undo)
                 .addComponent(redo)
                 .addComponent(oval)
+                .addComponent(exit)
              );
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
@@ -104,6 +110,7 @@ public class ToolbarGUI extends JPanel{
                 .addComponent(undo)
                 .addComponent(redo)
                 .addComponent(oval)
+                .addComponent(exit)
              );
         
     	undo.addActionListener(new ActionListener(){
@@ -121,6 +128,12 @@ public class ToolbarGUI extends JPanel{
         oval.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 canvas.toggleDrawingOval();
+            }
+        });
+        
+        exit.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                
             }
         });
     	

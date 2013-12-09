@@ -1,4 +1,4 @@
-package whiteboard;
+package server;
 
 import java.util.ArrayList;
 

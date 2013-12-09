@@ -1,10 +1,13 @@
-package collaboard;
+package client;
+
+
 
 import java.awt.CardLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -25,13 +28,13 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 
-import client.ClientCanvasModel;
-import client.User;
-import canvas.Canvas;
 import canvas.DrawingObject;
-import canvas.ToolbarGUI;
 
-
+/**
+ * GUI for the Collaborative whiteboard. 
+ * Most methods are package-private to prevent rep exposure.
+ *
+ */
 public class CollaboardGUI extends JFrame{
     private JPanel userSelect; //username selection pane 
     private JPanel whiteboardSelect; //whiteboard selection pane
@@ -84,16 +87,16 @@ public class CollaboardGUI extends JFrame{
         layout.show(panels, "user");
         this.setVisible(true);
     }
-    public ArrayList<Integer> getWhiteboards(){
+    ArrayList<Integer> getWhiteboards(){
         return whiteboards;
     }
-    public ArrayList<String> getUsers(){
+    ArrayList<String> getUsers(){
         return users;
     }
     /**
      * Display the error message for a invalid username input.
      */
-    public void displayUserTakenError(){
+    void displayUserTakenError(){
         error.setVisible(true);
     }
     /**
@@ -139,7 +142,7 @@ public class CollaboardGUI extends JFrame{
      * Method that initializes the whiteboard selection pane.
      * Called after receiving a list of active Whiteboards from the server.
      */
-    public void initializeWhiteboardPane(){
+    void initializeWhiteboardPane(){
         JButton chooseWhiteboard = new JButton("Go");
         JButton makeNewWhiteboard = new JButton("Create!");
         makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
@@ -196,7 +199,7 @@ public class CollaboardGUI extends JFrame{
      * Advances GUI to the whiteboard selection page. 
      * Called after receiving a "validuser" message from the server.
      */
-    public void goToWhiteboardSelect(){
+    void goToWhiteboardSelect(){
         CollaboardGUI.this.setSize(500,500);
         CardLayout layout = (CardLayout) panels.getLayout();
         layout.show(panels, "whiteboard");
@@ -205,7 +208,7 @@ public class CollaboardGUI extends JFrame{
      * Helper method to initialize the canvas.
      * Called after receiving a "ready" message from the server.
      */
-    public void initializeCanvas(){
+    void initializeCanvas(){
         currentUsers = new JTable();
         usersModel = new DefaultTableModel(new String[]{"Current Users"},0){
             //prevent user from editing cells
@@ -265,14 +268,14 @@ public class CollaboardGUI extends JFrame{
      * Displays an error message if the desired whiteboard ID is already taken.
      * Called after receiving a "whiteboardtaken" message from the server.
      */
-    public void displayWhiteboardTakenError(){
+    void displayWhiteboardTakenError(){
         createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
     }
     
     /**
      * Called by client after receiving a "validwhiteboard" message.
      */
-    public void enterCanvas(){
+    void enterCanvas(){
         user.setWhiteboardID(Integer.parseInt(whiteboardField.getText()));
         System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
         new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();     
@@ -374,7 +377,7 @@ public class CollaboardGUI extends JFrame{
     /**
      * SwingWorker that passes messages to the server in a background thread.
      */
-    public class ProtocolWorker extends SwingWorker<String, Object>{
+     private class ProtocolWorker extends SwingWorker<String, Object>{
         private String message; //message to be sent
         public ProtocolWorker(String message){
             this.message = message;
@@ -387,16 +390,16 @@ public class CollaboardGUI extends JFrame{
         }
         
     }
-    public void clearCanvas(){
+    void clearCanvas(){
         canvas.fillWithWhite();
     }
-    public Canvas getCanvas(){
+    Canvas getCanvas(){
         return canvas;
     }
-    public ClientCanvasModel getCanvasModel() {
+    ClientCanvasModel getCanvasModel() {
         return canvas.getCanvasModel();
     }
-    public void setCanvasModel(ClientCanvasModel c){
+    void setCanvasModel(ClientCanvasModel c){
         canvas.setCanvasModel(c);
     }
     
@@ -404,7 +407,7 @@ public class CollaboardGUI extends JFrame{
      * Draws the specified object.
      * @param d
      */
-    public void drawObject(DrawingObject d){
+    void drawObject(DrawingObject d){
     	// we pass in the string draw so that the undo list is incremented
     	// during the call to drawOrRedrawDrawingObject
         canvas.drawDrawingObject(d);
@@ -414,7 +417,7 @@ public class CollaboardGUI extends JFrame{
      * Adds the specified user to the table of active users.
      * @param user
      */
-    public void addUser(String user){
+    void addUser(String user){
         users.add(user);
         usersModel.addRow(new String[]{user});
     }
@@ -422,7 +425,7 @@ public class CollaboardGUI extends JFrame{
      * Remove the specified user from the table.
      * @param user
      */
-    public void removeUser(String user){
+    void removeUser(String user){
         users.remove(user);
         for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
             System.out.println(currentUsers.getValueAt(row,0));
@@ -431,5 +434,13 @@ public class CollaboardGUI extends JFrame{
                 break;
             }
         }
+    }
+    /**
+     * Method called when the user clicks the exit button on the toolbar.
+     * Package protected.
+     */
+    void exitProgram(){
+        WindowEvent wev = new WindowEvent(window, WindowEvent.WINDOW_CLOSING);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
     }
 }

@@ -1,7 +1,8 @@
-package whiteboard;
+package server;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 
 public class WhiteboardTest {
     //Check that adding users works.
