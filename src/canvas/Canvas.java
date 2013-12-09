@@ -131,6 +131,17 @@ public class Canvas extends JPanel{
     }
     
     /*
+     * We need to check if the drawingBuffer is null because
+	 * when a client enters a board already in progress, that client
+	 * does not have a drawingBuffer yet.
+     */
+    private void checkIfDrawingBufferIsNull() {
+        if (drawingBuffer == null) {
+            paintComponent(this.getGraphics());
+        }
+    }
+    
+    /*
      * Make the drawing buffer entirely white.
      */
     public void fillWithWhite() {
@@ -183,6 +194,7 @@ public class Canvas extends JPanel{
 	 */
 	private void drawLineSegment(int x1, int y1, int x2, int y2, String color,
 		String thickness, boolean areUndoingOrRedoing) {
+		
 		Graphics2D g = (Graphics2D) drawingBuffer.getGraphics();
 
 		// configure the color and thickness depending on we are undoing/redoing or not
@@ -313,6 +325,9 @@ public class Canvas extends JPanel{
 	 *            the drawingObject to redraw onto the canvas
 	 */
 	public void drawDrawingObject(DrawingObject d) {
+		// check if drawingBuffer is null; if it is, create the drawingBuffer
+		checkIfDrawingBufferIsNull();
+		
 		if (d instanceof Freehand) {
 			Freehand freehand = (Freehand) d;
 			redrawLinesInFreehand(freehand);

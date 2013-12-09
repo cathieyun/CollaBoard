@@ -52,6 +52,7 @@ public class CollaboardGUI extends JFrame{
     public CollaboardGUI(User user, OutputStream outputStream, InputStream inputStream){
         this.user = user;
         this.canvas = new Canvas(800, 600, new ClientCanvasModel(), user, outputStream);
+        // canvas.paintComponent(canvas.getGraphics());
         this.users = new ArrayList<String>();
         this.out = new PrintWriter(outputStream, true);
         this.whiteboards = new ArrayList<Integer>();
