@@ -326,10 +326,17 @@ public class CollaboardGUI extends JFrame{
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            // = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
-            user.setWhiteboardID(Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn())));
-            System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
-            new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();
+        	// System.out.println("table rowCount is: " + table.getRowCount());
+        	// System.out.println("table rowCount is: " + table.getSelectedRow());
+
+        	if (table.getRowCount() > 0) {
+        		if (table.getSelectedRow() != -1) {
+                    // = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
+                    user.setWhiteboardID(Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn())));
+                    System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
+                    new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();
+        		}
+        	}
         }
         
     }

@@ -215,7 +215,7 @@ public class CollaboardServer {
                         // make sure we close the socket (and associated I/O streams)
                         socket.close();
                     } catch (IOException ioe) {
-                        ioe.printStackTrace();
+                         ioe.printStackTrace();
                     }
                 }
                 threads.remove(this);
