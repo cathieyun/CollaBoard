@@ -10,8 +10,6 @@ import java.net.UnknownHostException;
 
 import javax.swing.SwingUtilities;
 
-import canvas.Canvas;
-import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Oval;
 
