@@ -51,7 +51,7 @@ public class CollaboardServer {
      * Also starts a requestHandler thread dedicated to handling possible concurrent edits.
      * @throws IOException if the main server socket is broken.
      */
-    private void serve() throws IOException{
+    protected void serve() throws IOException{
 
         Thread requestHandler = new Thread(new Runnable(){
             /**
@@ -264,7 +264,7 @@ public class CollaboardServer {
                         // make sure we close the socket (and associated I/O streams)
                         socket.close();
                     } catch (IOException ioe) {
-                        ioe.printStackTrace();
+                         ioe.printStackTrace();
                     }
                 }
                 threads.remove(this);
@@ -348,6 +348,7 @@ public class CollaboardServer {
 
     public static void main(String[] args) {
         int port = 4444; // default port
+        
         try {
             runCollaboardServer(port);
         } catch (IOException e) {
