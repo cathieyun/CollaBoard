@@ -5,19 +5,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import collaboard.TestUtil;
 
 /**
  * Testing strategy:
- * 1. Check various protocol messages
- * 2. Check that everything is being mutated how we would expect it to.
+ * 1. Check various protocol messages (Eric: This is done.)
+ * 2. Check that everything is being mutated how we would expect it to. (Eric: Not sure how to do this.)
  * 3. ?
  *
  */
@@ -32,18 +30,36 @@ public class CollaboardServerTest {
 	}
 
 	/**
-	 * Tests the "makeuser [A-Za-z0-9]+ -?\\d+" client-server protocol.
+	 * This testing suite covers client-server protocol messages, including clients connecting to the server and 
+	 * users entering, exiting, and switching whiteboards.
 	 * 
-	 * Client 1 connects, and attempts to create the username funkyPistol. Server should respond with "validuser".
-	 * Client 2 connects, and attempts to create the username theStrokes. Server should respond with "validuser".
-	 * Client 3 connects, and attempts to create the username theStrokes. Server should respond with "usertaken".
+	 * 
+	 * Testing Strategy:
+	 * Client 1 connects, and attempts to create the username "funkyPistol". Server should respond with "validuser".
+	 * Client 2 connects, and attempts to create the username "theStrokes". Server should respond with "validuser".
+	 * Client 1 makes whiteboard 13. Server should reply "newboard 13" then "validwhiteboard".
+	 * Client 2 should be alerted of whiteboard 13's existence.
+
+	 * 
+	 * Client 3 connects, and attempts to create the username "theStrokes". Server should respond with "usertaken".
+	 * Client 3 creates the username rollingStones; server should respond with "validuser".
+	 * Client 3 attempts to create the whiteboard 13, server should respond with "whiteboardtaken".
+	 * Client 3 creates the whiteboard 15, server should respond with "validwhiteboard".
+	 * Clients 1 and 2 should be alerted that Client 3 created whiteboard 15.
+	 * 
+	 * Client 1 switches from whiteboard 13. Server responds with an empty string.
+	 * Client 1 (username = funkyPistol, userID = 0) enters whiteboard 15.
+	 * Client 1 disconnects from the Collaboard program
 	 * 
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	@Test(timeout = 10000)
-	public void makeUsersTest() throws IOException, InterruptedException {
+	public void clientServerTest() throws IOException, InterruptedException {
+		// initialize the server
 		setUp();
+		
+		
 		// Avoid race where we try to connect to server too early
 		Thread.sleep(100);
 
@@ -73,9 +89,12 @@ public class CollaboardServerTest {
 			out2.println("makeuser theStrokes 6");
 			assertEquals("validuser", in2.readLine());
 			
-			// have client 1 make the whiteboard 13; server should reply "validwhiteboard"
+			// have client 1 make the whiteboard 13; server should reply "newboard 13" then "validwhiteboard"
 			out.println("makeboard 13");
+			assertEquals("newboard 13", in.readLine());
 			assertEquals("validwhiteboard", in.readLine());
+			// client 2 should be alerted of whiteboard 13's existence
+			assertEquals("newboard 13", in2.readLine());
 			
 			// open a socket between client 3 and the server
 			Socket sock3 = TestUtil.connect();
@@ -89,17 +108,47 @@ public class CollaboardServerTest {
 			out3.println("makeuser theStrokes 7");
 			assertEquals("usertaken", in3.readLine());
 			
+			// have client 3 attempt to create the username rollingStones; server should respond with "validuser"
+			out3.println("makeuser rollingStones 7");
+			assertEquals("validuser", in3.readLine());
+			
 			// have client 3 attempt to create the whiteboard 13, server should respond with "whiteboardtaken"
 			out3.println("makeboard 13");
 			assertEquals("whiteboardtaken", in3.readLine());
 			
-			// have client 1 switch to whiteboard 15, which will need to be created since it doesn't exist yet
-			out.println("switchboard 15");
-			assertEquals("enter 0", in.readLine());
-
-//			sock.close();
-//			sock2.close();
-//			sock3.close();
+			// have client 3 attempt to create the whiteboard 15, server should respond with "validwhiteboard"
+			out3.println("makeboard 15");
+			assertEquals("newboard 15", in3.readLine());
+			assertEquals("validwhiteboard", in3.readLine());
+			
+			// client 1 and 2 should be alerted that client 3 created whiteboard 15
+			assertEquals("newboard 15", in.readLine());
+			assertEquals("newboard 15", in2.readLine());
+			
+			//**** FIX THIS *****//
+			// have client 1 switch from whiteboard 13
+			out.println("switchboard funkyPistol 0 13");
+			assertEquals("", in.readLine()); // the server should respond with nothing.
+			assertEquals("", in.readLine()); // the server should respond with nothing.
+						
+			// have funkyPistol (userID 0) enter whiteboard 15
+			out.println("enter funkyPistol 0 15");
+			assertEquals("enter funkyPistol", in.readLine());
+			assertEquals("undoindex 0", in.readLine());
+			assertEquals("enter ", in.readLine());
+			assertEquals("", in.readLine());
+			assertEquals("users funkyPistol", in.readLine());
+			assertEquals("ready", in.readLine());
+			assertEquals("undoindex 0", in.readLine());
+			assertEquals("enter ", in.readLine());
+						
+			// have Client 1 disconnect from the Collaboard program
+			out.println("bye");
+			assertEquals("", in.readLine()); // the server should respond with nothing.
+						
+			sock.close();
+			sock2.close();
+			sock3.close();
 		} catch (SocketTimeoutException e) {
 			throw new RuntimeException(e);
 		}
