@@ -11,18 +11,17 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import whiteboard.Whiteboard;
 
 import canvas.CanvasModel;
 import canvas.DrawingObject;
 import canvas.Freehand;
 import canvas.Oval;
 
-import collaboard.Collaboard;
 
 /**
  * Class representing the Collaboard server.
@@ -35,11 +34,13 @@ public class CollaboardServer {
     private Collaboard collaboard;
     private AtomicInteger numClients; //keeps track of the number of clients in order to assign them each a unique user ID.
     private ArrayList<UserThread> threads;
-    private BlockingQueue<String[]> requests; 
+    private BlockingQueue<String[]> requests;
+    private HashMap<Integer, UserThread> threadsByID;
     
     public CollaboardServer(int port, Collaboard collaboard) throws IOException{
         this.serverSocket = new ServerSocket(port);
         this.threads = new ArrayList<UserThread>();
+        this.threadsByID = new HashMap<Integer, UserThread>();
         this.collaboard = collaboard;
         this.numClients = new AtomicInteger(0);
         this.requests = new LinkedBlockingQueue<String[]>();
@@ -73,6 +74,64 @@ public class CollaboardServer {
             private void handleRequest(String[] request){
                     int whiteboardID = Integer.parseInt(request[request.length-1]);
                     StringBuilder outputMsg = new StringBuilder();
+                    if (request[0].equals("enter")|request[0].equals("exit")|request[0].equals("switchboard")){
+                        int userID = Integer.parseInt(request[2]);
+                        if (request[0].equals("enter")){ 
+                            Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
+                            whiteboard.addUser(request[1]);
+                            StringBuilder message = new StringBuilder("users");
+                            ArrayList<String> users = whiteboard.getUsers();
+                            for (int i=0; i < users.size(); i++){ //send the list of users currently on the Whiteboard.
+                                message.append(" " + users.get(i));
+                            }
+                            message.append("\nready"); //tell the client to initialize the Canvas.
+                            CanvasModel canvasModel = whiteboard.getCanvasModel();
+                            for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects currently in the CanvasModel
+                                DrawingObject o = canvasModel.getIthDrawingObject(i);
+                                message.append("\ninitdraw " + o.toString());
+                            }
+                            message.append("\nundoindex " + canvasModel.getUndoIndex());
+                            threadsByID.get(userID).getPrintWriter().println(message.toString());
+                            outputMsg.append("enter ");
+                        }
+                        if (request[0].equals("exit")){
+                            Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
+                            whiteboard.removeUser(request[1]);
+                            outputMsg.append("exit ");
+                        }
+                        if (request[0].equals("switchboard")){
+                            if (!collaboard.existingWhiteboard(whiteboardID)){ 
+                                //if the whiteboard doesn't already exist, create a new one
+                                collaboard.createNewWhiteboard(whiteboardID);
+                            }
+                            Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
+                            whiteboard.addUser(request[1]); //add the user to the list of active users
+                            StringBuilder message = new StringBuilder();
+                            ArrayList<String> users = whiteboard.getUsers();
+                            for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
+                                message.append("\nenter " + users.get(i));
+                            } 
+                            CanvasModel canvasModel = whiteboard.getCanvasModel();
+                            for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects in the CanvasModel
+                                DrawingObject o = canvasModel.getIthDrawingObject(i);
+                                message.append("\ninitdraw " + o.toString());
+                            }
+                            message.append("\nundoindex " + canvasModel.getUndoIndex());
+                            threadsByID.get(userID).getPrintWriter().println(message.toString());
+                            outputMsg.append("enter ");
+                        }
+                        for (UserThread t: threads){
+
+                            System.out.println("Current whiteboardID: "+ whiteboardID);
+                            System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
+                            //find the threads that are on the same whiteboard and send the enter request to them.
+                            if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                                PrintWriter output = t.getPrintWriter();
+                                System.out.println("Sending this message to other threads: "+ outputMsg.toString());
+                                output.println(outputMsg.toString() + request[1]);
+                            }
+                        }
+                    }
                     if (request[0].equals("undo")|request[0].equals("redo")){
                         outputMsg.append(request[0]);
                         if (request[0].equals("undo")){
@@ -115,7 +174,9 @@ public class CollaboardServer {
             }
             
         });
+        
         requestHandler.start();
+        
         while (true) {
             // block until a client connects
             final Socket socket = serverSocket.accept();
@@ -142,6 +203,7 @@ public class CollaboardServer {
             currentWhiteboardID = 0; //initialize to 0
             userID = numClients.getAndIncrement();
             threads.add(this);
+            threadsByID.put(userID, this);
             try{
                 outputStream = socket.getOutputStream();
                 inputStream = socket.getInputStream();
@@ -205,7 +267,6 @@ public class CollaboardServer {
                     System.out.println("Received client message: " + line);
                     String output = handleRequest(line);
                     if (output != null) {
-                        System.out.println("Server response to " + line + ": " + output);
                         out.println(output);
                     }
                 }
@@ -231,27 +292,27 @@ public class CollaboardServer {
          * USERNAME: [0-9a-zA-Z]+<br>
 		 * MAKEUSER: makeuser USERNAME WHITEBOARDID<br>
 		 * MAKEBOARD: makeboard WHITEBOARDID<br>
-		 * SWITCH: switchboard USERNAME WHITEBOARDID<br>
+		 * SWITCH: switchboard USERNAME USERID WHITEBOARDID<br>
 		 * UNDO: undo USERID WHITEBOARDID<br>
  		 * REDO: redo USERID WHITEBOARDID<br>
  		 * COLOR: bl|y|r|g|o|m|blk|w<br>
  		 * THICKNESS: s|m|l<br>
 		 * DRAWFREEHAND: draw freehand ([0-9]+ [0-9]+ )([0-9]+ [0-9]+ )+ COLOR THICKNESS USERID WHITEBOARDID<br>
 		 * DRAWOVAL: draw oval [0-9]+ [0-9]+ [0-9]+ [0-9]+ COLOR THICKNESS USERID WHITEBOARDID<br>
-		 * ENTER: enter USERNAME WHITEBOARDID<br>
-		 * EXIT: exit USERNAME<br>
+		 * ENTER: enter USERNAME USERID WHITEBOARDID<br>
+		 * EXIT: exit USERNAME USERID WHITEBOARDID<br>
 		 * BYE: bye
          * 
          * @param input
          * @return server response to the Client's message.
          */
         public String handleRequest(String input){
-            String regex = "(makeuser [A-Za-z0-9]+ -?\\d+)|(makeboard -?\\d+)|(undo -?\\d+ -?\\d+)|"
-                    + "(redo -?\\d+ -?\\d+)|"+
-                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
-                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) -?\\d+ -?\\d+)|" +
-                    "(switchboard [A-Za-z0-9]+ -?\\d+)|"
-                    +"(enter [A-Za-z0-9]+ -?\\d+)|(exit [A-Za-z0-9]+)|(bye)";
+            String regex = "(makeuser [A-Za-z0-9]+ \\d+)|(makeboard \\d+)|(undo \\d+ \\d+)|"
+                    + "(redo \\d+ \\d+)|"+
+                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
+                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
+                    "(switchboard [A-Za-z0-9]+ \\d+ \\d+)|"
+                    +"(enter [A-Za-z0-9]+ \\d+ \\d+)|(exit [A-Za-z0-9]+ \\d+ \\d+)|(bye)";
             if ( ! input.matches(regex)) {
                 // invalid input
                 System.out.println("client msg: " + input + " didn't match"); 
@@ -260,89 +321,37 @@ public class CollaboardServer {
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
                 this.username = tokens[1];
-                return(collaboard.addUser(tokens[1])); //returns "validuser" if not taken, else "usertaken"
+                //returns "validuser" and adds the username to its list of users if not taken, else "usertaken"
+                return(collaboard.addUser(tokens[1])); 
             }
+          //returns "validwhiteboard" and creates the associated whiteboard if the ID is not taken, else "whiteboardtaken"
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
                 if (collaboard.existingWhiteboard(whiteboardID)){
                     return "whiteboardtaken";
                 }
                 collaboard.createNewWhiteboard(whiteboardID);
+                //send a message to all threads that a new whiteboard was created.
+                for (UserThread t: threads){
+                    t.getPrintWriter().println("newboard " + whiteboardID);
+                }
                 return "validwhiteboard";
-                //addboard
             }
             if (tokens[0].equals("switchboard")){
-                currentWhiteboardID = Integer.parseInt(tokens[2]);
-                if (!collaboard.existingWhiteboard(currentWhiteboardID)){ 
-                    //if the whiteboard doesn't already exist, create a new one
-                    collaboard.createNewWhiteboard(currentWhiteboardID);
-                }
-                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
-                whiteboard.addUser(tokens[1]); //add the user to the list of active users
-                StringBuilder message = new StringBuilder();
-                ArrayList<String> users = whiteboard.getUsers();
-                for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
-                    message.append("\nenter " + users.get(i));
-                } 
-                CanvasModel canvasModel = whiteboard.getCanvasModel();
-                for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects in the CanvasModel
-                    DrawingObject o = canvasModel.getIthDrawingObject(i);
-                    message.append("\ninitdraw " + o.toString());
-                }
-                message.append("\nundoindex " + canvasModel.getUndoIndex());
-                for (UserThread t: threads){
-                    //find the threads that are on the same whiteboard and send the enter request to them.
-                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (userID != t.getUserID())){
-                        PrintWriter output = t.getPrintWriter();
-                        output.println("enter " + tokens[1]);
-                    }
-                }
-                return message.toString();
+                currentWhiteboardID = Integer.parseInt(tokens[3]);
             }
             if (tokens[0].equals("enter")){ 
-                currentWhiteboardID = Integer.parseInt(tokens[2]);
-                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
-                whiteboard.addUser(tokens[1]);
-                StringBuilder message = new StringBuilder("users");
-                ArrayList<String> users = whiteboard.getUsers();
-                for (int i=0; i < users.size(); i++){ //send the list of users currently on the Whiteboard.
-                    message.append(" " + users.get(i));
-                }
-                message.append("\nready"); //tell the client to initialize the Canvas.
-                CanvasModel canvasModel = whiteboard.getCanvasModel();
-                for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects currently in the CanvasModel
-                    DrawingObject o = canvasModel.getIthDrawingObject(i);
-                    message.append("\ninitdraw " + o.toString());
-                }
-                message.append("\nundoindex " + canvasModel.getUndoIndex());
-                for (UserThread t: threads){
-                    //find the threads that are on the same whiteboard and send the enter request to them.
-                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
-                        PrintWriter output = t.getPrintWriter();
-                        output.println("enter " + tokens[1]);
-                    }
-                }
-                return message.toString();
+                currentWhiteboardID = Integer.parseInt(tokens[3]);
             }
             if (tokens[0].equals("exit")){
-                for (UserThread t: threads){
-                    //find the threads that are on the same whiteboard and send the exit request to them.
-                    if ((currentWhiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
-                        PrintWriter output = t.getPrintWriter();
-                        output.println("exit " + tokens[1]);
-                    }
-                }
-                Whiteboard whiteboard = collaboard.getWhiteboards().get(currentWhiteboardID);
-                whiteboard.removeUser(tokens[1]);
                 currentWhiteboardID = 0;
             }
-            if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")){
+            if (!tokens[0].equals("bye")){
                 //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
                 requests.add(tokens);
             }
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
-            	//then end the socket connection.
             }
             return "";
             
