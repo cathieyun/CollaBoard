@@ -351,7 +351,9 @@ public class CollaboardServer {
 
     public static void main(String[] args) {
         int port = 4444; // default port
+        
         try {
+      	     System.out.println("Hey I got here in server test ColaboardServer");
             runCollaboardServer(port);
         } catch (IOException e) {
             e.printStackTrace();
