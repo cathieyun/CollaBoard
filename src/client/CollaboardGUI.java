@@ -260,7 +260,7 @@ public class CollaboardGUI extends JFrame{
         window.pack();
       window.addWindowListener(new WindowAdapter() {
           public void windowClosing(WindowEvent e) {
-              out.println("exit " + user.getUsername());
+              out.println("exit " + user.getUsername() + " " + user.getUserID() + " " + user.getWhiteboardID());
               out.println("bye");
               }
       });
@@ -282,8 +282,8 @@ public class CollaboardGUI extends JFrame{
      */
     void enterCanvas(){
         user.setWhiteboardID(Integer.parseInt(whiteboardField.getText()));
-        System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
-        new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();     
+        System.out.println("enter "+ user.getUsername()+ " " + user.getUserID() + " " + user.getWhiteboardID());
+        new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getUserID() + " " +  user.getWhiteboardID()).execute();     
     }
     /**
      * ActionListener that listens for the actions pertaining to creation of a new username
@@ -337,7 +337,7 @@ public class CollaboardGUI extends JFrame{
             // = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
             user.setWhiteboardID(Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn())));
             System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
-            new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getWhiteboardID()).execute();
+            new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getUserID() + " " + user.getWhiteboardID()).execute();
         }
         
     }
@@ -355,6 +355,7 @@ public class CollaboardGUI extends JFrame{
                     throw new NumberFormatException(); //do nothing
                 }
                 changeWhiteboardField.setText(""); //clear the field
+                int oldID = user.getWhiteboardID();
                 user.setWhiteboardID(targetWhiteboard);
                 window.setTitle("Whiteboard " + user.getWhiteboardID());
                 clearCanvas();
@@ -370,7 +371,7 @@ public class CollaboardGUI extends JFrame{
                 //clear the Jtable
                 canvas.setCanvasModel(new ClientCanvasModel()); //new clientcanvasmodel
                 //send a message to the server 
-                new ProtocolWorker("exit "+ user.getUsername() + "\nswitchboard " + user.getUsername() + " " + targetWhiteboard).execute();
+                new ProtocolWorker("exit "+ user.getUsername() + " " + user.getUserID() + " " + oldID + "\nswitchboard " + user.getUsername() + " " + user.getUserID() + " " + targetWhiteboard).execute();
             }catch(NumberFormatException e){
                 //do nothing
             }
@@ -413,8 +414,6 @@ public class CollaboardGUI extends JFrame{
      * @param d
      */
     void drawObject(DrawingObject d){
-    	// we pass in the string draw so that the undo list is incremented
-    	// during the call to drawOrRedrawDrawingObject
         canvas.drawDrawingObject(d);
     }
 
@@ -433,7 +432,6 @@ public class CollaboardGUI extends JFrame{
     void removeUser(String user){
         users.remove(user);
         for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
-            System.out.println(currentUsers.getValueAt(row,0));
             if (user.equals(currentUsers.getValueAt(row,0))){
                 usersModel.removeRow(row);
                 break;
@@ -490,7 +488,7 @@ public class CollaboardGUI extends JFrame{
                     .addComponent(small)
                     .addComponent(med)
                     .addComponent(large)
-                    .addComponent(buttons[0]) //TODO:  figure put how to put these in a loop
+                    .addComponent(buttons[0])
                     .addComponent(buttons[1])
                     .addComponent(buttons[2])
                     .addComponent(buttons[3])

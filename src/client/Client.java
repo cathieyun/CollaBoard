@@ -110,7 +110,6 @@ public class Client {
         }
         //the chosen whiteboardID wasn't taken, can proceed to the whiteboard
         if (tokens[0].equals("validwhiteboard")){
-            System.out.println("Entering canvas");
             SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
                 @Override
                 public void run() {
