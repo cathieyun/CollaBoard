@@ -121,9 +121,13 @@ public class CollaboardServer {
                             outputMsg.append("enter ");
                         }
                         for (UserThread t: threads){
+
+                            System.out.println("Current whiteboardID: "+ whiteboardID);
+                            System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
                             //find the threads that are on the same whiteboard and send the enter request to them.
                             if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                                 PrintWriter output = t.getPrintWriter();
+                                System.out.println("Sending this message to other threads: "+ outputMsg.toString());
                                 output.println(outputMsg.toString() + request[1]);
                             }
                         }
@@ -326,10 +330,10 @@ public class CollaboardServer {
                 return(collaboard.addWhiteboard(whiteboardID));
             }
             if (tokens[0].equals("switchboard")){
-                currentWhiteboardID = Integer.parseInt(tokens[2]);
+                currentWhiteboardID = Integer.parseInt(tokens[3]);
             }
             if (tokens[0].equals("enter")){ 
-                currentWhiteboardID = Integer.parseInt(tokens[2]);
+                currentWhiteboardID = Integer.parseInt(tokens[3]);
             }
             if (tokens[0].equals("exit")){
                 currentWhiteboardID = 0;

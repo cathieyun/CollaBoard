@@ -54,6 +54,8 @@ public class CollaboardGUI extends JFrame{
     private ArrayList<Integer> whiteboards; //stores the list of active whiteboardIDs
     private ArrayList<String> users; //stores the list of active users on the current whiteboard
     private JLabel createWhiteboard; //displays instruction to create a whiteboard, and changes to an error message in the case of an error
+    private JTable currentWhiteboards;
+    private DefaultTableModel whiteboardsModel;
     private JTable currentUsers; //table displaying the list of active users on the current whiteboard
     private DefaultTableModel usersModel; //model for currentUsers
     private JFrame window; //the JFrame containing canvas, the toolbar, currentUsers, and the whiteboard switching header
@@ -154,20 +156,20 @@ public class CollaboardGUI extends JFrame{
         JButton makeNewWhiteboard = new JButton("Create!");
         makeNewWhiteboard.addActionListener(new CreateWhiteboardListener());
         JLabel selectWhiteboard = new JLabel("Select an existing whiteboard below");
-        JTable whiteboardIDs = new JTable();
-        chooseWhiteboard.addActionListener(new SelectWhiteboardListener(whiteboardIDs));
+        currentWhiteboards = new JTable();
+        chooseWhiteboard.addActionListener(new SelectWhiteboardListener(currentWhiteboards));
         createWhiteboard = new JLabel("Enter a new integer > 0 not displayed below to create a new whiteboard");
-        JScrollPane whiteboardsList = new JScrollPane(whiteboardIDs);
-        DefaultTableModel model = new DefaultTableModel(new String [] {"Existing Whiteboards"},0){
+        JScrollPane whiteboardsList = new JScrollPane(currentWhiteboards);
+        whiteboardsModel = new DefaultTableModel(new String [] {"Existing Whiteboards"},0){
             //prevent user from editing cells
             @Override
             public boolean isCellEditable(int row, int column) {
                return false;
             }
         };
-        whiteboardIDs.setModel(model);
+        currentWhiteboards.setModel(whiteboardsModel);
         for (int i: whiteboards){
-            model.addRow(new String[]{Integer.toString(i)});
+            whiteboardsModel.addRow(new String[]{Integer.toString(i)});
         }
         GroupLayout layout = new GroupLayout(whiteboardSelect);
         whiteboardSelect.setLayout(layout);
@@ -277,6 +279,7 @@ public class CollaboardGUI extends JFrame{
      */
     void displayWhiteboardTakenError(){
         createWhiteboard.setText("Whiteboard ID already taken. Select it from below or choose a new integer.");
+
     }
     
     /**
