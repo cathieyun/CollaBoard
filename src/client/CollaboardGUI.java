@@ -65,9 +65,8 @@ public class CollaboardGUI extends JFrame{
         this.out = new PrintWriter(outputStream, true);
         this.whiteboards = new ArrayList<Integer>();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-		this.addWindowListener(new WindowAdapter() {
+		this.addWindowListener(new WindowAdapter() { //send the bye message upon closing the window.
 			public void windowClosing(WindowEvent e) {
-				System.out.println("Window was closed!");
 				out.println("bye");
 			}
 		});
@@ -92,6 +91,9 @@ public class CollaboardGUI extends JFrame{
         layout.show(panels, "user");
         this.setVisible(true);
     }
+    /**
+     * Many of the following are package-private methods that are called by the Client class.
+     */
     ArrayList<Integer> getWhiteboards(){
         return whiteboards;
     }
@@ -285,6 +287,49 @@ public class CollaboardGUI extends JFrame{
         System.out.println("enter "+ user.getUsername()+ " " + user.getUserID() + " " + user.getWhiteboardID());
         new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getUserID() + " " +  user.getWhiteboardID()).execute();     
     }
+    void clearCanvas(){
+        canvas.fillWithWhite();
+    }
+    Canvas getCanvas(){
+        return canvas;
+    }
+    ClientCanvasModel getCanvasModel() {
+        return canvas.getCanvasModel();
+    }
+    void setCanvasModel(ClientCanvasModel c){
+        canvas.setCanvasModel(c);
+    }
+    
+    /**
+     * Draws the specified object.
+     * @param d
+     */
+    void drawObject(DrawingObject d){
+        canvas.drawDrawingObject(d);
+    }
+
+    /**
+     * Adds the specified user to the table of active users.
+     * @param user
+     */
+    void addUser(String user){
+        users.add(user);
+        usersModel.addRow(new String[]{user});
+    }
+    /**
+     * Remove the specified user from the table.
+     * @param user
+     */
+    void removeUser(String user){
+        users.remove(user);
+        for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
+            if (user.equals(currentUsers.getValueAt(row,0))){
+                usersModel.removeRow(row);
+                break;
+            }
+        }
+    }
+    
     /**
      * ActionListener that listens for the actions pertaining to creation of a new username
      */
@@ -395,48 +440,6 @@ public class CollaboardGUI extends JFrame{
             return null;
         }
         
-    }
-    void clearCanvas(){
-        canvas.fillWithWhite();
-    }
-    Canvas getCanvas(){
-        return canvas;
-    }
-    ClientCanvasModel getCanvasModel() {
-        return canvas.getCanvasModel();
-    }
-    void setCanvasModel(ClientCanvasModel c){
-        canvas.setCanvasModel(c);
-    }
-    
-    /**
-     * Draws the specified object.
-     * @param d
-     */
-    void drawObject(DrawingObject d){
-        canvas.drawDrawingObject(d);
-    }
-
-    /**
-     * Adds the specified user to the table of active users.
-     * @param user
-     */
-    void addUser(String user){
-        users.add(user);
-        usersModel.addRow(new String[]{user});
-    }
-    /**
-     * Remove the specified user from the table.
-     * @param user
-     */
-    void removeUser(String user){
-        users.remove(user);
-        for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
-            if (user.equals(currentUsers.getValueAt(row,0))){
-                usersModel.removeRow(row);
-                break;
-            }
-        }
     }
     /**
      * GUI by which the user can call undo, redo, draw ovals, and change the color and thickness of the stroke.

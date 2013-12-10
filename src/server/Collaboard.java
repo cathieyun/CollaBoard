@@ -50,6 +50,12 @@ public class Collaboard {
         return (whiteboards.keySet().contains(ID));
     }
     
+    /**
+     * Checks whether the desired whiteboardID is taken, and returns the message
+     * the server should return to the client. If it's not taken, create a whiteboard with the specified ID.
+     * @param ID - desired whiteboard ID
+     * @return "whiteboardtaken" if the ID is taken, "validuser" if not
+     */
     public synchronized String addWhiteboard(int ID){
         if (existingWhiteboard(ID)){
             return "whiteboardtaken";
@@ -79,6 +85,7 @@ public class Collaboard {
     public synchronized void removeUsername(String username){
         usernames.remove(username);
     }
+    
     /**
      * @return HashMap mapping whiteboardIDs to whiteboards.
      */

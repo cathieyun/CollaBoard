@@ -42,7 +42,9 @@ public class Oval implements DrawingObject{
 	public int getTopLeftY() {
 		return shapeStartY < y ? shapeStartY : y;
 	}
-
+    /**
+     * Returns a String representation of an Oval that is consistent with the client-server protocol.
+     */
 	@Override
 	public String toString() {
 		return "oval " + shapeStartX + " " + shapeStartY + " " + x + " " + y + " " + color + " " + thickness;

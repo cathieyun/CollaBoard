@@ -170,7 +170,9 @@ public class CollaboardServer {
             }
             
         });
+        
         requestHandler.start();
+        
         while (true) {
             // block until a client connects
             final Socket socket = serverSocket.accept();
