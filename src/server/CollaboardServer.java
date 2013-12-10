@@ -324,10 +324,18 @@ public class CollaboardServer {
                 //returns "validuser" and adds the username to its list of users if not taken, else "usertaken"
                 return(collaboard.addUser(tokens[1])); 
             }
+          //returns "validwhiteboard" and creates the associated whiteboard if the ID is not taken, else "whiteboardtaken"
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
-                //returns "validwhiteboard" and creates the associated whiteboard if the ID is not taken, else "whiteboardtaken"
-                return(collaboard.addWhiteboard(whiteboardID));
+                if (collaboard.existingWhiteboard(whiteboardID)){
+                    return "whiteboardtaken";
+                }
+                collaboard.createNewWhiteboard(whiteboardID);
+                //send a message to all threads that a new whiteboard was created.
+                for (UserThread t: threads){
+                    t.getPrintWriter().println("newboard " + whiteboardID);
+                }
+                return "validwhiteboard";
             }
             if (tokens[0].equals("switchboard")){
                 currentWhiteboardID = Integer.parseInt(tokens[3]);

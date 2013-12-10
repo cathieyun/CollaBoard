@@ -310,13 +310,15 @@ public class CollaboardGUI extends JFrame{
     void drawObject(DrawingObject d){
         canvas.drawDrawingObject(d);
     }
-
+    void addWhiteboard(int ID){
+        whiteboardsModel.addRow(new String[]{Integer.toString(ID)});
+    }
     /**
      * Adds the specified user to the table of active users.
      * @param user
      */
     void addUser(String user){
-        users.add(user);
+        //users.add(user);
         usersModel.addRow(new String[]{user});
     }
     /**
@@ -324,7 +326,7 @@ public class CollaboardGUI extends JFrame{
      * @param user
      */
     void removeUser(String user){
-        users.remove(user);
+        //users.remove(user);
         for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
             if (user.equals(currentUsers.getValueAt(row,0))){
                 usersModel.removeRow(row);

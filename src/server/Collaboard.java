@@ -51,19 +51,6 @@ public class Collaboard {
     }
     
     /**
-     * Checks whether the desired whiteboardID is taken, and returns the message
-     * the server should return to the client. If it's not taken, create a whiteboard with the specified ID.
-     * @param ID - desired whiteboard ID
-     * @return "whiteboardtaken" if the ID is taken, "validuser" if not
-     */
-    public synchronized String addWhiteboard(int ID){
-        if (existingWhiteboard(ID)){
-            return "whiteboardtaken";
-        }
-        createNewWhiteboard(ID);
-        return "validwhiteboard";
-    }
-    /**
      * Checks whether the desired username is taken, and returns the message the server
      * should return to the client. If it's not taken, add it to the list.
      * @param username - desired username to check

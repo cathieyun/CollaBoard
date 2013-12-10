@@ -63,6 +63,8 @@ public class Client {
     /**
      * Handles messages from the server according to the following grammar:<br>
      * USERID: [0-9]+<br>
+     * WHITEBOARDID: [0-9]+<br>
+     * LIST: list WHITEBOARDID* <br>
      * VALIDUSER: validuser<br>
      * VALIDWHITEBOARD: validwhiteboard<br>
      * READY: ready<br>
@@ -73,6 +75,7 @@ public class Client {
      * UNDOINDEX: undoindex [0-9]+<br>
      * USERTAKEN: usertaken<br>
      * WHITEBOARDTAKEN: whiteboardtaken<br>
+     * NEWBOARD: newboard WHITEBOARDID<br>
      * ENTER: enter USERNAME<br>
      * EXIT: exit USERNAME<br>
      * UNDO: undo<br>
@@ -86,8 +89,8 @@ public class Client {
         String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
         		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"(initdraw)|(initdone)|(undoindex [0-9]+)|"
-                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
+        		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
+                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             System.out.println("server msg: "+ input + " didn't match");
@@ -116,6 +119,10 @@ public class Client {
                     gui.enterCanvas();            
                 }                
             });
+        }
+        if (tokens[0].equals("newboard")){
+            gui.addWhiteboard(Integer.parseInt(tokens[1]));
+            //add it to the list of whiteboards
         }
         //the chosen username was taken, display error message
         if (tokens[0].equals("usertaken")){
