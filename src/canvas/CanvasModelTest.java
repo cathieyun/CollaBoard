@@ -13,5 +13,6 @@ public class CanvasModelTest {
         c.preventRedoAfterThisEdit();
         assertEquals(1, c.getListSize()); //check that the list now has one element
         assertEquals(c.getIthDrawingObject(0).toString(), "freehand 1 2 3 4 bl s"); //check that the correct object was removed
+        assertTrue(c.checkRep());
     }
 }

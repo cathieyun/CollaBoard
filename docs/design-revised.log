@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  8 DEC 2013 18:02
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  10 DEC 2013 11:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -272,9 +272,8 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.30 \item S
-            tores the current instance of Collaboard, and current active Use...
-[1 <./snapshot.png>]
+l.27 \section
+             {Datatype Design} [1 <./snapshot.png>]
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 30.
 
 (/usr/local/texlive/2012/texmf-dist/tex/latex/base/omscmr.fd
@@ -292,38 +291,26 @@ Missing character: There is no Ó in font cmr12!
 Missing character: There is no Ò in font cmr12!
 Missing character: There is no Ó in font cmr12!
 Missing character: There is no Õ in font cmr12!
-Missing character: There is no Õ in font cmr12!
-Missing character: There is no Õ in font cmr12!
-Missing character: There is no Õ in font cmr12!
-Missing character: There is no Õ in font cmr12!
-Missing character: There is no Õ in font cmr12!
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--118
+Underfull \hbox (badness 10000) in paragraph at lines 114--117
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--118
+Underfull \hbox (badness 10000) in paragraph at lines 114--117
 
  []
 
 [5] [6] [7]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 207.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 213.
  [8]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 207.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 213.
  (./design-revised.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 207.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 207.
-
-
-Package rerunfilecheck Warning: File `design-revised.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `design-revised.out':
-(rerunfilecheck)             Before: 8DDBC3539C809FC047D805A6BE810A13;847
-(rerunfilecheck)             After:  036DD5B6CCFDC3795D826C0051DFFB49;843.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 207.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 213.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 213.
+Package rerunfilecheck Info: File `design-revised.out' has not changed.
+(rerunfilecheck)             Checksum: 036DD5B6CCFDC3795D826C0051DFFB49;843.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 213.
  ) 
 Here is how much of TeX's memory you used:
  5070 strings out of 493488
@@ -332,12 +319,12 @@ Here is how much of TeX's memory you used:
  8342 multiletter control sequences out of 15000+200000
  6627 words of font info for 24 fonts, out of 3000000 for 9000
  957 hyphenation exceptions out of 8191
- 29i,6n,28p,1099b,380s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 29i,6n,28p,650b,380s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 ></usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><
 /usr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></u
 sr/local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on design-revised.pdf (9 pages, 151664 bytes).
+Output written on design-revised.pdf (9 pages, 150970 bytes).
 PDF statistics:
  123 PDF objects out of 1000 (max. 8388607)
  104 compressed objects within 2 object streams

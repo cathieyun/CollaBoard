@@ -1,5 +1,6 @@
 package client;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,6 @@ import javax.swing.SwingUtilities;
 import canvas.Freehand;
 import canvas.Oval;
 
-import collaboard.CollaboardGUI;
 /**
  * Client class for Collaboard. Represents a single client connection.
  * Handles inputs/outputs to the server and acts as a controller for the GUI.
@@ -63,6 +63,8 @@ public class Client {
     /**
      * Handles messages from the server according to the following grammar:<br>
      * USERID: [0-9]+<br>
+     * WHITEBOARDID: [0-9]+<br>
+     * LIST: list WHITEBOARDID* <br>
      * VALIDUSER: validuser<br>
      * VALIDWHITEBOARD: validwhiteboard<br>
      * READY: ready<br>
@@ -73,6 +75,7 @@ public class Client {
      * UNDOINDEX: undoindex [0-9]+<br>
      * USERTAKEN: usertaken<br>
      * WHITEBOARDTAKEN: whiteboardtaken<br>
+     * NEWBOARD: newboard WHITEBOARDID<br>
      * ENTER: enter USERNAME<br>
      * EXIT: exit USERNAME<br>
      * UNDO: undo<br>
@@ -86,8 +89,8 @@ public class Client {
         String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
         		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"(initdraw)|(initdone)|(undoindex [0-9]+)|"
-                + "(usertaken)|(whiteboardtaken)|(list( -?\\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
+        		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
+                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
                 +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             System.out.println("server msg: "+ input + " didn't match");
@@ -110,13 +113,16 @@ public class Client {
         }
         //the chosen whiteboardID wasn't taken, can proceed to the whiteboard
         if (tokens[0].equals("validwhiteboard")){
-            System.out.println("Entering canvas");
             SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue
                 @Override
                 public void run() {
                     gui.enterCanvas();            
                 }                
             });
+        }
+        if (tokens[0].equals("newboard")){
+            gui.addWhiteboard(Integer.parseInt(tokens[1]));
+            //add it to the list of whiteboards
         }
         //the chosen username was taken, display error message
         if (tokens[0].equals("usertaken")){

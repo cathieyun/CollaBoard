@@ -1,7 +1,7 @@
 package canvas;
 
 /**
- * Line represents a line segment that a user draws by dragging his mouse. 
+ * Line represents a line segment that a user draws by dragging the mouse. 
  * Freehand objects are composed of one or more Lines.
  * 
  */
@@ -27,7 +27,9 @@ public class Line {
 		String s = x1 + " " + y1 + " " + x2 + " "  + y2 + " " + color + " " + thickness;
 		return s;
 	}
-	
+	/**
+	 * @return String representing the x and y coordinate of the first point of the line. 
+	 */
     public String firstPointToString() {
         String s = x1 + " " + y1;
         return s;
