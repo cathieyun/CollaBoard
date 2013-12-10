@@ -49,6 +49,14 @@ public class Collaboard {
     public synchronized boolean existingWhiteboard(int ID){
         return (whiteboards.keySet().contains(ID));
     }
+    
+    public synchronized String addWhiteboard(int ID){
+        if (existingWhiteboard(ID)){
+            return "whiteboardtaken";
+        }
+        createNewWhiteboard(ID);
+        return "validwhiteboard";
+    }
     /**
      * Checks whether the desired username is taken, and returns the message the server
      * should return to the client. If it's not taken, add it to the list.

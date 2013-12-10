@@ -315,16 +315,13 @@ public class CollaboardServer {
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
                 this.username = tokens[1];
-                return(collaboard.addUser(tokens[1])); //returns "validuser" if not taken, else "usertaken"
+                //returns "validuser" and adds the username to its list of users if not taken, else "usertaken"
+                return(collaboard.addUser(tokens[1])); 
             }
             if (tokens[0].equals("makeboard")){
                 int whiteboardID = Integer.parseInt(tokens[1]);
-                if (collaboard.existingWhiteboard(whiteboardID)){
-                    return "whiteboardtaken";
-                }
-                collaboard.createNewWhiteboard(whiteboardID);
-                return "validwhiteboard";
-                //addboard
+                //returns "validwhiteboard" and creates the associated whiteboard if the ID is not taken, else "whiteboardtaken"
+                return(collaboard.addWhiteboard(whiteboardID));
             }
             if (tokens[0].equals("switchboard")){
                 currentWhiteboardID = Integer.parseInt(tokens[2]);
@@ -335,8 +332,7 @@ public class CollaboardServer {
             if (tokens[0].equals("exit")){
                 currentWhiteboardID = 0;
             }
-            if (tokens[0].equals("undo")|tokens[0].equals("redo")|tokens[0].equals("draw")|
-                    tokens[0].equals("enter")|tokens[0].equals("exit")|tokens[0].equals("switchboard")){
+            if (!tokens[0].equals("bye")){
                 //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
                 requests.add(tokens);
             }
