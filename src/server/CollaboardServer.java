@@ -76,37 +76,24 @@ public class CollaboardServer {
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("enter")|request[0].equals("exit")|request[0].equals("switchboard")){
                         int userID = Integer.parseInt(request[2]);
-                        if (request[0].equals("enter")){ 
-                            Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
-                            whiteboard.addUser(request[1]);
-                            StringBuilder message = new StringBuilder("users");
-                            ArrayList<String> users = whiteboard.getUsers();
-                            for (int i=0; i < users.size(); i++){ //send the list of users currently on the Whiteboard.
-                                message.append(" " + users.get(i));
-                            }
-                            message.append("\nready"); //tell the client to initialize the Canvas.
-                            CanvasModel canvasModel = whiteboard.getCanvasModel();
-                            for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects currently in the CanvasModel
-                                DrawingObject o = canvasModel.getIthDrawingObject(i);
-                                message.append("\ninitdraw " + o.toString());
-                            }
-                            message.append("\nundoindex " + canvasModel.getUndoIndex());
-                            threadsByID.get(userID).getPrintWriter().println(message.toString());
-                            outputMsg.append("enter ");
-                        }
                         if (request[0].equals("exit")){
                             Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
                             whiteboard.removeUser(request[1]);
                             outputMsg.append("exit ");
                         }
-                        if (request[0].equals("switchboard")){
-                            if (!collaboard.existingWhiteboard(whiteboardID)){ 
-                                //if the whiteboard doesn't already exist, create a new one
-                                collaboard.createNewWhiteboard(whiteboardID);
+                        else{
+                            StringBuilder message = new StringBuilder();
+                            if (request[0].equals("enter")){ 
+                                message.append("\nready"); //tell the client to initialize the Canvas.
+                            }
+                            if (request[0].equals("switchboard")){
+                                if (!collaboard.existingWhiteboard(whiteboardID)){ 
+                                    //if the whiteboard doesn't already exist, create a new one
+                                    collaboard.createNewWhiteboard(whiteboardID);
+                                }
                             }
                             Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
                             whiteboard.addUser(request[1]); //add the user to the list of active users
-                            StringBuilder message = new StringBuilder();
                             ArrayList<String> users = whiteboard.getUsers();
                             for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
                                 message.append("\nenter " + users.get(i));
@@ -120,6 +107,7 @@ public class CollaboardServer {
                             threadsByID.get(userID).getPrintWriter().println(message.toString());
                             outputMsg.append("enter ");
                         }
+
                         for (UserThread t: threads){
 
                             System.out.println("Current whiteboardID: "+ whiteboardID);

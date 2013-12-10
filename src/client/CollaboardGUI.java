@@ -52,7 +52,6 @@ public class CollaboardGUI extends JFrame{
     private User user; //user that is using the whiteboard
     private PrintWriter out; //sends messages to the server
     private ArrayList<Integer> whiteboards; //stores the list of active whiteboardIDs
-    private ArrayList<String> users; //stores the list of active users on the current whiteboard
     private JLabel createWhiteboard; //displays instruction to create a whiteboard, and changes to an error message in the case of an error
     private JTable currentWhiteboards;
     private DefaultTableModel whiteboardsModel;
@@ -63,7 +62,7 @@ public class CollaboardGUI extends JFrame{
         this.user = user;
         this.canvas = new Canvas(800, 600, new ClientCanvasModel(), user, outputStream);
         // canvas.paintComponent(canvas.getGraphics());
-        this.users = new ArrayList<String>();
+        //this.users = new ArrayList<String>();
         this.out = new PrintWriter(outputStream, true);
         this.whiteboards = new ArrayList<Integer>();
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
@@ -98,9 +97,6 @@ public class CollaboardGUI extends JFrame{
      */
     ArrayList<Integer> getWhiteboards(){
         return whiteboards;
-    }
-    ArrayList<String> getUsers(){
-        return users;
     }
     /**
      * Display the error message for a invalid username input.
@@ -226,9 +222,6 @@ public class CollaboardGUI extends JFrame{
                return false;
             }
         };
-        for (String user: users){
-            usersModel.addRow(new String[]{user});
-        }
         currentUsers.setModel(usersModel);
         JScrollPane usersList = new JScrollPane(currentUsers);
         JPanel changeWhiteboard = new JPanel();
@@ -318,7 +311,6 @@ public class CollaboardGUI extends JFrame{
      * @param user
      */
     void addUser(String user){
-        //users.add(user);
         usersModel.addRow(new String[]{user});
     }
     /**
@@ -326,7 +318,6 @@ public class CollaboardGUI extends JFrame{
      * @param user
      */
     void removeUser(String user){
-        //users.remove(user);
         for (int row = 0; row <= currentUsers.getRowCount()-1; row++){
             if (user.equals(currentUsers.getValueAt(row,0))){
                 usersModel.removeRow(row);
@@ -384,7 +375,6 @@ public class CollaboardGUI extends JFrame{
         }
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            // = Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn()));
             user.setWhiteboardID(Integer.parseInt((String) table.getValueAt(table.getSelectedRow(),table.getSelectedColumn())));
             System.out.println("enter "+ user.getUsername()+ " " + user.getWhiteboardID());
             new ProtocolWorker("enter "+ user.getUsername()+ " " + user.getUserID() + " " + user.getWhiteboardID()).execute();
