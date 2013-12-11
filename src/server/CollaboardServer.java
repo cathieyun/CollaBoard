@@ -111,13 +111,14 @@ public class CollaboardServer {
                             threadsByID.get(userID).getPrintWriter().println(message.toString());
                             outputMsg.append("enter ");
                         }
-
-                        for (UserThread t: threads){
-                            //find the threads that are on the same whiteboard and send the enter request to them.
-                            if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
-                                PrintWriter output = t.getPrintWriter();
-                                System.out.println("Sending this message to other threads: "+ outputMsg.toString() + request[1]);
-                                output.println(outputMsg.toString() + request[1]);
+                        synchronized(threads){ //ensure that if a new person connects there won't be a concurrentModificationException on threads by locking on threads
+                            for (UserThread t: threads){
+                                //find the threads that are on the same whiteboard and send the enter request to them.
+                                if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
+                                    PrintWriter output = t.getPrintWriter();
+                                    System.out.println("Sending this message to other threads: "+ outputMsg.toString() + request[1]);
+                                    output.println(outputMsg.toString() + request[1]);
+                                }
                             }
                         }
                     }
@@ -157,11 +158,13 @@ public class CollaboardServer {
                                 outputMsg.append(" " + request[i]);
                             }
                         }
-                        //Send the message to all other threads on the same whiteboard to update their canvases.
-                        for (UserThread t: threads){
-                            if ((whiteboardID == t.getCurrentWhiteboardID())){
-                                PrintWriter output = t.getPrintWriter();
-                                output.println(outputMsg.toString());
+                        synchronized(threads){ //ensure that if a new person connects there won't be a concurrentModificationException on threads by locking on threads
+                            //Send the message to all other threads on the same whiteboard to update their canvases.
+                            for (UserThread t: threads){
+                                if ((whiteboardID == t.getCurrentWhiteboardID())){
+                                    PrintWriter output = t.getPrintWriter();
+                                    output.println(outputMsg.toString());
+                                }
                             }
                         }
                     }
@@ -197,7 +200,9 @@ public class CollaboardServer {
             this.socket= socket;
             currentWhiteboardID = 0; //initialize to 0
             userID = numClients.getAndIncrement();
-            threads.add(this);
+            synchronized(threads){
+                threads.add(this);
+            }
             threadsByID.put(userID, this);
             try{
                 outputStream = socket.getOutputStream();
