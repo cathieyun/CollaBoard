@@ -219,9 +219,17 @@ Single user
 \item Switch to whiteboard 2.
 \item Switch back to whiteboard 1. It should be in the same state as you left it.
 \end{itemize}
-Multiple Users
+2 Users
 \begin{itemize}
 \item A person enters whiteboard 1 and draws something, and leaves.
 \item A second person enters whiteboard 1. It should be in the same state as person one left it.
+\item Two people should try drawing and undoing things at the same time. The state of their boards after the series of actions should be the same.
+\end{itemize}
+3 Users
+\begin{itemize}
+\item A person enters whiteboard 1 and draws something.
+\item A second person enters whiteboard 1. It should be in the same state as person one sees the whiteboard.
+\item A third person enters whiteboard 1. It should be in the same state as person one and two see the board.
+\item The three people should draw on the whiteboard. The state of their boards after the series of actions should be the same.
 \end{itemize}
 \end{document}

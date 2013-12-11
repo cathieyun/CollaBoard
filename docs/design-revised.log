@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9) (preloaded format=pdflatex 2013.9.18)  10 DEC 2013 22:33
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9) (preloaded format=pdflatex 2013.9.18)  10 DEC 2013 23:55
 entering extended mode
 **design-revised.tex
 
@@ -290,17 +290,17 @@ Underfull \hbox (badness 10000) in paragraph at lines 116--119
  []
 
 [5] [6] [7] [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 227.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 235.
  [9]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 227.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 235.
 
 ("C:\Users\Eric\Dropbox\College\Sophomore Year\6.005 Software Construction\whit
 eboard\docs\design-revised.aux")
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 227.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 227.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 235.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 235.
 Package rerunfilecheck Info: File `design-revised.out' has not changed.
 (rerunfilecheck)             Checksum: 361C10E1F0A97D4E095EBD1DA14F4392;856.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 227.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 235.
  ) 
 Here is how much of TeX's memory you used:
  5066 strings out of 493921
@@ -314,7 +314,7 @@ Here is how much of TeX's memory you used:
 <C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:
 /Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Pr
 ogram Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on design-revised.pdf (10 pages, 161537 bytes).
+Output written on design-revised.pdf (10 pages, 161872 bytes).
 PDF statistics:
  124 PDF objects out of 1000 (max. 8388607)
  23 named destinations out of 1000 (max. 500000)
