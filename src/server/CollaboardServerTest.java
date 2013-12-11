@@ -1,3 +1,4 @@
+
 package server;
 import static org.junit.Assert.*;
 
@@ -134,13 +135,11 @@ public class CollaboardServerTest {
 			out.println("enter funkyPistol 0 15");
 			assertEquals("enter funkyPistol", in.readLine());
 			assertEquals("undoindex 0", in.readLine());
-			assertEquals("enter ", in.readLine());
 			assertEquals("", in.readLine());
 			assertEquals("", in.readLine());
             assertEquals("ready", in.readLine());
 			assertEquals("enter funkyPistol", in.readLine());
 			assertEquals("undoindex 0", in.readLine());
-			assertEquals("enter ", in.readLine());
 						
 			// have Client 1 disconnect from the Collaboard program
 			out.println("bye");

@@ -109,56 +109,56 @@ public class CollaboardServer {
                         }
 
                         for (UserThread t: threads){
-
-                            System.out.println("Current whiteboardID: "+ whiteboardID);
-                            System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
                             //find the threads that are on the same whiteboard and send the enter request to them.
                             if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                                 PrintWriter output = t.getPrintWriter();
-                                System.out.println("Sending this message to other threads: "+ outputMsg.toString());
+                                System.out.println("Sending this message to other threads: "+ outputMsg.toString() + request[1]);
                                 output.println(outputMsg.toString() + request[1]);
                             }
                         }
                     }
-                    if (request[0].equals("undo")|request[0].equals("redo")){
-                        outputMsg.append(request[0]);
-                        if (request[0].equals("undo")){
-                            collaboard.getCanvasModelByID(whiteboardID).decrementIndex();
-                        }
-                        else{
-                            collaboard.getCanvasModelByID(whiteboardID).incrementIndex();
-                        }
-                    }
-                    else if (request[0].equals("draw")){
-                        String color = request[request.length-4];
-                        String thickness = request[request.length-3];
-                        collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
-                        if(request[1].equals("freehand")){
-                            int [] points = new int[request.length-6];
-                            for (int i=0; i < points.length; i++){
-                                points[i] = Integer.parseInt(request[i+2]);
+                    else{
+                        if (request[0].equals("undo")|request[0].equals("redo")){
+                            outputMsg.append(request[0]);
+                            if (request[0].equals("undo")){
+                                collaboard.getCanvasModelByID(whiteboardID).decrementIndex();
                             }
-                            Freehand freehand = new Freehand(points, color, thickness);
-                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(freehand);
-                            
+                            else{
+                                collaboard.getCanvasModelByID(whiteboardID).incrementIndex();
+                            }
                         }
-                        if(request[1].equals("oval")){
-                            Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
-                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(oval);
+                        else if (request[0].equals("draw")){
+                            String color = request[request.length-4];
+                            String thickness = request[request.length-3];
+                            collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
+                            if(request[1].equals("freehand")){
+                                int [] points = new int[request.length-6];
+                                for (int i=0; i < points.length; i++){
+                                    points[i] = Integer.parseInt(request[i+2]);
+                                }
+                                Freehand freehand = new Freehand(points, color, thickness);
+                                collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(freehand);
+                                
+                            }
+                            if(request[1].equals("oval")){
+                                Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
+                                collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(oval);
+                            }
+                            collaboard.getWhiteboards().get(whiteboardID).getCanvasModel().incrementIndex();
+                            outputMsg.append("draw");
+                            for (int i = 1; i < request.length-2; i++){
+                                outputMsg.append(" " + request[i]);
+                            }
                         }
-                        collaboard.getWhiteboards().get(whiteboardID).getCanvasModel().incrementIndex();
-                        outputMsg.append("draw");
-                        for (int i = 1; i < request.length-2; i++){
-                            outputMsg.append(" " + request[i]);
+                        //Send the message to all other threads on the same whiteboard to update their canvases.
+                        for (UserThread t: threads){
+                            if ((whiteboardID == t.getCurrentWhiteboardID())){
+                                PrintWriter output = t.getPrintWriter();
+                                output.println(outputMsg.toString());
+                            }
                         }
                     }
-                    //Send the message to all other threads on the same whiteboard to update their canvases.
-                    for (UserThread t: threads){
-                        if ((whiteboardID == t.getCurrentWhiteboardID())){
-                            PrintWriter output = t.getPrintWriter();
-                            output.println(outputMsg.toString());
-                        }
-                    }
+                    
             }
             
         });
