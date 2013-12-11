@@ -1,5 +1,13 @@
 package canvas;
 import static org.junit.Assert.*;
+/**
+ * Testing Strategy:
+ * Ensure that any operations on the CanvasModel do not violate the Rep Invariant.
+ * 1. preventRedoAfterThisEdit() - ensure that DrawingObjects past the undoIndex are removed if a user draws a new object,
+ *    so that undo/redos will work properly.
+ * 2. Attempting to decrement the index when it is 0 will not work.
+ * 3. Attempting to increment the index when it is equal to the size of the drawingObjectList will not work.
+ */
 import org.junit.Test;
 public class CanvasModelTest {
     //Check that preventRedoAfterThisEdit() removes DrawingObjects that come after the current undoIndex.

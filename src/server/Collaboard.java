@@ -87,5 +87,4 @@ public class Collaboard {
     public synchronized CanvasModel getCanvasModelByID(int ID){
         return whiteboards.get(ID).getCanvasModel();
     }
-
 }
