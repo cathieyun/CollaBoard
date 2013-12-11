@@ -125,7 +125,6 @@ public class CollaboardServerTest {
 			assertEquals("newboard 15", in.readLine());
 			assertEquals("newboard 15", in2.readLine());
 			
-			//**** FIX THIS *****//
 			// have client 1 switch from whiteboard 13
 			out.println("switchboard funkyPistol 0 13");
 			assertEquals("", in.readLine()); // the server should respond with nothing.
@@ -137,8 +136,9 @@ public class CollaboardServerTest {
 			assertEquals("undoindex 0", in.readLine());
 			assertEquals("enter ", in.readLine());
 			assertEquals("", in.readLine());
-			assertEquals("users funkyPistol", in.readLine());
-			assertEquals("ready", in.readLine());
+			assertEquals("", in.readLine());
+            assertEquals("ready", in.readLine());
+			assertEquals("enter funkyPistol", in.readLine());
 			assertEquals("undoindex 0", in.readLine());
 			assertEquals("enter ", in.readLine());
 						
