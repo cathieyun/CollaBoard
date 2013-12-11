@@ -90,7 +90,7 @@ public class Client {
         		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
         		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
-                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|(users ([A-Za-z0-9]( )*)+)|"
+                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|"
                 +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
         if ( ! input.matches(regex)) {
             System.out.println("server msg: "+ input + " didn't match");
@@ -154,13 +154,6 @@ public class Client {
                 }                
             });
         }
-        //populate the JScrollPane of active users with the list of users sent by the server
-        if (tokens[0].equals("users")){
-            for (int i = 1; i < tokens.length; i++){
-                gui.getUsers().add(tokens[i]);
-            }
-        }
-        //add the user that just entered to the list of active users
         if(tokens[0].equals("enter")){
             final String username = tokens[1];
             SwingUtilities.invokeLater(new Runnable(){ //avoid race conditions on the GUI by adding this to event handling thread's queue

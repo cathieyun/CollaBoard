@@ -76,101 +76,89 @@ public class CollaboardServer {
                     StringBuilder outputMsg = new StringBuilder();
                     if (request[0].equals("enter")|request[0].equals("exit")|request[0].equals("switchboard")){
                         int userID = Integer.parseInt(request[2]);
-                        if (request[0].equals("enter")){ 
-                            Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
-                            whiteboard.addUser(request[1]);
-                            StringBuilder message = new StringBuilder("users");
-                            ArrayList<String> users = whiteboard.getUsers();
-                            for (int i=0; i < users.size(); i++){ //send the list of users currently on the Whiteboard.
-                                message.append(" " + users.get(i));
-                            }
-                            message.append("\nready"); //tell the client to initialize the Canvas.
-                            CanvasModel canvasModel = whiteboard.getCanvasModel();
-                            for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects currently in the CanvasModel
-                                DrawingObject o = canvasModel.getIthDrawingObject(i);
-                                message.append("\ninitdraw " + o.toString());
-                            }
-                            message.append("\nundoindex " + canvasModel.getUndoIndex());
-                            threadsByID.get(userID).getPrintWriter().println(message.toString());
-                            outputMsg.append("enter ");
-                        }
                         if (request[0].equals("exit")){
                             Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
                             whiteboard.removeUser(request[1]);
                             outputMsg.append("exit ");
                         }
-                        if (request[0].equals("switchboard")){
-                            if (!collaboard.existingWhiteboard(whiteboardID)){ 
-                                //if the whiteboard doesn't already exist, create a new one
-                                collaboard.createNewWhiteboard(whiteboardID);
+                        else{
+                            StringBuilder message = new StringBuilder();
+                            if (request[0].equals("enter")){ 
+                                message.append("ready\n"); //tell the client to initialize the Canvas.
+                            }
+                            if (request[0].equals("switchboard")){
+                                if (!collaboard.existingWhiteboard(whiteboardID)){ 
+                                    //if the whiteboard doesn't already exist, create a new one
+                                    collaboard.createNewWhiteboard(whiteboardID);
+                                }
                             }
                             Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
                             whiteboard.addUser(request[1]); //add the user to the list of active users
-                            StringBuilder message = new StringBuilder();
                             ArrayList<String> users = whiteboard.getUsers();
                             for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
-                                message.append("\nenter " + users.get(i));
+                                message.append("enter " + users.get(i) + "\n");
                             } 
                             CanvasModel canvasModel = whiteboard.getCanvasModel();
                             for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects in the CanvasModel
                                 DrawingObject o = canvasModel.getIthDrawingObject(i);
-                                message.append("\ninitdraw " + o.toString());
+                                message.append("initdraw " + o.toString()+"\n");
                             }
-                            message.append("\nundoindex " + canvasModel.getUndoIndex());
+                            message.append("undoindex " + canvasModel.getUndoIndex());
                             threadsByID.get(userID).getPrintWriter().println(message.toString());
                             outputMsg.append("enter ");
                         }
-                        for (UserThread t: threads){
 
-                            System.out.println("Current whiteboardID: "+ whiteboardID);
-                            System.out.println("Thread whiteboardID: "+ t.getCurrentWhiteboardID());
+                        for (UserThread t: threads){
                             //find the threads that are on the same whiteboard and send the enter request to them.
                             if ((whiteboardID == t.getCurrentWhiteboardID()) && (t.getUserID() != userID)){
                                 PrintWriter output = t.getPrintWriter();
-                                System.out.println("Sending this message to other threads: "+ outputMsg.toString());
+                                System.out.println("Sending this message to other threads: "+ outputMsg.toString() + request[1]);
                                 output.println(outputMsg.toString() + request[1]);
                             }
                         }
                     }
-                    if (request[0].equals("undo")|request[0].equals("redo")){
-                        outputMsg.append(request[0]);
-                        if (request[0].equals("undo")){
-                            collaboard.getCanvasModelByID(whiteboardID).decrementIndex();
-                        }
-                        else{
-                            collaboard.getCanvasModelByID(whiteboardID).incrementIndex();
-                        }
-                    }
-                    else if (request[0].equals("draw")){
-                        String color = request[request.length-4];
-                        String thickness = request[request.length-3];
-                        collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
-                        if(request[1].equals("freehand")){
-                            int [] points = new int[request.length-6];
-                            for (int i=0; i < points.length; i++){
-                                points[i] = Integer.parseInt(request[i+2]);
+                    else{
+                        if (request[0].equals("undo")|request[0].equals("redo")){
+                            outputMsg.append(request[0]);
+                            if (request[0].equals("undo")){
+                                collaboard.getCanvasModelByID(whiteboardID).decrementIndex();
                             }
-                            Freehand freehand = new Freehand(points, color, thickness);
-                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(freehand);
-                            
+                            else{
+                                collaboard.getCanvasModelByID(whiteboardID).incrementIndex();
+                            }
                         }
-                        if(request[1].equals("oval")){
-                            Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
-                            collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(oval);
+                        else if (request[0].equals("draw")){
+                            String color = request[request.length-4];
+                            String thickness = request[request.length-3];
+                            collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
+                            if(request[1].equals("freehand")){
+                                int [] points = new int[request.length-6];
+                                for (int i=0; i < points.length; i++){
+                                    points[i] = Integer.parseInt(request[i+2]);
+                                }
+                                Freehand freehand = new Freehand(points, color, thickness);
+                                collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(freehand);
+                                
+                            }
+                            if(request[1].equals("oval")){
+                                Oval oval = new Oval(Integer.parseInt(request[2]), Integer.parseInt(request[3]), Integer.parseInt(request[4]), Integer.parseInt(request[5]), color, thickness);
+                                collaboard.getCanvasModelByID(whiteboardID).addDrawingObject(oval);
+                            }
+                            collaboard.getWhiteboards().get(whiteboardID).getCanvasModel().incrementIndex();
+                            outputMsg.append("draw");
+                            for (int i = 1; i < request.length-2; i++){
+                                outputMsg.append(" " + request[i]);
+                            }
                         }
-                        collaboard.getWhiteboards().get(whiteboardID).getCanvasModel().incrementIndex();
-                        outputMsg.append("draw");
-                        for (int i = 1; i < request.length-2; i++){
-                            outputMsg.append(" " + request[i]);
+                        //Send the message to all other threads on the same whiteboard to update their canvases.
+                        for (UserThread t: threads){
+                            if ((whiteboardID == t.getCurrentWhiteboardID())){
+                                PrintWriter output = t.getPrintWriter();
+                                output.println(outputMsg.toString());
+                            }
                         }
                     }
-                    //Send the message to all other threads on the same whiteboard to update their canvases.
-                    for (UserThread t: threads){
-                        if ((whiteboardID == t.getCurrentWhiteboardID())){
-                            PrintWriter output = t.getPrintWriter();
-                            output.println(outputMsg.toString());
-                        }
-                    }
+                    
             }
             
         });
@@ -353,7 +341,7 @@ public class CollaboardServer {
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
             }
-            return "";
+            return null; //server doesn't respond here, response happens in request-handler thread.
             
         }
     }

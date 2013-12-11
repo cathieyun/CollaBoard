@@ -12,8 +12,6 @@ import server.CollaboardServer;
  * 
  * Adapted from the published test of PS3.
  * 
- * @author Eric
- * 
  */
 public class TestUtil {
     
