@@ -11,7 +11,6 @@ import java.net.SocketTimeoutException;
 
 import org.junit.Test;
 
-import collaboard.TestUtil;
 
 /**
  * Testing strategy:
