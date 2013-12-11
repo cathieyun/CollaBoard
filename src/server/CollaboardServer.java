@@ -84,7 +84,7 @@ public class CollaboardServer {
                         else{
                             StringBuilder message = new StringBuilder();
                             if (request[0].equals("enter")){ 
-                                message.append("\nready"); //tell the client to initialize the Canvas.
+                                message.append("ready\n"); //tell the client to initialize the Canvas.
                             }
                             if (request[0].equals("switchboard")){
                                 if (!collaboard.existingWhiteboard(whiteboardID)){ 
@@ -96,14 +96,14 @@ public class CollaboardServer {
                             whiteboard.addUser(request[1]); //add the user to the list of active users
                             ArrayList<String> users = whiteboard.getUsers();
                             for (int i=0; i < users.size(); i++){ //send the list of active users to populate the client's active users table
-                                message.append("\nenter " + users.get(i));
+                                message.append("enter " + users.get(i) + "\n");
                             } 
                             CanvasModel canvasModel = whiteboard.getCanvasModel();
                             for (int i = 0; i < canvasModel.getListSize(); i++){ //send the list of drawing objects in the CanvasModel
                                 DrawingObject o = canvasModel.getIthDrawingObject(i);
-                                message.append("\ninitdraw " + o.toString());
+                                message.append("initdraw " + o.toString()+"\n");
                             }
-                            message.append("\nundoindex " + canvasModel.getUndoIndex());
+                            message.append("undoindex " + canvasModel.getUndoIndex());
                             threadsByID.get(userID).getPrintWriter().println(message.toString());
                             outputMsg.append("enter ");
                         }
@@ -341,7 +341,7 @@ public class CollaboardServer {
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
             }
-            return "";
+            return null; //server doesn't respond here, response happens in request-handler thread.
             
         }
     }
