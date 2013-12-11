@@ -207,12 +207,15 @@ public class CollaboardServerTest {
 			
 			// have client 2 enter the whiteboard created by client 1 (whiteboard 13)
 			out2.println("enter puppiesss 0 13");
+			
+//			assertEquals("enter puppiesss", in2.readLine());
+	
+			assertEquals("draw oval 0 0 5 5 blk m", in2.readLine());
+
             assertEquals("ready", in.readLine());
 			assertEquals("enter puppiesss", in.readLine());
-			assertEquals("initdraw oval 0 0 5 5 blk m", in.readLine());
+			assertEquals("initdraw oval 0 0 5 5 blk m", in.readLine());	
 			assertEquals("undoindex 1", in.readLine());	
-			assertEquals("enter puppiesss", in2.readLine());
-//			System.out.println("reading in2"+in2.readLine());
 			
 			// open a socket between client 3 and the server
 			Socket sock3 = TestUtil.connect(port);
@@ -223,15 +226,21 @@ public class CollaboardServerTest {
 			assertEquals("list 13", in3.readLine()); // server sends us the list of whiteboards (#13)
 			
 			// have client 3 attempt to create the username meow; server should respond with "validuser"
-			out3.println("makeuser meow 3");
-			assertEquals("validuser", in3.readLine());
+//			out3.println("makeuser meow 3");
+//			assertEquals("validuser", in3.readLine());
 			
 			// make a whiteboard, ID 10
-			out3.println("makeboard 10");
-			assertEquals("newboard 10", in3.readLine());
-			assertEquals("validwhiteboard", in3.readLine());
+//			out3.println("makeboard 10");
+//			assertEquals("newboard 10", in3.readLine());
+//			assertEquals("validwhiteboard", in3.readLine());
 			
+			// client 1 and 2 should be alerted that client 3 created whiteboard 10
+//			assertEquals("newboard 10", in.readLine());
+//			assertEquals("newboard 10", in2.readLine());
 			
+			// have Client 3 draw on the whiteboard (whiteboard 10)
+			out3.println("draw freehand 5 5 10 10 blk m 2 10");
+
 			
 			out.println("bye");
 			out2.println("bye");
