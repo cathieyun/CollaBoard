@@ -3,7 +3,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-
+/**
+ * Testing Strategy:
+ * Beyond getters and setters, the main ways to mutate Whiteboard are adding and removing users.
+ * We want to ensure that these methods function as expected.
+ *
+ */
 public class WhiteboardTest {
     //Check that adding users works.
     @Test

@@ -4,7 +4,13 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 
 import org.junit.Test;
-
+/**
+ * Testing Strategy:
+ * 1. Ensure that the toString() method outputs the correct String representation as to easily be integrated into our protocol.
+ * 2. Ensure that the Freehand class is a subtype of DrawingObject.
+ * 3. Ensure that instantiating a Freehand using either of its constructors can produce structurally equal objects.
+ *
+ */
 public class FreehandTest {
     //Test that instantiating two identical freehands with the two different constructors produces the same string rep
     @Test

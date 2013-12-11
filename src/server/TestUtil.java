@@ -1,10 +1,9 @@
-package collaboard;
+package server;
 
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 
-import server.CollaboardServer;
 
 /**
  * This class is used in CollaboardServerTest in order to initialize the server
