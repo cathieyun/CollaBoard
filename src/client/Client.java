@@ -86,16 +86,6 @@ public class Client {
      * @param input - message from the server
      */
     private void handleMessage(String input){
-//        String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
-//        		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-//        		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-//        		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
-//                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|"
-//                +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
-//        if ( ! input.matches(regex)) {
-//            System.out.println("server msg: "+ input + " didn't match");
-//            return; //do nothing
-//        }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("userID")){
             int userID = Integer.parseInt(tokens[1]);
@@ -277,7 +267,7 @@ public class Client {
      */
     public static void main(String[]args){
         //if you want to access the server from multiple machines, change "localhost" to the IP address of the machine running the server.
-        Client client = new Client("18.189.3.64", 4444); 
+        Client client = new Client("localhost", 4444); 
         client.run();
     }
 }

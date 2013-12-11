@@ -136,6 +136,9 @@ public class CollaboardServer {
                             String thickness = request[request.length-3];
                             collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
                             if(request[1].equals("freehand")){
+                            	if (request.length < 6) {
+                            		return; //do nothing
+                            	}
                                 int [] points = new int[request.length-6];
                                 for (int i=0; i < points.length; i++){
                                     points[i] = Integer.parseInt(request[i+2]);
@@ -299,17 +302,6 @@ public class CollaboardServer {
          * @return server response to the Client's message.
          */
         public String handleRequest(String input){
-//            String regex = "(makeuser [A-Za-z0-9]+ \\d+)|(makeboard \\d+)|(undo \\d+ \\d+)|"
-//                    + "(redo \\d+ \\d+)|"+
-//                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
-//                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
-//                    "(switchboard [A-Za-z0-9]+ \\d+ \\d+)|"
-//                    +"(enter [A-Za-z0-9]+ \\d+ \\d+)|(exit [A-Za-z0-9]+ \\d+ \\d+)|(bye)";
-//            if ( ! input.matches(regex)) {
-//                // invalid input
-//                System.out.println("client msg: " + input + " didn't match"); 
-//                return null;
-//            }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
                 this.username = tokens[1];
@@ -340,7 +332,12 @@ public class CollaboardServer {
             }
             if (!tokens[0].equals("bye")){
                 //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
-                requests.add(tokens);
+                try {
+					requests.put(tokens);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
