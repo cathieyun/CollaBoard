@@ -333,18 +333,11 @@ public class CollaboardServer {
             if (!tokens[0].equals("bye")){
                 //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
                 try {
-<<<<<<< HEAD
                     requests.put(tokens);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-=======
-					requests.put(tokens);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
->>>>>>> 681ec5b6ef9788e3c94cd15803d9cd6445235647
+
             }
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);

@@ -96,6 +96,6 @@ public class CanvasModel{
 	}
 	
 	public boolean checkRep(){
-	    return undoIndex < drawingObjectList.size() && undoIndex >=0;
+	    return undoIndex <= drawingObjectList.size() && undoIndex >=0;
 	}
 }
