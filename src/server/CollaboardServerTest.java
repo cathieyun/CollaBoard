@@ -36,7 +36,6 @@ public class CollaboardServerTest {
 	 * Client 2 connects, and attempts to create the username "theStrokes". Server should respond with "validuser".
 	 * Client 1 makes whiteboard 13. Server should reply "newboard 13" then "validwhiteboard".
 	 * Client 2 should be alerted of whiteboard 13's existence.
-
 	 * 
 	 * Client 3 connects, and attempts to create the username "theStrokes". Server should respond with "usertaken".
 	 * Client 3 creates the username rollingStones; server should respond with "validuser".
@@ -46,7 +45,7 @@ public class CollaboardServerTest {
 	 * 
 	 * Client 1 switches from whiteboard 13. Server responds with an empty string.
 	 * Client 1 (username = funkyPistol, userID = 0) enters whiteboard 15.
-	 * Client 1 disconnects from the Collaboard program
+	 * Client 1 disconnects from the Collaboard program.
 	 * 
 	 * @throws IOException
 	 * @throws InterruptedException

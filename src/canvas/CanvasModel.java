@@ -20,7 +20,7 @@ public class CanvasModel{
      * 
      * @return the current size of drawingObjectList
      */
-    public int getListSize(){
+    public synchronized int getListSize(){
         return drawingObjectList.size();
     }
 
@@ -30,7 +30,7 @@ public class CanvasModel{
 	 * @param i - index of the DrawingObject to retrieve
 	 * @return DrawingObject at the ith index in drawingObjectList
 	 */
-    public DrawingObject getIthDrawingObject(int i){
+    public synchronized DrawingObject getIthDrawingObject(int i){
         return drawingObjectList.get(i);
     }
     
@@ -38,28 +38,32 @@ public class CanvasModel{
 	 * 
 	 * @return the current undo index
 	 */
-    public int getUndoIndex(){
+    public synchronized int getUndoIndex(){
         return undoIndex;
     }
 
     /**
      * Set the undo index to the input index.
      */
-    public void setUndoIndex(int index){
+    public synchronized void setUndoIndex(int index){
         undoIndex = index;
     }
 	/**
 	 * Decrements the undo index.
 	 */
-    public void decrementIndex(){
-        undoIndex--;
+    public synchronized void decrementIndex(){
+    	if (undoIndex > 0) {
+            undoIndex--;
+    	}
     }
 
 	/**
 	 * Increments the undo index.
 	 */
-    public void incrementIndex(){
-        undoIndex++;
+    public synchronized void incrementIndex(){
+    	if (undoIndex < drawingObjectList.size()) {
+            undoIndex++;
+    	}
     }
     
 	/**
@@ -68,7 +72,7 @@ public class CanvasModel{
 	 * 
 	 * @param index of the DrawingObject to be removed
 	 */
-    public void removeDrawingObject(int index){
+    public synchronized void removeDrawingObject(int index){
         drawingObjectList.remove(index);
     }
     
@@ -77,7 +81,7 @@ public class CanvasModel{
 	 * 
 	 * @param d - DrawingObject object to be added.
 	 */
-    public void addDrawingObject(DrawingObject d){
+    public synchronized void addDrawingObject(DrawingObject d){
         drawingObjectList.add(d);
     }
     
@@ -85,13 +89,13 @@ public class CanvasModel{
 	 *  After a series of undo operations, if a user begins to draw again,
 	 *  all edits after the current edit are discarded.
 	 */
-	public void preventRedoAfterThisEdit() {
+	public synchronized void preventRedoAfterThisEdit() {
 		for (int i = getListSize() - 1; getUndoIndex() < getListSize(); i--) {
 			removeDrawingObject(i);
 		}
 	}
 	
 	public boolean checkRep(){
-	    return undoIndex >=0;
+	    return undoIndex < drawingObjectList.size() && undoIndex >=0;
 	}
 }

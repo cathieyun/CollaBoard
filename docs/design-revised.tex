@@ -83,14 +83,16 @@ CollaboardGUI: GUI class of the collaborative whiteboard. Populated upon connect
 \section{Protocol}
 From the Server to the Client:
 \begin{itemize}
-     \item \textbf {VALIDUSER} Allows the client to proceed to the whiteboard selection pane
-     \item \textbf {VALIDWHITEBOARD} Allows the client to proceed to the specified whiteboard
+	 \item \textbf {LIST} List of current, active whiteboard IDs.
+     \item \textbf {VALIDUSER} Allows the client to proceed to the whiteboard selection pane.
+     \item \textbf {VALIDWHITEBOARD} Allows the client to proceed to the specified whiteboard.
      \item \textbf {USERTAKEN} The username the client selected is invalid. Prompts an error message on the username selection pane.
      \item \textbf {WHITEBOARDTAKEN} The whiteboardID the client tried to create a whiteboard with is taken. prompts an error message.
-     \item \textbf {READY} The canvas is ready to be initialized
+     \item \textbf {NEWBOARD} Encodes the whiteboard ID of a whiteboard that has just been created to update the list of current whiteboard IDs on the whiteboard selection pane.
+     \item \textbf {READY} The canvas is ready to be initialized.
      \item \textbf {INITDRAW} Sent when a client enters a new whiteboard. Encodes a DrawingObject for the client to add to its ClientCanvasModel.
      \item \textbf {UNDOINDEX}  Sent when a client enters a new whiteboard. encodes the undoIndex of the Whiteboard's CanvasModel. Prompts the client's GUI to be populated with DrawingObjects up until the undoIndex.
-     \item \textbf {DRAW} Encodes a DrawingObject to be added to the client's ClientCanvasModel and to be populated on the Canvas
+     \item \textbf {DRAW} Encodes a DrawingObject to be added to the client's ClientCanvasModel and to be populated on the Canvas.
      \item \textbf {ENTER} Contains the username of a client that has just entered the same whiteboard the current client is using. Prompts the GUI to update its list of users accordingly.
      \item \textbf {EXIT} Contains the username of a client that has just exited the whiteboard the current client is using. Prompts the GUI to update its list of users accordingly.
           \item \textbf {UNDO} Prompts the GUI's canvas to perform the undo action.
@@ -126,7 +128,19 @@ Test methods that may mutate the state of each of our Data types (beyond getter 
 \item Whiteboard: addUser() and removeUser() function correctly.
 \end{itemize}
 \subsection{Integrated Tests}
-*Flesh this one out please*
+Test the server-client protocol and the client-server protocol.
+\begin{itemize}
+\item Client connect: make sure that a client can open a socket and connect to the server
+\item MakeUser: make sure that a user can create a valid username
+\item MakeUser: make sure that the server does not allow the user to create a duplicate username
+\item MakeWhiteboard: make sure that the user can create a valid whiteboard.
+\item MakeWhiteboard: make sure that the user cannot create a duplicate whiteboard.
+\item NewBoard: make sure that other connected clients are notified if another user creates another whiteboard
+\item Switchboard: make sure that the user can switch to a different whiteboard
+\item Enter: make sure that the user can enter a valid whiteboard
+\item Exit: make sure that the user can exit a whiteboard
+\item List: make sure the server sends a list of current whiteboard IDs to the client when the client connects
+\end{itemize}
 \subsection{GUI Testing}
 Assume a new server is started at the beginning of each of these tests.
 \subsubsection{Basic Tests}
@@ -205,7 +219,7 @@ Single user
 \item Switch to whiteboard 2.
 \item Switch back to whiteboard 1. It should be in the same state as you left it.
 \end{itemize}
-Multiple User
+Multiple Users
 \begin{itemize}
 \item A person enters whiteboard 1 and draws something, and leaves.
 \item A second person enters whiteboard 1. It should be in the same state as person one left it.
