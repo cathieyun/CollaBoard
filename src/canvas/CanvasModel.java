@@ -52,14 +52,19 @@ public class CanvasModel{
 	 * Decrements the undo index.
 	 */
     public void decrementIndex(){
-        undoIndex--;
+        if (undoIndex > 0){
+            undoIndex--;
+        }
+        
     }
 
 	/**
 	 * Increments the undo index.
 	 */
     public void incrementIndex(){
-        undoIndex++;
+        if (undoIndex < drawingObjectList.size()-1){
+            undoIndex++;
+        }
     }
     
 	/**
@@ -92,6 +97,6 @@ public class CanvasModel{
 	}
 	
 	public boolean checkRep(){
-	    return undoIndex >=0;
+	    return undoIndex < drawingObjectList.size() && undoIndex >=0;
 	}
 }
