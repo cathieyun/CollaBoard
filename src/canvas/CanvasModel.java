@@ -52,15 +52,18 @@ public class CanvasModel{
 	 * Decrements the undo index.
 	 */
     public synchronized void decrementIndex(){
-        undoIndex--;
-        
+    	if (undoIndex > 0) {
+            undoIndex--;
+    	}
     }
 
 	/**
 	 * Increments the undo index.
 	 */
     public synchronized void incrementIndex(){
-        undoIndex++;
+    	if (undoIndex < drawingObjectList.size()) {
+            undoIndex++;
+    	}
     }
     
 	/**

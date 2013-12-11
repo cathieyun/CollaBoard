@@ -136,6 +136,9 @@ public class CollaboardServer {
                             String thickness = request[request.length-3];
                             collaboard.getCanvasModelByID(whiteboardID).preventRedoAfterThisEdit();
                             if(request[1].equals("freehand")){
+                            	if (request.length < 6) {
+                            		return; //do nothing
+                            	}
                                 int [] points = new int[request.length-6];
                                 for (int i=0; i < points.length; i++){
                                     points[i] = Integer.parseInt(request[i+2]);
@@ -330,10 +333,18 @@ public class CollaboardServer {
             if (!tokens[0].equals("bye")){
                 //add the message pertaining to whiteboard edits to the queue to prevent concurrency problems.
                 try {
+<<<<<<< HEAD
                     requests.put(tokens);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+=======
+					requests.put(tokens);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+>>>>>>> 681ec5b6ef9788e3c94cd15803d9cd6445235647
             }
             if (tokens[0].equals("bye")){
             	collaboard.removeUsername(this.username);
