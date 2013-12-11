@@ -295,17 +295,17 @@ public class CollaboardServer {
          * @return server response to the Client's message.
          */
         public String handleRequest(String input){
-            String regex = "(makeuser [A-Za-z0-9]+ \\d+)|(makeboard \\d+)|(undo \\d+ \\d+)|"
-                    + "(redo \\d+ \\d+)|"+
-                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
-                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
-                    "(switchboard [A-Za-z0-9]+ \\d+ \\d+)|"
-                    +"(enter [A-Za-z0-9]+ \\d+ \\d+)|(exit [A-Za-z0-9]+ \\d+ \\d+)|(bye)";
-            if ( ! input.matches(regex)) {
-                // invalid input
-                System.out.println("client msg: " + input + " didn't match"); 
-                return null;
-            }
+//            String regex = "(makeuser [A-Za-z0-9]+ \\d+)|(makeboard \\d+)|(undo \\d+ \\d+)|"
+//                    + "(redo \\d+ \\d+)|"+
+//                    "(draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
+//                    "(draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l) \\d+ \\d+)|" +
+//                    "(switchboard [A-Za-z0-9]+ \\d+ \\d+)|"
+//                    +"(enter [A-Za-z0-9]+ \\d+ \\d+)|(exit [A-Za-z0-9]+ \\d+ \\d+)|(bye)";
+//            if ( ! input.matches(regex)) {
+//                // invalid input
+//                System.out.println("client msg: " + input + " didn't match"); 
+//                return null;
+//            }
             String[] tokens = input.split(" ");
             if (tokens[0].equals("makeuser")){
                 this.username = tokens[1];

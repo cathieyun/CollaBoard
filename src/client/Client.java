@@ -86,16 +86,16 @@ public class Client {
      * @param input - message from the server
      */
     private void handleMessage(String input){
-        String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
-        		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
-        		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
-                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|"
-                +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
-        if ( ! input.matches(regex)) {
-            System.out.println("server msg: "+ input + " didn't match");
-            return; //do nothing
-        }
+//        String regex = "(userID [0-9]+)|(validuser)|(validwhiteboard)|(ready)|" +
+//        		"((init)*draw freehand( -?\\d+ -?\\d+)( -?\\d+ -?\\d+)+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+//        		"((init)*draw oval -?\\d+ -?\\d+ -?\\d+ -?\\d+ (bl|y|r|g|o|m|blk|w) (s|m|l))|" +
+//        		"(initdraw)|(initdone)|(undoindex \\d+)|(newboard \\d+)|"
+//                + "(usertaken)|(whiteboardtaken)|(list( \\d+)*)|"
+//                +"(enter [A-Za-z0-9]+)|(exit [A-Za-z0-9]+)|(undo)|(redo)";
+//        if ( ! input.matches(regex)) {
+//            System.out.println("server msg: "+ input + " didn't match");
+//            return; //do nothing
+//        }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("userID")){
             int userID = Integer.parseInt(tokens[1]);
