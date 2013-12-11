@@ -151,6 +151,14 @@ public class CollaboardServerTest {
 	 * that they are invalid and returns the appropriate response. 
 	 * 
 	 * Testing strategy:
+	 * Create Client 1, have them create a whiteboard (whiteboard 13) and draw on it.
+	 * Create Client 2, have them join the same whiteboard (whiteboard 13).
+	 * Client 2 should be sent information on the current state of whiteboard 13, so 
+	 * we test that they get the drawings already on the whiteboard.
+	 * 
+	 * Create Client 3, have them create a whiteboard (whiteboard 5) and draw on it.
+	 * Have Client 2 switch from their whiteboard (
+	 * 
 	 * 
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -158,30 +166,79 @@ public class CollaboardServerTest {
 	@Test(timeout = 10000)
 	public void invalidInputsTest() throws IOException, InterruptedException {
 		// initialize the server
-		setUp();
-		
+		final int port = 4443;
+		TestUtil.startServer(port); // initialize the server on port 4444
 		
 		// Avoid race where we try to connect to server too early
 		Thread.sleep(100);
 
 		try {
 			// open a socket between client 1 and the server
-			Socket sock4 = TestUtil.connect();
+			Socket sock4 = TestUtil.connect(port);
 			in = new BufferedReader(new InputStreamReader(
 					sock4.getInputStream()));
 			out = new PrintWriter(sock4.getOutputStream(), true);
 			
 
-			assertEquals("userID 3", in.readLine()); // our client connection should be assigned userID 3
-			assertEquals("list 13 15", in.readLine()); // server sends us the empty list of whiteboards
+			assertEquals("userID 0", in.readLine()); // our client connection should be assigned userID 3
+			assertEquals("list", in.readLine()); // server sends us the empty list of whiteboards
 
 			// have client 1 attempt to create an invalid username, should respond with "client msg: [username] didn't match"
-			out.println("makeuser kittehs! 5");
-			assertEquals("client msg: makeuser kittehs! 5 didn't match", in.readLine());
+			out.println("makeuser kittehs 5");
+			assertEquals("validuser", in.readLine());
+
+			// make a whiteboard
+			out.println("makeboard 13");
+			assertEquals("newboard 13", in.readLine());
+			assertEquals("validwhiteboard", in.readLine());
+			
+			out.println("draw oval 0 0 5 5 blk m 0 13");
+			
+			// open a socket between client 2 and the server
+			Socket sock2 = TestUtil.connect(port);
+			BufferedReader in2 = new BufferedReader(new InputStreamReader(
+					sock2.getInputStream()));
+			PrintWriter out2 = new PrintWriter(sock2.getOutputStream(), true);
+			assertEquals("userID 1", in2.readLine()); // our client connection should be assigned userID 1
+			assertEquals("list 13", in2.readLine()); // server sends us the empty list of whiteboards
+			
+			// have client 2 attempt to create the username puppiesss; server should respond with "validuser"
+			out2.println("makeuser puppiesss 6");
+			assertEquals("validuser", in2.readLine());
+			
+			// have client 2 enter the whiteboard created by client 1 (whiteboard 13)
+			out2.println("enter puppiesss 0 13");
+            assertEquals("ready", in.readLine());
+			assertEquals("enter puppiesss", in.readLine());
+			assertEquals("initdraw oval 0 0 5 5 blk m", in.readLine());
+			assertEquals("undoindex 1", in.readLine());	
+			assertEquals("enter puppiesss", in2.readLine());
+//			System.out.println("reading in2"+in2.readLine());
+			
+			// open a socket between client 3 and the server
+			Socket sock3 = TestUtil.connect(port);
+			BufferedReader in3 = new BufferedReader(new InputStreamReader(
+					sock3.getInputStream()));
+			PrintWriter out3 = new PrintWriter(sock3.getOutputStream(), true);
+			assertEquals("userID 2", in3.readLine()); // our client connection should be assigned userID 2
+			assertEquals("list 13", in3.readLine()); // server sends us the list of whiteboards (#13)
+			
+			// have client 3 attempt to create the username meow; server should respond with "validuser"
+			out3.println("makeuser meow 3");
+			assertEquals("validuser", in3.readLine());
+			
+			// make a whiteboard, ID 10
+			out3.println("makeboard 10");
+			assertEquals("newboard 10", in3.readLine());
+			assertEquals("validwhiteboard", in3.readLine());
+			
+			
 			
 			out.println("bye");
+			out2.println("bye");
 			sock4.close();
-			
+			sock2.close();
+		
 		} catch (SocketTimeoutException e) {
 			throw new RuntimeException(e);
 		}
