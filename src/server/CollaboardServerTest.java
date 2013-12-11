@@ -147,4 +147,46 @@ public class CollaboardServerTest {
 			throw new RuntimeException(e);
 		}
 	}
+	
+
+	/**
+	 * This test makes sure that when invalid inputs are entered, that the sever recognizes
+	 * that they are invalid and returns the appropriate response. 
+	 * 
+	 * Testing strategy:
+	 * 
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	@Test(timeout = 10000)
+	public void invalidInputsTest() throws IOException, InterruptedException {
+		// initialize the server
+		setUp();
+		
+		
+		// Avoid race where we try to connect to server too early
+		Thread.sleep(100);
+
+		try {
+			// open a socket between client 1 and the server
+			Socket sock4 = TestUtil.connect();
+			in = new BufferedReader(new InputStreamReader(
+					sock4.getInputStream()));
+			out = new PrintWriter(sock4.getOutputStream(), true);
+			
+
+			assertEquals("userID 3", in.readLine()); // our client connection should be assigned userID 3
+			assertEquals("list 13 15", in.readLine()); // server sends us the empty list of whiteboards
+
+			// have client 1 attempt to create an invalid username, should respond with "client msg: [username] didn't match"
+			out.println("makeuser kittehs! 5");
+			assertEquals("client msg: makeuser kittehs! 5 didn't match", in.readLine());
+			
+			out.println("bye");
+			sock4.close();
+			
+		} catch (SocketTimeoutException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
