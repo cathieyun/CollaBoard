@@ -90,6 +90,10 @@ public class CollaboardServer {
                                 if (!collaboard.existingWhiteboard(whiteboardID)){ 
                                     //if the whiteboard doesn't already exist, create a new one
                                     collaboard.createNewWhiteboard(whiteboardID);
+                                    //send a message to all threads that a new whiteboard was created.
+                                    for (UserThread t: threads){
+                                        t.getPrintWriter().println("newboard " + whiteboardID);
+                                    }
                                 }
                             }
                             Whiteboard whiteboard = collaboard.getWhiteboards().get(whiteboardID);
