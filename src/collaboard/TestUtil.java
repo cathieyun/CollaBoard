@@ -17,9 +17,7 @@ import server.CollaboardServer;
  */
 public class TestUtil {
     
-    private static final int port = 4444; // default port
-
-    public static void startServer() {
+    public static void startServer(final int port) {
         new Thread(new Runnable() {
             public void run() {
                 try {
@@ -32,7 +30,7 @@ public class TestUtil {
         }).start();
     }
 
-    public static Socket connect() throws IOException {
+    public static Socket connect(int port) throws IOException {
       Socket ret = null;
       final int MAX_ATTEMPTS = 50;
       int attempts = 0;

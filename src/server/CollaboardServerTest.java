@@ -24,10 +24,6 @@ import collaboard.TestUtil;
 public class CollaboardServerTest {
 	PrintWriter out;
 	BufferedReader in;
-	
-	private void setUp() {
-		TestUtil.startServer();
-	}
 
 	/**
 	 * This testing suite covers client-server protocol messages, including clients connecting to the server and 
@@ -57,7 +53,8 @@ public class CollaboardServerTest {
 	@Test(timeout = 10000)
 	public void clientServerTest() throws IOException, InterruptedException {
 		// initialize the server
-		setUp();
+		final int port = 4444;
+		TestUtil.startServer(port); // initialize the server on port 4444
 		
 		
 		// Avoid race where we try to connect to server too early
@@ -65,7 +62,7 @@ public class CollaboardServerTest {
 
 		try {
 			// open a socket between client 1 and the server
-			Socket sock = TestUtil.connect();
+			Socket sock = TestUtil.connect(port);
 			in = new BufferedReader(new InputStreamReader(
 					sock.getInputStream()));
 			out = new PrintWriter(sock.getOutputStream(), true);
@@ -78,7 +75,7 @@ public class CollaboardServerTest {
 			assertEquals("validuser", in.readLine());
 
 			// open a socket between client 2 and the server
-			Socket sock2 = TestUtil.connect();
+			Socket sock2 = TestUtil.connect(port);
 			BufferedReader in2 = new BufferedReader(new InputStreamReader(
 					sock2.getInputStream()));
 			PrintWriter out2 = new PrintWriter(sock2.getOutputStream(), true);
@@ -97,7 +94,7 @@ public class CollaboardServerTest {
 			assertEquals("newboard 13", in2.readLine());
 			
 			// open a socket between client 3 and the server
-			Socket sock3 = TestUtil.connect();
+			Socket sock3 = TestUtil.connect(port);
 			BufferedReader in3 = new BufferedReader(new InputStreamReader(
 					sock3.getInputStream()));
 			PrintWriter out3 = new PrintWriter(sock3.getOutputStream(), true);
