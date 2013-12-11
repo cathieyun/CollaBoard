@@ -304,7 +304,10 @@ public class CollaboardGUI extends JFrame{
         canvas.drawDrawingObject(d);
     }
     void addWhiteboard(int ID){
-        whiteboardsModel.addRow(new String[]{Integer.toString(ID)});
+        if (whiteboardsModel != null){
+            //if whiteboardsModel hasn't been initialized yet, don't do anything.
+            whiteboardsModel.addRow(new String[]{Integer.toString(ID)});
+        }
     }
     /**
      * Adds the specified user to the table of active users.
